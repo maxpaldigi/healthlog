@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Notifications\MagicLinkNotification;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use Throwable;
 
 class SendMagicLink
 {
@@ -35,9 +36,19 @@ class SendMagicLink
             ['token' => $plainToken],
         );
 
-        $user->notify(new MagicLinkNotification($url));
+        $sent = true;
 
-        if (! app()->isProduction()) {
+        try {
+            $user->notify(new MagicLinkNotification($url));
+        } catch (Throwable $e) {
+            report($e);
+            $sent = false;
+            session()->flash('mail_failed', true);
+        }
+
+        $sendsRealMail = ! in_array(config('mail.default'), ['log', 'array'], true);
+
+        if (! $sent || ! $sendsRealMail) {
             session()->flash('dev_login_url', $url);
         }
     }

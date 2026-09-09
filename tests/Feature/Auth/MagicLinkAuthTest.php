@@ -5,6 +5,8 @@ use App\Enums\WeightUnit;
 use App\Models\LoginToken;
 use App\Models\User;
 use App\Notifications\MagicLinkNotification;
+use Illuminate\Notifications\Events\NotificationSending;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -131,6 +133,29 @@ it('shows an open-login-link button after a known email is submitted', function 
         ->assertInertia(fn (Assert $page) => $page
             ->component('auth/CheckEmail')
             ->where('sendsRealMail', false)
+            ->where('loginUrl', fn (?string $url): bool => is_string($url) && str_contains($url, '/login/magic/')));
+});
+
+it('does not 500 when the login email cannot be sent', function () {
+    Event::listen(NotificationSending::class, function (): void {
+        throw new RuntimeException('Request to Resend API failed.');
+    });
+
+    $this->post(route('register.store'), [
+        'name' => 'Test User',
+        'email' => 'mailfail@example.com',
+        'timezone' => 'Asia/Kolkata',
+        'glucose_unit' => GlucoseUnit::MgDl->value,
+        'weight_unit' => WeightUnit::Kg->value,
+    ])->assertRedirect(route('login.check-email'));
+
+    $this->assertDatabaseHas('users', ['email' => 'mailfail@example.com']);
+
+    $this->get(route('login.check-email'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('auth/CheckEmail')
+            ->where('mailFailed', true)
             ->where('loginUrl', fn (?string $url): bool => is_string($url) && str_contains($url, '/login/magic/')));
 });
 

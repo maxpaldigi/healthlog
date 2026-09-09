@@ -48,9 +48,7 @@ class AppServiceProvider extends ServiceProvider
             app()->isProduction(),
         );
 
-        if (config('mail.default') === 'resend' && blank(config('services.resend.key'))) {
-            config(['mail.default' => 'log']);
-        }
+        $this->useLogMailerWhenRemoteMailIsNotReady();
 
         Password::defaults(fn (): ?Password => app()->isProduction()
             ? Password::min(12)
@@ -61,6 +59,21 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+    }
+
+    private function useLogMailerWhenRemoteMailIsNotReady(): void
+    {
+        if (config('mail.default') === 'resend' && blank(config('services.resend.key'))) {
+            config(['mail.default' => 'log']);
+
+            return;
+        }
+
+        $smtpHost = (string) config('mail.mailers.smtp.host');
+
+        if (config('mail.default') === 'smtp' && in_array($smtpHost, ['127.0.0.1', 'localhost'], true)) {
+            config(['mail.default' => 'log']);
+        }
     }
 
     private function configureRateLimiting(): void

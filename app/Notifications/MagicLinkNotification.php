@@ -20,9 +20,9 @@ class MagicLinkNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Your HealthLog login link')
+            ->subject('Your HealthyMe login link')
             ->line('Tap the button below to log in. This link expires in 15 minutes and can only be used once.')
-            ->action('Log in to HealthLog', $this->url)
+            ->action('Log in to HealthyMe', $this->url)
             ->line('If you did not request this, you can ignore this email.');
     }
 }

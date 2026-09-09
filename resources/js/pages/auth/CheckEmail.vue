@@ -14,6 +14,7 @@ defineOptions({
 defineProps<{
     loginUrl?: string | null;
     sendsRealMail?: boolean;
+    mailFailed?: boolean;
 }>();
 </script>
 
@@ -21,13 +22,20 @@ defineProps<{
     <Head title="Check your email" />
 
     <div class="flex flex-col gap-6">
+        <p
+            v-if="mailFailed"
+            class="text-destructive text-center text-base leading-relaxed"
+        >
+            We could not send the email. Use the button below, or fix mail in
+            Laravel Cloud and try again.
+        </p>
         <p class="text-muted-foreground text-center text-base leading-relaxed">
             This app signs you in with a link, not an OTP code.
-            <template v-if="sendsRealMail">
+            <template v-if="sendsRealMail && !mailFailed">
                 Check your inbox (and spam). The link expires in 15 minutes and
                 works once.
             </template>
-            <template v-else>
+            <template v-else-if="!mailFailed">
                 On this computer mail is not sent to a real inbox yet.
             </template>
         </p>

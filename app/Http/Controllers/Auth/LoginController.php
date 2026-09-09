@@ -32,6 +32,7 @@ class LoginController extends Controller
         return Inertia::render('auth/CheckEmail', [
             'loginUrl' => session('dev_login_url'),
             'sendsRealMail' => ! in_array(config('mail.default'), ['log', 'array'], true),
+            'mailFailed' => (bool) session('mail_failed'),
         ]);
     }
 
