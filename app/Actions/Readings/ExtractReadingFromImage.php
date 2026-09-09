@@ -23,11 +23,11 @@ use JsonException;
 class ExtractReadingFromImage implements ExtractsDeviceReading
 {
     public const PROMPT = <<<'PROMPT'
-You are reading the digital display of a home medical device from a photograph. Report only what is actually printed on the screen.
+You are reading the digital display of a home medical device from a photograph. Report only what is actually printed on the screen. Decide device_type from the display itself.
 
-If it is a blood pressure monitor, there are usually three numbers: systolic (largest, top), diastolic (middle), and pulse (bottom, often marked with a heart symbol). Systolic is always greater than diastolic.
+If it is a blood pressure monitor, there are usually two or three numbers: systolic (largest, top), diastolic (middle), and often pulse (bottom, marked with a heart). Systolic is always greater than diastolic. Set device_type to blood_pressure_monitor.
 
-If it is a glucometer, there is usually a single number, and the unit mg/dL or mmol/L may be printed next to it.
+If it is a glucometer, there is usually a single glucose number, and the unit mg/dL or mmol/L may be printed next to it. Set device_type to glucometer. Never treat one glucose number as blood pressure.
 
 Rules: Do not guess. If a digit is unclear, blurred, cut off, or obscured by glare, set that field to null and set confidence to "low". If the image does not show a medical device display at all, set device_type to "unknown" and every value to null. Never estimate, infer, or complete a partially visible number. Use the notes field to say briefly what you saw or why you could not read it.
 PROMPT;

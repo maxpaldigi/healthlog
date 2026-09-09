@@ -21,19 +21,19 @@ defineProps<{
                         class="flex flex-col items-center gap-2 font-medium"
                     >
                         <div
-                            class="mb-1 flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary"
+                            class="bg-nav text-nav-foreground mb-1 flex h-14 w-14 items-center justify-center rounded-full"
                         >
                             <AppLogoIcon
-                                class="size-8 fill-current text-primary"
+                                class="size-8 fill-current"
                             />
                         </div>
                         <span class="sr-only">{{ title }}</span>
                     </Link>
                     <div class="space-y-2 text-center">
-                        <p class="text-primary text-sm font-semibold tracking-wide uppercase">
+                        <p class="text-primary text-sm font-bold tracking-wide uppercase">
                             HealthLog
                         </p>
-                        <h1 class="text-2xl font-semibold">{{ title }}</h1>
+                        <h1 class="text-2xl font-bold">{{ title }}</h1>
                         <p class="text-muted-foreground text-center text-base leading-relaxed">
                             {{ description }}
                         </p>

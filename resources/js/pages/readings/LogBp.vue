@@ -246,7 +246,7 @@ const confirmDelete = (event: Event): void => {
 
         <Button
             type="submit"
-            class="mt-auto h-16 w-full text-xl"
+            class="mt-auto h-16 w-full rounded-full text-xl"
             :disabled="processing"
             data-test="save-bp"
         >

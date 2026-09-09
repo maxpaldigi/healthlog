@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { Activity, Droplet, Pencil } from '@lucide/vue';
 
 type TimelineItem = {
     id: number;
@@ -19,13 +20,13 @@ defineProps<{
     testId?: string;
 }>();
 
-const barClass: Record<string, string> = {
-    crisis: 'bg-red-600',
-    high: 'bg-orange-500',
-    raised: 'bg-amber-500',
-    elevated: 'bg-yellow-400',
-    normal: 'bg-emerald-600',
-    glucose: 'bg-primary',
+const iconWrap: Record<string, string> = {
+    crisis: 'bg-red-600 text-white',
+    high: 'bg-orange-600 text-white',
+    raised: 'bg-amber-600 text-white',
+    elevated: 'bg-yellow-500 text-stone-900',
+    normal: 'bg-emerald-700 text-white',
+    glucose: 'bg-primary text-primary-foreground',
 };
 
 const typeLabel: Record<string, string> = {
@@ -38,18 +39,29 @@ const typeLabel: Record<string, string> = {
     <Link
         :href="entry.edit_url"
         :class="[
-            'hl-card flex min-h-16 cursor-pointer items-stretch gap-3 px-3 py-3 transition-transform duration-200',
+            'hl-card flex min-h-16 cursor-pointer items-center gap-3 px-3 py-3 transition-transform duration-200',
             'active:scale-[0.99]',
         ]"
         :data-test="testId"
     >
         <span
-            class="my-0.5 w-1.5 shrink-0 rounded-full"
-            :class="barClass[entry.color] ?? 'bg-border'"
+            class="flex size-12 shrink-0 items-center justify-center rounded-full"
+            :class="iconWrap[entry.color] ?? 'bg-muted text-foreground'"
             aria-hidden="true"
-        />
+        >
+            <Activity v-if="entry.type === 'bp'" class="size-6" />
+            <Droplet v-else class="size-6" />
+        </span>
         <div class="min-w-0 flex-1">
-            <p class="text-xl font-semibold tabular-nums">
+            <p class="text-lg font-semibold leading-tight">
+                {{ typeLabel[entry.type] }}
+            </p>
+            <p class="text-muted-foreground mt-0.5 text-base">
+                {{ entry.context_label }}
+                <span aria-hidden="true"> · </span>
+                {{ entry.measured_at_label }}
+            </p>
+            <p class="mt-1 text-xl font-bold tabular-nums">
                 {{ entry.title }}
                 <span
                     v-if="entry.range_label"
@@ -58,17 +70,16 @@ const typeLabel: Record<string, string> = {
                     {{ entry.range_label }}
                 </span>
             </p>
-            <p class="text-muted-foreground mt-0.5 text-base">
-                {{ typeLabel[entry.type] }}
-                <span aria-hidden="true"> · </span>
-                {{ entry.context_label }}
-            </p>
             <p v-if="entry.note" class="text-muted-foreground mt-0.5 text-sm">
                 {{ entry.note }}
             </p>
         </div>
-        <p class="text-muted-foreground shrink-0 self-center text-sm">
-            {{ entry.measured_at_label }}
-        </p>
+        <span
+            class="text-muted-foreground flex size-11 shrink-0 items-center justify-center rounded-full"
+            aria-hidden="true"
+        >
+            <Pencil class="size-5" />
+        </span>
+        <span class="sr-only">Edit this reading</span>
     </Link>
 </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { Activity, ChartLine, Droplet, Printer } from '@lucide/vue';
+import { Activity, Droplet, Printer } from '@lucide/vue';
 import { computed, onMounted, ref } from 'vue';
 import HistoryDateRange from '@/components/HistoryDateRange.vue';
 import TrendBarChart from '@/components/TrendBarChart.vue';
@@ -85,11 +85,6 @@ onMounted(() => {
     <Head title="Trends" />
 
     <div class="flex flex-1 flex-col gap-4">
-        <h1 class="flex items-center gap-2 text-2xl font-semibold">
-            <ChartLine class="size-7" aria-hidden="true" />
-            Trends
-        </h1>
-
         <p
             class="text-muted-foreground text-base leading-relaxed"
             data-test="trends-summary"
@@ -110,7 +105,7 @@ onMounted(() => {
                     query: { from: filters.from, to: filters.to },
                 })
             "
-            class="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl border text-base font-medium"
+            class="bg-card inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-full border text-base font-medium shadow-sm"
             data-test="print-for-doctor"
         >
             <Printer class="size-4" aria-hidden="true" />

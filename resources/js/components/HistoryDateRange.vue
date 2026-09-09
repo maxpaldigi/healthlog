@@ -76,7 +76,7 @@ const onEnd = (event: Event): void => {
     <section class="hl-card px-4 py-4">
         <div class="flex items-start gap-3">
             <span
-                class="bg-primary/10 text-primary mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-xl"
+                class="bg-primary/10 text-primary mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-full"
                 aria-hidden="true"
             >
                 <CalendarDays class="size-6" />

@@ -13,13 +13,7 @@ const props = defineProps<{
     expect?: 'bp' | 'glucose' | null;
 }>();
 
-const fileLabel = ref(
-    props.expect === 'glucose'
-        ? 'Take a photo of the sugar meter'
-        : props.expect === 'bp'
-          ? 'Take a photo of the BP monitor'
-          : 'Take or choose a photo',
-);
+const fileLabel = ref('Take or choose a photo');
 
 const title = computed(() => {
     if (props.expect === 'glucose') {
@@ -30,7 +24,7 @@ const title = computed(() => {
         return 'Scan BP monitor';
     }
 
-    return 'Scan a photo';
+    return 'Take a photo';
 });
 
 const help = computed(() => {
@@ -42,7 +36,7 @@ const help = computed(() => {
         return 'Photograph the monitor screen so the numbers are large and clear. You will check them before they are saved.';
     }
 
-    return 'Photograph the device screen. You will check the numbers before they are saved.';
+    return 'Photograph the screen of a blood pressure monitor or a sugar meter. We can tell them apart from the numbers. You will check before anything is saved.';
 });
 
 const onFile = (event: Event): void => {
@@ -62,15 +56,17 @@ const onFile = (event: Event): void => {
 
     <div class="flex flex-1 flex-col gap-6">
         <div class="space-y-2">
-            <h1 class="text-2xl font-semibold">{{ title }}</h1>
-            <p class="text-muted-foreground text-base leading-relaxed">
+            <h1 class="text-3xl font-bold leading-tight">
+                Your numbers, from a photo
+            </h1>
+            <p class="text-muted-foreground text-lg leading-relaxed">
                 {{ help }}
             </p>
         </div>
 
         <p
             v-if="status"
-            class="rounded-2xl border border-amber-400 bg-amber-50 px-4 py-3 text-base leading-relaxed text-amber-950"
+            class="rounded-2xl border border-amber-500 bg-amber-50 px-4 py-3 text-base leading-relaxed text-amber-950"
             data-test="scan-status"
             role="alert"
         >
@@ -84,11 +80,21 @@ const onFile = (event: Event): void => {
         >
             <input v-if="expect" type="hidden" name="expect" :value="expect" />
             <label
-                class="hl-card border-primary/40 flex min-h-40 cursor-pointer flex-col items-center justify-center gap-3 border-2 border-dashed px-4 text-center text-xl font-semibold"
+                class="bg-nav text-nav-foreground flex min-h-56 cursor-pointer flex-col items-center justify-center gap-4 rounded-[2rem] px-6 text-center shadow-[0_16px_40px_-18px_rgb(28_25_23_/_0.45)]"
             >
-                <Spinner v-if="processing" />
-                <Camera v-else class="text-primary size-8" aria-hidden="true" />
-                {{ processing ? 'Reading the photo…' : fileLabel }}
+                <span
+                    class="bg-cta text-cta-foreground flex size-20 items-center justify-center rounded-full"
+                    aria-hidden="true"
+                >
+                    <Spinner v-if="processing" class="size-8" />
+                    <Camera v-else class="size-10" />
+                </span>
+                <span class="text-2xl font-bold">
+                    {{ processing ? 'Reading the photo…' : fileLabel }}
+                </span>
+                <span class="text-nav-muted text-base leading-relaxed">
+                    Hold the phone so the screen fills the frame
+                </span>
                 <input
                     type="file"
                     name="photo"
@@ -103,12 +109,12 @@ const onFile = (event: Event): void => {
             <InputError :message="errors.photo" />
         </Form>
 
-        <p class="text-muted-foreground text-center text-base">
+        <p class="text-muted-foreground text-center text-base leading-relaxed">
             Prefer to type?
             <Link
                 v-if="expect !== 'glucose'"
                 :href="logBp()"
-                class="text-foreground font-medium underline"
+                class="text-foreground min-h-11 font-semibold underline"
             >
                 Log BP
             </Link>
@@ -116,7 +122,7 @@ const onFile = (event: Event): void => {
             <Link
                 v-if="expect !== 'bp'"
                 :href="logSugar()"
-                class="text-foreground font-medium underline"
+                class="text-foreground min-h-11 font-semibold underline"
             >
                 Log Sugar
             </Link>

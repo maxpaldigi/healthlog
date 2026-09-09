@@ -54,7 +54,7 @@ defineProps<{
 
             <Button
                 type="submit"
-                class="mt-2 h-14 w-full text-lg"
+                class="mt-2 h-14 w-full rounded-full text-lg"
                 :disabled="processing"
                 data-test="login-button"
             >

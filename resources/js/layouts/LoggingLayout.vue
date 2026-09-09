@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
+import { CalendarDays } from '@lucide/vue';
 import { computed } from 'vue';
 import LoggingTabBar from '@/components/LoggingTabBar.vue';
 import { Toaster } from '@/components/ui/sonner';
@@ -12,12 +13,20 @@ const wide = computed(
         page.component === 'clinic/Clinic',
 );
 const title = computed(() => {
+    if (page.component === 'Home') {
+        return 'Today';
+    }
+
     if (page.component === 'readings/History') {
         return 'History';
     }
 
     if (page.component === 'readings/Trends') {
         return 'Trends';
+    }
+
+    if (page.component === 'readings/Scan') {
+        return 'Scan';
     }
 
     if (page.component === 'readings/Report') {
@@ -34,6 +43,14 @@ const title = computed(() => {
 
     return 'HealthLog';
 });
+
+const dateLabel = computed(() =>
+    new Date().toLocaleDateString(undefined, {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+    }),
+);
 </script>
 
 <template>
@@ -46,22 +63,24 @@ const title = computed(() => {
         </a>
 
         <header
-            class="no-print px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-1"
+            class="no-print mx-auto flex w-full items-center justify-between gap-3 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-1"
+            :class="wide ? 'max-w-3xl' : 'max-w-md'"
         >
             <p
-                v-if="isHome"
-                class="text-primary text-sm font-bold tracking-wide uppercase"
+                class="text-muted-foreground flex min-h-11 min-w-0 items-center gap-2 text-sm font-medium"
             >
-                HealthLog
+                <CalendarDays class="size-5 shrink-0" aria-hidden="true" />
+                <span class="truncate">{{ dateLabel }}</span>
             </p>
-            <p v-else class="text-muted-foreground text-sm font-medium">
-                {{ title }}
+            <p class="text-foreground text-lg font-bold">
+                {{ isHome ? 'HealthLog' : title }}
             </p>
+            <span class="min-w-11" aria-hidden="true" />
         </header>
 
         <main
             id="main"
-            class="mx-auto flex w-full flex-1 flex-col px-4 pt-2 pb-28"
+            class="mx-auto flex w-full flex-1 flex-col px-4 pt-2 pb-36"
             :class="wide ? 'max-w-3xl' : 'max-w-md'"
         >
             <slot />

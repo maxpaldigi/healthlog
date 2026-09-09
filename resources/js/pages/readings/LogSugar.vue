@@ -65,7 +65,7 @@ const confirmDelete = (event: Event): void => {
     }
 };
 
-const photoLabel = ref('Take a photo of the meter');
+const photoLabel = ref('Take a photo of the screen');
 
 const onMeterPhoto = (event: Event): void => {
     const input = event.target as HTMLInputElement;
@@ -109,7 +109,6 @@ const onMeterPhoto = (event: Event): void => {
             v-slot="{ processing }"
             class="grid gap-2"
         >
-            <input type="hidden" name="expect" value="glucose" />
             <label
                 class="hl-card border-primary/40 flex min-h-20 cursor-pointer items-center justify-center gap-3 border-2 border-dashed px-4 text-center text-lg font-semibold"
                 :class="processing ? 'opacity-70' : ''"
@@ -212,7 +211,7 @@ const onMeterPhoto = (event: Event): void => {
 
         <Button
             type="submit"
-            class="mt-auto h-16 w-full text-xl"
+            class="mt-auto h-16 w-full rounded-full text-xl"
             :disabled="processing"
             data-test="save-sugar"
         >

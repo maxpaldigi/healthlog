@@ -133,7 +133,7 @@ defineOptions({
 
             <Button
                 type="submit"
-                class="mt-2 h-12 w-full text-base"
+                class="mt-2 h-14 w-full rounded-full text-lg"
                 :disabled="processing"
                 data-test="register-user-button"
             >

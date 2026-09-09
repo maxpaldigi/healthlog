@@ -34,6 +34,31 @@ function extractedReading(array $overrides = []): ExtractedReading
     ]);
 }
 
+it('routes a photo to blood pressure or sugar from the device on screen, without being told which', function () {
+    Storage::fake('local');
+    $user = userWithProfile();
+
+    $this->mock(ExtractsDeviceReading::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('handle')->once()->andReturn(extractedReading());
+        $mock->shouldReceive('handle')->once()->andReturn(extractedReading([
+            'device_type' => 'glucometer',
+            'systolic' => null,
+            'diastolic' => null,
+            'pulse' => null,
+            'glucose' => 118,
+            'glucose_unit_on_screen' => 'mg/dL',
+        ]));
+    });
+
+    $this->actingAs($user)
+        ->post(route('scan.store'), ['photo' => scanPhoto()])
+        ->assertRedirect(route('bp.create'));
+
+    $this->actingAs($user)
+        ->post(route('scan.store'), ['photo' => scanPhoto()])
+        ->assertRedirect(route('glucose.create'));
+});
+
 it('does not save a reading until the user confirms extracted numbers', function () {
     Storage::fake('local');
     $user = userWithProfile();

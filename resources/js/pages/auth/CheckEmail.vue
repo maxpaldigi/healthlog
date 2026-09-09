@@ -26,7 +26,7 @@ defineProps<{
         </p>
 
         <a v-if="loginUrl" :href="loginUrl" class="block">
-            <Button class="h-14 w-full text-lg" data-test="open-login-link">
+            <Button class="h-14 w-full rounded-full text-lg" data-test="open-login-link">
                 Open login link
             </Button>
         </a>
