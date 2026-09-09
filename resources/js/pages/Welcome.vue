@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { Activity, Camera, Droplet } from '@lucide/vue';
+import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import { login } from '@/routes';
 import { register } from '@/routes';
 </script>
 
 <template>
-    <Head title="HealthLog" />
+    <Head title="HealthyMe" />
 
     <div
         class="bg-background text-foreground flex min-h-dvh flex-col px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))]"
     >
         <div class="mx-auto flex w-full max-w-md flex-1 flex-col">
-            <p class="text-primary text-sm font-bold tracking-wide uppercase">
-                HealthLog
+            <AppLogoIcon class="size-24" />
+            <p class="text-primary mt-4 text-sm font-bold tracking-wide uppercase">
+                HealthyMe
             </p>
             <h1 class="mt-3 text-4xl font-bold leading-tight">
                 Blood pressure and sugar, easy to keep

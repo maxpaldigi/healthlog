@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { CalendarDays } from '@lucide/vue';
 import { computed } from 'vue';
+import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import LoggingTabBar from '@/components/LoggingTabBar.vue';
 import { Toaster } from '@/components/ui/sonner';
+import { home } from '@/routes';
 
 const page = usePage();
 const isHome = computed(() => page.component === 'Home');
@@ -41,7 +43,7 @@ const title = computed(() => {
         return 'Log';
     }
 
-    return 'HealthLog';
+    return 'HealthyMe';
 });
 
 const dateLabel = computed(() =>
@@ -66,16 +68,21 @@ const dateLabel = computed(() =>
             class="no-print mx-auto flex w-full items-center justify-between gap-3 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-1"
             :class="wide ? 'max-w-3xl' : 'max-w-md'"
         >
-            <p
-                class="text-muted-foreground flex min-h-11 min-w-0 items-center gap-2 text-sm font-medium"
+            <Link
+                :href="home()"
+                class="flex min-h-11 min-w-11 items-center"
             >
-                <CalendarDays class="size-5 shrink-0" aria-hidden="true" />
-                <span class="truncate">{{ dateLabel }}</span>
-            </p>
+                <AppLogoIcon class="size-10 shrink-0" />
+            </Link>
             <p class="text-foreground text-lg font-bold">
-                {{ isHome ? 'HealthLog' : title }}
+                {{ isHome ? 'HealthyMe' : title }}
             </p>
-            <span class="min-w-11" aria-hidden="true" />
+            <p
+                class="text-muted-foreground flex min-h-11 min-w-11 items-center justify-end gap-1 text-sm font-medium"
+            >
+                <CalendarDays class="size-4 shrink-0" aria-hidden="true" />
+                <span class="hidden truncate sm:inline">{{ dateLabel }}</span>
+            </p>
         </header>
 
         <main

@@ -86,10 +86,17 @@ const slotTitles = {
 
 <template>
     <div class="visit-report space-y-6 text-base">
-        <header class="space-y-1">
-            <h1 class="text-2xl font-semibold">Clinic visit report</h1>
-            <p class="text-lg font-medium">{{ report.profile.name }}</p>
-            <p class="text-muted-foreground">{{ report.range.label }}</p>
+        <header class="flex items-start gap-3">
+            <img
+                src="/logo.png"
+                alt="HealthyMe"
+                class="size-12 shrink-0 rounded-full object-cover"
+            />
+            <div class="space-y-1">
+                <h1 class="text-2xl font-semibold">Clinic visit report</h1>
+                <p class="text-lg font-medium">{{ report.profile.name }}</p>
+                <p class="text-muted-foreground">{{ report.range.label }}</p>
+            </div>
         </header>
 
         <section class="grid grid-cols-2 gap-3">

@@ -20,18 +20,11 @@ defineProps<{
                         :href="home()"
                         class="flex flex-col items-center gap-2 font-medium"
                     >
-                        <div
-                            class="bg-nav text-nav-foreground mb-1 flex h-14 w-14 items-center justify-center rounded-full"
-                        >
-                            <AppLogoIcon
-                                class="size-8 fill-current"
-                            />
-                        </div>
-                        <span class="sr-only">{{ title }}</span>
+                        <AppLogoIcon class="size-16" />
                     </Link>
                     <div class="space-y-2 text-center">
                         <p class="text-primary text-sm font-bold tracking-wide uppercase">
-                            HealthLog
+                            HealthyMe
                         </p>
                         <h1 class="text-2xl font-bold">{{ title }}</h1>
                         <p class="text-muted-foreground text-center text-base leading-relaxed">

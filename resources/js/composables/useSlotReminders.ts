@@ -26,7 +26,7 @@ export const useSlotReminders = (reminders: ReminderConfig) => {
         }
 
         const notice = new Notification(`${label} blood pressure`, {
-            body: 'Tap to log this reading in HealthLog.',
+            body: 'Tap to log this reading in HealthyMe.',
         });
 
         notice.onclick = () => {

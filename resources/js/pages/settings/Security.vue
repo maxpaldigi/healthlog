@@ -24,7 +24,7 @@ defineOptions({
         <Heading
             variant="small"
             title="Sign-in"
-            description="HealthLog uses an email login link. You never need a password."
+            description="HealthyMe uses an email login link. You never need a password."
         />
 
         <p class="text-muted-foreground text-base leading-relaxed">

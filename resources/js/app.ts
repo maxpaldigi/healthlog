@@ -6,7 +6,7 @@ import LoggingLayout from '@/layouts/LoggingLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'HealthyMe';
 
 void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
@@ -29,7 +29,7 @@ void createInertiaApp({
         }
     },
     progress: {
-        color: '#0B6A80',
+        color: '#2A3B8F',
     },
 });
 
