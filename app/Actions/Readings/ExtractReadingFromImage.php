@@ -73,29 +73,22 @@ PROMPT;
                     ],
                 ],
             );
-        } catch (RateLimitException) {
-            throw CouldNotReadPhotoException::make();
-        } catch (APITimeoutException) {
-            throw CouldNotReadPhotoException::make();
-        } catch (BadRequestException) {
-            throw CouldNotReadPhotoException::make();
-        } catch (AuthenticationException) {
-            throw CouldNotReadPhotoException::make();
-        } catch (PermissionDeniedException) {
-            throw CouldNotReadPhotoException::make();
-        } catch (NotFoundException) {
-            throw CouldNotReadPhotoException::make();
-        } catch (ConflictException) {
-            throw CouldNotReadPhotoException::make();
-        } catch (UnprocessableEntityException) {
-            throw CouldNotReadPhotoException::make();
-        } catch (InternalServerException) {
-            throw CouldNotReadPhotoException::make();
-        } catch (APIStatusException) {
-            throw CouldNotReadPhotoException::make();
-        } catch (APIConnectionException) {
-            throw CouldNotReadPhotoException::make();
-        } catch (APIException) {
+        } catch (
+            RateLimitException|
+            APITimeoutException|
+            BadRequestException|
+            AuthenticationException|
+            PermissionDeniedException|
+            NotFoundException|
+            ConflictException|
+            UnprocessableEntityException|
+            InternalServerException|
+            APIStatusException|
+            APIConnectionException|
+            APIException $exception
+        ) {
+            report($exception);
+
             throw CouldNotReadPhotoException::make();
         }
 

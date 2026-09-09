@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Anthropic\Client;
+use App\Actions\Readings\ExtractReadingFromGemini;
 use App\Actions\Readings\ExtractReadingFromImage;
 use App\Contracts\ExtractsDeviceReading;
 use Carbon\CarbonImmutable;
@@ -25,7 +26,13 @@ class AppServiceProvider extends ServiceProvider
             apiKey: (string) config('services.anthropic.key'),
         ));
 
-        $this->app->bind(ExtractsDeviceReading::class, ExtractReadingFromImage::class);
+        $this->app->bind(ExtractsDeviceReading::class, function (): ExtractsDeviceReading {
+            if (filled(config('services.gemini.key')) || blank(config('services.anthropic.key'))) {
+                return $this->app->make(ExtractReadingFromGemini::class);
+            }
+
+            return $this->app->make(ExtractReadingFromImage::class);
+        });
     }
 
     /**
