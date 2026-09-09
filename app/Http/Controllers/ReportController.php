@@ -27,8 +27,8 @@ class ReportController extends Controller
             $validated['to'] ?? null,
         );
 
-        $fromLocal = Carbon::parse($range['filters']['from'], $profile->timezone)->startOfDay();
-        $toLocal = Carbon::parse($range['filters']['to'], $profile->timezone)->startOfDay();
+        $fromLocal = Carbon::parse($range['filters']['from'], $profile->clockTimezone())->startOfDay();
+        $toLocal = Carbon::parse($range['filters']['to'], $profile->clockTimezone())->startOfDay();
 
         $bp = $profile->bpReadings()->forPeriod($range['from'], $range['to'])->orderBy('measured_at')->get();
         $glucose = $profile->glucoseReadings()->forPeriod($range['from'], $range['to'])->orderBy('measured_at')->get();

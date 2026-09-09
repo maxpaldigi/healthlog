@@ -22,7 +22,7 @@ class UpdateGlucoseReading
         $reading->update([
             'value_mg_dl' => Glucose::toMgDl((string) $data['value'], $profile->glucose_unit),
             'context' => GlucoseContext::from($data['context']),
-            'measured_at' => Carbon::parse($data['measured_at'], $profile->timezone)->utc(),
+            'measured_at' => Carbon::parse($data['measured_at'], $profile->clockTimezone())->utc(),
             'note' => self::note($data['note'] ?? null),
         ]);
 

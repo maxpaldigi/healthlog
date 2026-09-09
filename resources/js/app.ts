@@ -1,5 +1,6 @@
-import { createInertiaApp } from '@inertiajs/vue3';
+import { createInertiaApp, router } from '@inertiajs/vue3';
 import { initializeTheme } from '@/composables/useAppearance';
+import { rememberSystemTimezone } from '@/lib/systemClock';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import LoggingLayout from '@/layouts/LoggingLayout.vue';
@@ -35,6 +36,17 @@ void createInertiaApp({
 
 // This will set light / dark mode on page load...
 initializeTheme();
+
+const systemTimezone = rememberSystemTimezone();
+
+if (systemTimezone !== '') {
+    router.on('before', (event) => {
+        event.detail.visit.headers = {
+            ...event.detail.visit.headers,
+            'X-Timezone': systemTimezone,
+        };
+    });
+}
 
 // This will listen for flash toast data from the server...
 initializeFlashToast();

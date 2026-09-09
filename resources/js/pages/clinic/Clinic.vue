@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { destroy as destroyHba1c, store as storeHba1c } from '@/routes/hba1c';
 import { destroy as destroyMedication, store as storeMedication, update as updateMedication } from '@/routes/medications';
+import { systemDate, systemDateTimeLocal } from '@/lib/systemClock';
 import { destroy as destroyWeight, store as storeWeight } from '@/routes/weights';
 
 defineProps<{
@@ -63,7 +64,7 @@ defineProps<{
                         id="weight_at"
                         type="datetime-local"
                         name="measured_at"
-                        :default-value="defaults.measured_at"
+                        :default-value="systemDateTimeLocal()"
                         required
                         class="h-14 text-lg"
                     />
@@ -124,7 +125,7 @@ defineProps<{
                         id="tested_at"
                         type="date"
                         name="tested_at"
-                        :default-value="defaults.tested_at"
+                        :default-value="systemDate()"
                         required
                         class="h-14 text-lg"
                     />

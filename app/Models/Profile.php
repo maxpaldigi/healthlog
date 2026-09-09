@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\GlucoseUnit;
 use App\Enums\WeightUnit;
+use App\Support\SystemTimezone;
 use Carbon\CarbonInterface;
 use Database\Factories\ProfileFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -135,8 +136,13 @@ class Profile extends Model
         ];
     }
 
+    public function clockTimezone(): string
+    {
+        return SystemTimezone::detected() ?? $this->timezone;
+    }
+
     public function nowInTimezone(): CarbonInterface
     {
-        return now($this->timezone);
+        return now($this->clockTimezone());
     }
 }

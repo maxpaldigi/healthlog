@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 class RegisterUser
 {
     /**
-     * @param  array{name: string, email: string, timezone: string, glucose_unit: string, weight_unit: string}  $data
+     * @param  array{name: string, email: string, timezone: string, detected_timezone?: string|null, glucose_unit: string, weight_unit: string}  $data
      */
     public function handle(array $data): User
     {
@@ -25,7 +25,7 @@ class RegisterUser
             Profile::create([
                 'user_id' => $user->id,
                 'name' => $data['name'],
-                'timezone' => $data['timezone'],
+                'timezone' => $data['detected_timezone'] ?? $data['timezone'],
                 'glucose_unit' => GlucoseUnit::from($data['glucose_unit']),
                 'weight_unit' => WeightUnit::from($data['weight_unit']),
                 'is_default' => true,

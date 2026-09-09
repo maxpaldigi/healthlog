@@ -17,7 +17,7 @@ trait ValidatesMeasuredAt
             }
 
             $profile = app(CurrentProfile::class)->handle($this->user(), $this);
-            $measuredAt = Carbon::parse($raw, $profile->timezone);
+            $measuredAt = Carbon::parse($raw, $profile->clockTimezone());
             $now = $profile->nowInTimezone();
 
             if ($measuredAt->greaterThan($now->addMinute())) {

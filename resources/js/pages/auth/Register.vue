@@ -1,22 +1,41 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { rememberSystemTimezone, systemTimezone } from '@/lib/systemClock';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 
 const props = defineProps<{
     timezones: Record<string, string>;
+    aliases?: Record<string, string>;
     defaultTimezone: string;
 }>();
 
+const selectedTimezone = ref(props.defaultTimezone);
+const detectedTimezone = ref('');
 const glucoseUnit = ref('mg_dl');
 const weightUnit = ref('kg');
+
+onMounted(() => {
+    const browser = rememberSystemTimezone() || systemTimezone();
+    detectedTimezone.value = browser;
+
+    if (selectedTimezone.value !== '') {
+        return;
+    }
+
+    const match = browser !== '' ? props.aliases?.[browser] : undefined;
+
+    if (match && props.timezones[match]) {
+        selectedTimezone.value = match;
+    }
+});
 
 defineOptions({
     layout: {
@@ -65,13 +84,21 @@ defineOptions({
             </div>
 
             <div class="grid gap-2">
-                <Label for="timezone" class="text-base">Timezone</Label>
+                <input
+                    type="hidden"
+                    name="detected_timezone"
+                    :value="detectedTimezone"
+                />
+                <Label for="timezone" class="text-base">Country</Label>
                 <select
                     id="timezone"
                     name="timezone"
-                    :value="props.defaultTimezone"
+                    required
+                    :value="selectedTimezone"
                     class="border-input bg-background h-12 w-full rounded-md border px-3 text-lg"
+                    @change="selectedTimezone = ($event.target as HTMLSelectElement).value"
                 >
+                    <option value="" disabled>Choose your country</option>
                     <option
                         v-for="(label, value) in props.timezones"
                         :key="value"

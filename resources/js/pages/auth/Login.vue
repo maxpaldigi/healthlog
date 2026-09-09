@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
+import { onMounted, ref } from 'vue';
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
@@ -9,16 +10,40 @@ import { Spinner } from '@/components/ui/spinner';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
 
+const LAST_EMAIL_KEY = 'healthyme.last-login-email';
+
 defineOptions({
     layout: {
         title: 'Log in',
-        description: 'Enter your email. We send a login link — there is no password and no OTP code.',
+        description: 'Enter your email. We send a one-time login link. After you open it, this phone stays signed in.',
     },
 });
 
 defineProps<{
     status?: string;
 }>();
+
+const email = ref('');
+
+onMounted(() => {
+    try {
+        email.value = window.localStorage.getItem(LAST_EMAIL_KEY) ?? '';
+    } catch {
+        email.value = '';
+    }
+});
+
+const rememberEmail = (): void => {
+    const value = email.value.trim();
+
+    try {
+        if (value !== '') {
+            window.localStorage.setItem(LAST_EMAIL_KEY, value);
+        }
+    } catch {
+        // Private browsing can block storage.
+    }
+};
 </script>
 
 <template>
@@ -35,12 +60,14 @@ defineProps<{
         v-bind="store.form()"
         v-slot="{ errors, processing }"
         class="flex flex-col gap-6"
+        @submit="rememberEmail"
     >
         <div class="grid gap-6">
             <div class="grid gap-2">
                 <Label for="email" class="text-base">Email address</Label>
                 <Input
                     id="email"
+                    v-model="email"
                     type="email"
                     name="email"
                     required
@@ -48,8 +75,13 @@ defineProps<{
                     autocomplete="email"
                     placeholder="email@example.com"
                     class="h-12 text-lg md:text-lg"
+                    @change="rememberEmail"
                 />
                 <InputError :message="errors.email" />
+                <p class="text-muted-foreground text-base leading-relaxed">
+                    You only need a new link on a new phone, or after you log
+                    out. This phone remembers the last email you used here.
+                </p>
             </div>
 
             <Button

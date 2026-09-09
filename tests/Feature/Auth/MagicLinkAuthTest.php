@@ -6,6 +6,7 @@ use App\Models\LoginToken;
 use App\Models\User;
 use App\Notifications\MagicLinkNotification;
 use Illuminate\Notifications\Events\NotificationSending;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
@@ -71,7 +72,8 @@ it('logs the user in and verifies email when a valid magic link is used', functi
     expect($url)->not->toBeNull();
 
     $this->get($url)
-        ->assertRedirect(route('home'));
+        ->assertRedirect(route('home'))
+        ->assertCookie(Auth::guard()->getRecallerName());
 
     $this->assertAuthenticatedAs($user->fresh());
     expect($user->fresh()->email_verified_at)->not->toBeNull();

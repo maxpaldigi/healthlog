@@ -114,7 +114,7 @@ onMounted(() => {
 
         <div v-if="empty" class="hl-card px-4 py-6">
             <p class="text-base leading-relaxed">
-                Log a few blood pressure or sugar readings to see charts here.
+                Add a few blood pressure or sugar readings to see charts here.
             </p>
             <div class="mt-4 grid gap-2">
                 <Link
@@ -122,14 +122,14 @@ onMounted(() => {
                     class="bg-primary text-primary-foreground inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl text-base font-medium"
                 >
                     <Activity class="size-5" aria-hidden="true" />
-                    Log blood pressure
+                    Add blood pressure
                 </Link>
                 <Link
                     :href="logSugar()"
                     class="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl border text-base font-medium"
                 >
                     <Droplet class="size-5" aria-hidden="true" />
-                    Log sugar
+                    Add blood sugar
                 </Link>
             </div>
         </div>

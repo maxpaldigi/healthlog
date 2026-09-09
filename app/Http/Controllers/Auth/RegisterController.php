@@ -17,7 +17,8 @@ class RegisterController extends Controller
     {
         return Inertia::render('auth/Register', [
             'timezones' => Timezones::common(),
-            'defaultTimezone' => 'Asia/Kolkata',
+            'aliases' => Timezones::aliases(),
+            'defaultTimezone' => '',
         ]);
     }
 

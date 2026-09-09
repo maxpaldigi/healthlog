@@ -31,7 +31,7 @@ class HealthProfileController extends Controller
                 'is_default' => $profile->is_default,
                 'is_current' => $profile->id === $current->id,
             ])->values()->all(),
-            'timezones' => Timezones::common(),
+            'timezones' => Timezones::common($current->timezone),
             'glucoseUnits' => ProfileSettings::glucoseUnits(),
             'weightUnits' => ProfileSettings::weightUnits(),
             'canDelete' => $profiles->count() > 1,

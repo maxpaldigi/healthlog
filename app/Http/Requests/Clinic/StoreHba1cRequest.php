@@ -36,7 +36,7 @@ class StoreHba1cRequest extends FormRequest
             }
 
             $profile = app(CurrentProfile::class)->handle($this->user(), $this);
-            $testedAt = Carbon::parse($raw, $profile->timezone)->startOfDay();
+            $testedAt = Carbon::parse($raw, $profile->clockTimezone())->startOfDay();
             $today = $profile->nowInTimezone()->startOfDay();
 
             if ($testedAt->greaterThan($today)) {

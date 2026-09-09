@@ -22,7 +22,7 @@ class UpdateBpReading
             'systolic' => $data['systolic'],
             'diastolic' => $data['diastolic'],
             'pulse' => $data['pulse'] ?? null,
-            'measured_at' => Carbon::parse($data['measured_at'], $profile->timezone)->utc(),
+            'measured_at' => Carbon::parse($data['measured_at'], $profile->clockTimezone())->utc(),
             'tag' => ReadingTag::from($data['tag']),
             'note' => self::note($data['note'] ?? null),
         ]);

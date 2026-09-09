@@ -7,6 +7,13 @@
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>
             (function() {
+                try {
+                    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    if (timezone) {
+                        document.cookie = 'system_timezone=' + encodeURIComponent(timezone) + '; path=/; max-age=31536000; samesite=lax';
+                    }
+                } catch (error) {}
+
                 const appearance = '{{ $appearance ?? "system" }}';
 
                 if (appearance === 'system') {

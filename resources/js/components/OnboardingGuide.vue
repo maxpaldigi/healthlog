@@ -52,7 +52,7 @@ const steps = (): Step[] => [
         target: 'log-manual',
         radius: 20,
         title: 'Or type the numbers',
-        body: 'Use these if you would rather type. Log blood pressure from the cuff, or log sugar from the meter.',
+        body: 'Use these if you would rather type. Add blood pressure from the arm cuff, or add blood sugar from the meter.',
     },
     {
         target: 'today',

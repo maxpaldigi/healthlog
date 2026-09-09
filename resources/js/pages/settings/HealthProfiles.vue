@@ -90,7 +90,7 @@ defineProps<{
             </div>
 
             <div class="grid gap-2">
-                <Label for="timezone">Timezone</Label>
+                <Label for="timezone">Country</Label>
                 <select
                     id="timezone"
                     name="timezone"
@@ -258,7 +258,7 @@ defineProps<{
                 <InputError :message="errors.name" />
             </div>
             <div class="grid gap-2">
-                <Label for="new_timezone">Timezone</Label>
+                <Label for="new_timezone">Country</Label>
                 <select
                     id="new_timezone"
                     name="timezone"

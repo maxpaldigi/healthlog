@@ -22,7 +22,7 @@ class HomeController extends Controller
         $filledSlots = [];
 
         foreach ($bpToday as $reading) {
-            $slot = BpDaySlot::fromLocalTime($reading->measured_at->timezone($profile->timezone));
+            $slot = BpDaySlot::fromLocalTime($reading->measured_at->timezone($profile->clockTimezone()));
             $filledSlots[$slot->value] = true;
         }
 

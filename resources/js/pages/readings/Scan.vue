@@ -116,7 +116,7 @@ const onFile = (event: Event): void => {
                 :href="logBp()"
                 class="text-foreground min-h-11 font-semibold underline"
             >
-                Log BP
+                Add blood pressure
             </Link>
             <template v-if="!expect"> or </template>
             <Link
@@ -124,7 +124,7 @@ const onFile = (event: Event): void => {
                 :href="logSugar()"
                 class="text-foreground min-h-11 font-semibold underline"
             >
-                Log Sugar
+                Add blood sugar
             </Link>
         </p>
     </div>

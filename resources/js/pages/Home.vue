@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
-import { Activity, Camera, Droplet, Moon, Plus, Sun, Sunrise } from '@lucide/vue';
+import { Activity, Camera, ChevronRight, Droplet, Moon, Plus, Sun, Sunrise } from '@lucide/vue';
 import type { Component } from 'vue';
 import { computed } from 'vue';
 import { Button } from '@/components/ui/button';
@@ -127,7 +127,7 @@ const slotIcons: Record<string, Component> = {
                 :href="logBp()"
                 class="mt-3 inline-flex min-h-12 items-center justify-center rounded-2xl bg-amber-900 px-4 text-base font-medium text-white"
             >
-                Log blood pressure
+                Add blood pressure
             </Link>
             <button
                 v-if="permission === 'default'"
@@ -193,43 +193,72 @@ const slotIcons: Record<string, Component> = {
             Point the camera at a BP monitor or sugar meter.
         </p>
 
-        <div class="grid gap-3" data-tour="log-manual">
-            <Link
-                :href="logBp()"
-                class="hl-card flex min-h-24 cursor-pointer items-center gap-4 px-4 py-4 transition-transform duration-200 active:scale-[0.98]"
-                data-test="log-bp"
-            >
-                <span
-                    class="bg-primary text-primary-foreground flex size-14 shrink-0 items-center justify-center rounded-full"
-                >
-                    <Activity class="size-7" aria-hidden="true" />
-                </span>
-                <span class="min-w-0">
-                    <span class="block text-xl font-bold">Log blood pressure</span>
-                    <span class="text-muted-foreground mt-0.5 block text-base">
-                        Type the numbers from the cuff
-                    </span>
-                </span>
-            </Link>
+        <section class="space-y-3" data-tour="log-manual">
+            <div class="space-y-1">
+                <h2 class="text-xl font-bold">Add a reading</h2>
+                <p class="text-muted-foreground text-base leading-relaxed">
+                    Choose what you measured. Tap a card to type the numbers.
+                </p>
+            </div>
 
-            <Link
-                :href="logSugar()"
-                class="hl-card flex min-h-24 cursor-pointer items-center gap-4 px-4 py-4 transition-transform duration-200 active:scale-[0.98]"
-                data-test="log-sugar"
-            >
-                <span
-                    class="bg-success text-success-foreground flex size-14 shrink-0 items-center justify-center rounded-full"
+            <div class="grid grid-cols-2 gap-3">
+                <Link
+                    :href="logBp()"
+                    class="hl-card flex min-h-44 cursor-pointer flex-col items-start gap-2 border-t-4 border-t-primary px-3 py-4 transition-transform duration-200 active:scale-[0.98] sm:px-4"
+                    data-test="log-bp"
                 >
-                    <Droplet class="size-7" aria-hidden="true" />
-                </span>
-                <span class="min-w-0">
-                    <span class="block text-xl font-bold">Log sugar</span>
-                    <span class="text-muted-foreground mt-0.5 block text-base">
-                        Type the number from the meter
+                    <span
+                        class="bg-primary text-primary-foreground flex size-12 items-center justify-center rounded-full"
+                        aria-hidden="true"
+                    >
+                        <Activity class="size-6" />
                     </span>
-                </span>
-            </Link>
-        </div>
+                    <span class="text-lg font-bold leading-tight">
+                        Add blood pressure
+                    </span>
+                    <span class="text-muted-foreground text-base leading-relaxed">
+                        Arm cuff
+                    </span>
+                    <span class="text-base font-medium tabular-nums">
+                        132 / 84
+                    </span>
+                    <span
+                        class="bg-primary text-primary-foreground mt-auto inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-full text-base font-semibold"
+                    >
+                        Add
+                        <ChevronRight class="size-5" aria-hidden="true" />
+                    </span>
+                </Link>
+
+                <Link
+                    :href="logSugar()"
+                    class="hl-card flex min-h-44 cursor-pointer flex-col items-start gap-2 border-t-4 border-t-success px-3 py-4 transition-transform duration-200 active:scale-[0.98] sm:px-4"
+                    data-test="log-sugar"
+                >
+                    <span
+                        class="bg-success text-success-foreground flex size-12 items-center justify-center rounded-full"
+                        aria-hidden="true"
+                    >
+                        <Droplet class="size-6" />
+                    </span>
+                    <span class="text-lg font-bold leading-tight">
+                        Add blood sugar
+                    </span>
+                    <span class="text-muted-foreground text-base leading-relaxed">
+                        Sugar meter
+                    </span>
+                    <span class="text-base font-medium tabular-nums">
+                        110
+                    </span>
+                    <span
+                        class="bg-success text-success-foreground mt-auto inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-full text-base font-semibold"
+                    >
+                        Add
+                        <ChevronRight class="size-5" aria-hidden="true" />
+                    </span>
+                </Link>
+            </div>
+        </section>
 
         <section class="space-y-3">
             <h2 class="text-xl font-bold">Last readings</h2>

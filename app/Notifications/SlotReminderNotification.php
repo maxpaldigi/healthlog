@@ -27,8 +27,8 @@ class SlotReminderNotification extends Notification
             ->subject('Time to log '.$slot.' blood pressure')
             ->greeting('Hello '.$this->profile->name)
             ->line('This is a reminder to log the '.$slot.' blood pressure reading for '.$this->profile->name.'.')
-            ->action('Log blood pressure', route('bp.create'))
-            ->line('Need to log sugar too? Open '.route('glucose.create'))
+            ->action('Add blood pressure', route('bp.create'))
+            ->line('Need to add blood sugar too? Open '.route('glucose.create'))
             ->line('This is a record-keeping reminder, not medical advice.');
     }
 }

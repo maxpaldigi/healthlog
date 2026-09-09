@@ -31,7 +31,7 @@ final class ReadingTimeline
      */
     public static function bpItem(Profile $profile, BpReading $reading): array
     {
-        $local = $reading->measured_at->timezone($profile->timezone);
+        $local = $reading->measured_at->timezone($profile->clockTimezone());
         $slot = BpDaySlot::fromLocalTime($local);
 
         return [
@@ -60,7 +60,7 @@ final class ReadingTimeline
      */
     public static function glucoseItem(Profile $profile, GlucoseReading $reading): array
     {
-        $local = $reading->measured_at->timezone($profile->timezone);
+        $local = $reading->measured_at->timezone($profile->clockTimezone());
         $display = Glucose::fromMgDl((string) $reading->value_mg_dl, $profile->glucose_unit);
 
         return [
@@ -87,7 +87,7 @@ final class ReadingTimeline
     public static function dateLabel(Profile $profile, CarbonInterface $local): string
     {
         $today = $profile->nowInTimezone()->startOfDay();
-        $date = $local->copy()->timezone($profile->timezone)->startOfDay();
+        $date = $local->copy()->timezone($profile->clockTimezone())->startOfDay();
 
         if ($date->isSameDay($today)) {
             return 'Today';
@@ -98,8 +98,8 @@ final class ReadingTimeline
         }
 
         return $date->year === $today->year
-            ? $local->timezone($profile->timezone)->format('j M')
-            : $local->timezone($profile->timezone)->format('j M Y');
+            ? $local->timezone($profile->clockTimezone())->format('j M')
+            : $local->timezone($profile->clockTimezone())->format('j M Y');
     }
 
     private static function bpSubtitle(BpReading $reading): string
@@ -119,6 +119,6 @@ final class ReadingTimeline
 
     public static function localDateTimeValue(Profile $profile, ?CarbonInterface $at = null): string
     {
-        return ($at ?? $profile->nowInTimezone())->timezone($profile->timezone)->format('Y-m-d\TH:i');
+        return ($at ?? $profile->nowInTimezone())->timezone($profile->clockTimezone())->format('Y-m-d\TH:i');
     }
 }

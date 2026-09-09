@@ -57,7 +57,7 @@ class ClinicController extends Controller
 
         $profile->weights()->create([
             'kg' => BodyWeight::toKg((string) $request->validated('value'), $profile->weight_unit),
-            'measured_at' => Carbon::parse($request->validated('measured_at'), $profile->timezone)->utc(),
+            'measured_at' => Carbon::parse($request->validated('measured_at'), $profile->clockTimezone())->utc(),
         ]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Weight saved.']);

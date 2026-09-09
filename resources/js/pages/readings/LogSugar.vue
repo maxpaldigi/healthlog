@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { systemDateTimeLocal } from '@/lib/systemClock';
 import { destroy, store, update } from '@/routes/glucose';
 import { store as scanStore } from '@/routes/scan';
 
@@ -80,13 +81,19 @@ const onMeterPhoto = (event: Event): void => {
 </script>
 
 <template>
-    <Head :title="reading ? 'Edit sugar' : source === 'photo' ? 'Check sugar' : 'Log sugar'" />
+    <Head :title="reading ? 'Edit sugar' : source === 'photo' ? 'Check sugar' : 'Add blood sugar'" />
 
     <div class="flex flex-1 flex-col gap-6">
         <h1 class="flex items-center gap-2 text-2xl font-semibold">
             <Droplet class="size-7" aria-hidden="true" />
-            {{ reading ? 'Edit sugar' : source === 'photo' ? 'Check these numbers' : 'Sugar' }}
+            {{ reading ? 'Edit sugar' : source === 'photo' ? 'Check these numbers' : 'Add blood sugar' }}
         </h1>
+        <p
+            v-if="!reading && source !== 'photo'"
+            class="text-muted-foreground text-base leading-relaxed"
+        >
+            Type the one number from your sugar meter.
+        </p>
         <p
             v-if="scanStatus"
             class="rounded-2xl border border-amber-400 bg-amber-50 px-4 py-3 text-base leading-relaxed text-amber-950"
@@ -189,7 +196,7 @@ const onMeterPhoto = (event: Event): void => {
                 id="measured_at"
                 type="datetime-local"
                 name="measured_at"
-                :default-value="reading?.measured_at ?? defaults?.measured_at"
+                :default-value="reading?.measured_at ?? systemDateTimeLocal()"
                 required
                 class="h-14 text-lg md:text-lg"
             />

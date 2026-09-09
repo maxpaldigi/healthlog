@@ -7,7 +7,7 @@ import { login, register } from '@/routes';
 defineOptions({
     layout: {
         title: 'Check your email',
-        description: 'We sent a login link if that email has an account. It expires in 15 minutes and works once.',
+        description: 'We sent a login link if that email has an account. It expires in 15 minutes and works once. After you open it, this phone stays signed in.',
     },
 });
 
@@ -30,7 +30,9 @@ defineProps<{
             Laravel Cloud and try again.
         </p>
         <p class="text-muted-foreground text-center text-base leading-relaxed">
-            This app signs you in with a link, not an OTP code.
+            This app signs you in with a link, not an OTP code. After you open
+            the link, this phone stays signed in so you do not need a new email
+            every time.
             <template v-if="sendsRealMail && !mailFailed">
                 Check your inbox (and spam). The link expires in 15 minutes and
                 works once.

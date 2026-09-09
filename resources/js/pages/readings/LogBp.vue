@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { systemDateTimeLocal } from '@/lib/systemClock';
 import { destroy, store, update } from '@/routes/bp';
 
 type Tag = { value: string; label: string };
@@ -97,7 +98,7 @@ const confirmDelete = (event: Event): void => {
 </script>
 
 <template>
-    <Head :title="reading ? 'Edit BP' : source === 'photo' ? 'Check BP' : 'Log BP'" />
+    <Head :title="reading ? 'Edit BP' : source === 'photo' ? 'Check BP' : 'Add blood pressure'" />
 
     <Form
         v-bind="formBind"
@@ -106,7 +107,7 @@ const confirmDelete = (event: Event): void => {
     >
         <h1 class="flex items-center gap-2 text-2xl font-semibold">
             <Activity class="size-7" aria-hidden="true" />
-            {{ reading ? 'Edit BP' : source === 'photo' ? 'Check these numbers' : 'Blood pressure' }}
+            {{ reading ? 'Edit BP' : source === 'photo' ? 'Check these numbers' : 'Add blood pressure' }}
         </h1>
         <p
             v-if="scanStatus"
@@ -119,7 +120,8 @@ const confirmDelete = (event: Event): void => {
             v-if="!reading && source !== 'photo'"
             class="text-muted-foreground text-base leading-relaxed"
         >
-            Doctors often want 3 readings a day: morning, afternoon, and evening.
+            Type the top and bottom numbers from your arm cuff. Doctors often
+            want 3 readings a day: morning, afternoon, and evening.
         </p>
         <p
             v-if="source === 'photo'"
@@ -201,7 +203,7 @@ const confirmDelete = (event: Event): void => {
                 id="measured_at"
                 type="datetime-local"
                 name="measured_at"
-                :default-value="reading?.measured_at ?? defaults?.measured_at"
+                :default-value="reading?.measured_at ?? systemDateTimeLocal()"
                 required
                 class="h-14 text-lg md:text-lg"
             />

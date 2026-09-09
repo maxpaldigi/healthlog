@@ -29,7 +29,7 @@ class CurrentProfile
         if ($profile === null) {
             $profile = $user->profiles()->create([
                 'name' => $user->name,
-                'timezone' => 'Asia/Kolkata',
+                'timezone' => 'UTC',
                 'glucose_unit' => GlucoseUnit::MgDl,
                 'weight_unit' => WeightUnit::Kg,
                 'is_default' => true,

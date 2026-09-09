@@ -23,10 +23,10 @@ final class HistoryDateRange
         $earliest = $today->copy()->subYears(2)->startOfDay();
 
         $fromLocal = $from !== null
-            ? Carbon::parse($from, $profile->timezone)->startOfDay()
+            ? Carbon::parse($from, $profile->clockTimezone())->startOfDay()
             : $today->copy()->subDays(30);
         $toLocal = $to !== null
-            ? Carbon::parse($to, $profile->timezone)->startOfDay()
+            ? Carbon::parse($to, $profile->clockTimezone())->startOfDay()
             : $today->copy();
 
         if ($fromLocal->greaterThan($toLocal)) {

@@ -23,6 +23,7 @@ class RegisterUserRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'timezone' => ['required', 'timezone:all'],
+            'detected_timezone' => ['nullable', 'timezone:all'],
             'glucose_unit' => ['required', Rule::enum(GlucoseUnit::class)],
             'weight_unit' => ['required', Rule::enum(WeightUnit::class)],
         ];
