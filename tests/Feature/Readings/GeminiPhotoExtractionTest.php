@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Http;
 
 it('asks for a Gemini key when photo reading is not set up', function () {
     config(['services.gemini.key' => null]);
+    putenv('GEMINI_API_KEY');
+    unset($_ENV['GEMINI_API_KEY'], $_SERVER['GEMINI_API_KEY']);
 
     $photo = UploadedFile::fake()->image('meter.jpg', 80, 80);
 

@@ -27,7 +27,10 @@ class AppServiceProvider extends ServiceProvider
         ));
 
         $this->app->bind(ExtractsDeviceReading::class, function (): ExtractsDeviceReading {
-            if (filled(config('services.gemini.key')) || blank(config('services.anthropic.key'))) {
+            $geminiKey = config('services.gemini.key')
+                ?: ($_ENV['GEMINI_API_KEY'] ?? $_SERVER['GEMINI_API_KEY'] ?? getenv('GEMINI_API_KEY'));
+
+            if (filled($geminiKey) || blank(config('services.anthropic.key'))) {
                 return $this->app->make(ExtractReadingFromGemini::class);
             }
 
