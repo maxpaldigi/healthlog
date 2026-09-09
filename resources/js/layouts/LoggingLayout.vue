@@ -65,23 +65,29 @@ const dateLabel = computed(() =>
         </a>
 
         <header
-            class="no-print mx-auto flex w-full items-center justify-between gap-3 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-1"
+            class="no-print mx-auto flex w-full items-center justify-between gap-3 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-2"
             :class="wide ? 'max-w-3xl' : 'max-w-md'"
         >
             <Link
                 :href="home()"
-                class="flex min-h-11 min-w-11 items-center"
+                class="flex min-h-11 min-w-0 items-center gap-2.5 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                aria-label="HealthyMe home"
             >
-                <AppLogoIcon class="size-10 shrink-0" />
+                <AppLogoIcon
+                    class="size-11 shrink-0 shadow-sm ring-1 ring-black/5"
+                    alt=""
+                />
+                <span
+                    class="text-foreground truncate text-lg font-bold leading-tight"
+                >
+                    {{ isHome ? 'HealthyMe' : title }}
+                </span>
             </Link>
-            <p class="text-foreground text-lg font-bold">
-                {{ isHome ? 'HealthyMe' : title }}
-            </p>
             <p
-                class="text-muted-foreground flex min-h-11 min-w-11 items-center justify-end gap-1 text-sm font-medium"
+                class="text-muted-foreground flex min-h-11 shrink-0 items-center gap-1.5 text-sm font-medium"
             >
                 <CalendarDays class="size-4 shrink-0" aria-hidden="true" />
-                <span class="hidden truncate sm:inline">{{ dateLabel }}</span>
+                <time class="whitespace-nowrap">{{ dateLabel }}</time>
             </p>
         </header>
 
