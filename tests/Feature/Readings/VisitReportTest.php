@@ -47,6 +47,33 @@ it('shows a printable clinic visit report with slot table, notes, and range labe
     $this->travelBack();
 });
 
+it('includes every day in the range so today is visible with its readings', function () {
+    $this->travelTo(Carbon::parse('2026-09-09 18:20:00', 'Europe/London'));
+
+    $user = userWithProfile([], [
+        'timezone' => 'Europe/London',
+        'name' => 'Deepak',
+    ]);
+
+    BpReading::factory()->for($user->defaultProfile)->create([
+        'systolic' => 132,
+        'diastolic' => 84,
+        'measured_at' => Carbon::parse('2026-09-09 18:15:00', 'Europe/London')->utc(),
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('report', ['from' => '2026-09-03', 'to' => '2026-09-09']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('report.days', 7)
+            ->where('report.days.0.date', '2026-09-03')
+            ->where('report.days.6.date', '2026-09-09')
+            ->where('report.days.6.date_label', 'Today')
+            ->where('report.days.6.slots.evening.title', '132 / 84'));
+
+    $this->travelBack();
+});
+
 it('saves an optional note on blood pressure and sugar', function () {
     $user = userWithProfile();
     $when = $user->defaultProfile->nowInTimezone()->subMinutes(10)->format('Y-m-d\TH:i');

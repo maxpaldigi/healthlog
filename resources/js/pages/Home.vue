@@ -9,7 +9,7 @@ import ReadingRow from '@/components/ReadingRow.vue';
 import TodayGauge from '@/components/TodayGauge.vue';
 import { create as logBp } from '@/routes/bp';
 import { create as logSugar } from '@/routes/glucose';
-import { scan } from '@/routes';
+import { home, scan } from '@/routes';
 import { current as switchProfile } from '@/routes/profiles';
 
 type TimelineItem = {
@@ -88,6 +88,13 @@ const slotIcons: Record<string, Component> = {
             <p class="text-muted-foreground text-lg">
                 Photograph the meter, or type the numbers.
             </p>
+            <Link
+                :href="home.url({ query: { guide: '1' } })"
+                class="text-primary inline-flex min-h-11 items-center text-base underline-offset-4 hover:underline"
+                data-test="open-guide"
+            >
+                How to use this app
+            </Link>
         </header>
 
         <div v-if="profiles.length > 1" class="flex flex-wrap gap-2">
@@ -132,7 +139,11 @@ const slotIcons: Record<string, Component> = {
             </button>
         </section>
 
-        <section class="hl-card px-5 pb-5 pt-6" aria-live="polite">
+        <section
+            class="hl-card px-5 pb-5 pt-6"
+            aria-live="polite"
+            data-tour="today"
+        >
             <TodayGauge
                 :count="todayCount"
                 :target="todayTarget"
@@ -167,6 +178,7 @@ const slotIcons: Record<string, Component> = {
             :href="scan()"
             class="bg-nav text-nav-foreground flex min-h-16 cursor-pointer items-center justify-center gap-3 rounded-full px-5 text-xl font-bold shadow-[0_10px_24px_-10px_rgb(28_25_23_/_0.45)] transition-transform duration-200 active:scale-[0.98]"
             data-test="scan"
+            data-tour="scan-photo"
         >
             <span
                 class="bg-cta text-cta-foreground flex size-11 items-center justify-center rounded-full"
@@ -181,7 +193,7 @@ const slotIcons: Record<string, Component> = {
             Point the camera at a BP monitor or sugar meter.
         </p>
 
-        <div class="grid gap-3">
+        <div class="grid gap-3" data-tour="log-manual">
             <Link
                 :href="logBp()"
                 class="hl-card flex min-h-24 cursor-pointer items-center gap-4 px-4 py-4 transition-transform duration-200 active:scale-[0.98]"

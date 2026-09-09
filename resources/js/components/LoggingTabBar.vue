@@ -28,6 +28,7 @@ const tabClass = (active: boolean): string =>
     <nav
         class="bg-nav text-nav-foreground fixed inset-x-0 bottom-0 z-20 rounded-t-[1.75rem] pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-8px_28px_-12px_rgb(28_25_23_/_0.35)]"
         aria-label="Main"
+        data-tour="tabs"
     >
         <div class="mx-auto grid max-w-md grid-cols-5 items-end px-1 pt-2">
             <Link
@@ -47,6 +48,7 @@ const tabClass = (active: boolean): string =>
                 :href="history()"
                 :class="tabClass(onHistory)"
                 :aria-current="onHistory ? 'page' : undefined"
+                data-tour="tab-history"
             >
                 <ClipboardList
                     class="size-6"
@@ -88,6 +90,7 @@ const tabClass = (active: boolean): string =>
                 <DropdownMenuTrigger
                     :class="tabClass(false)"
                     aria-label="Account menu"
+                    data-tour="tab-account"
                 >
                     <CircleUser class="size-6" aria-hidden="true" />
                     Account

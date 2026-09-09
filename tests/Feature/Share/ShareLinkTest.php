@@ -37,7 +37,7 @@ it('creates an expiring read-only share link for the visit report', function () 
             ->component('shared/Report')
             ->where('shared', true)
             ->where('report.profile.name', 'Meena')
-            ->where('report.days.0.slots.morning.title', '118 / 76'));
+            ->where('report.days.7.slots.morning.title', '118 / 76'));
 
     $this->travelBack();
 });

@@ -34,45 +34,47 @@ final class VisitReport
         Collection $medications = new Collection,
     ): array {
         $insights = ReadingInsights::make($profile, $bpReadings, $glucoseReadings);
-        $entries = ReadingTimeline::merge($profile, $bpReadings, $glucoseReadings);
+        $entries = collect(ReadingTimeline::merge($profile, $bpReadings, $glucoseReadings))
+            ->groupBy('date_key');
         $unit = $profile->glucose_unit->label();
         $weightUnit = $profile->weight_unit->label();
+        $days = [];
+        $endLocal = $toLocal->copy()->startOfDay();
 
-        $days = collect($entries)
-            ->groupBy('date_key')
-            ->sortKeys()
-            ->map(function (Collection $dayEntries, string $date): array {
-                $bp = $dayEntries->where('type', 'bp');
-                $slots = [];
+        for (
+            $cursor = $fromLocal->copy()->startOfDay();
+            $cursor->lessThanOrEqualTo($endLocal);
+            $cursor = $cursor->copy()->addDay()
+        ) {
+            $date = $cursor->toDateString();
+            $dayEntries = collect($entries->get($date, []));
+            $bp = $dayEntries->where('type', 'bp');
+            $slots = [];
 
-                foreach (BpDaySlot::dayOrder() as $slot) {
-                    $reading = $bp->firstWhere('slot', $slot->value);
-                    $slots[$slot->value] = $reading === null ? null : [
-                        'title' => $reading['title'],
-                        'time_label' => $reading['time_label'],
-                        'range_label' => $reading['range_label'],
-                        'note' => $reading['note'],
-                    ];
-                }
-
-                $local = $dayEntries->first()['date_label'] ?? $date;
-
-                return [
-                    'date' => $date,
-                    'date_label' => $local,
-                    'bp_filled' => collect($slots)->filter()->count(),
-                    'slots' => $slots,
-                    'sugar' => $dayEntries->where('type', 'glucose')->values()->map(fn (array $item): array => [
-                        'title' => $item['title'],
-                        'time_label' => $item['time_label'],
-                        'context_label' => $item['context_label'],
-                        'range_label' => $item['range_label'],
-                        'note' => $item['note'],
-                    ])->all(),
+            foreach (BpDaySlot::dayOrder() as $slot) {
+                $reading = $bp->firstWhere('slot', $slot->value);
+                $slots[$slot->value] = $reading === null ? null : [
+                    'title' => $reading['title'],
+                    'time_label' => $reading['time_label'],
+                    'range_label' => $reading['range_label'],
+                    'note' => $reading['note'],
                 ];
-            })
-            ->values()
-            ->all();
+            }
+
+            $days[] = [
+                'date' => $date,
+                'date_label' => $dayEntries->first()['date_label'] ?? ReadingTimeline::dateLabel($profile, $cursor),
+                'bp_filled' => collect($slots)->filter()->count(),
+                'slots' => $slots,
+                'sugar' => $dayEntries->where('type', 'glucose')->values()->map(fn (array $item): array => [
+                    'title' => $item['title'],
+                    'time_label' => $item['time_label'],
+                    'context_label' => $item['context_label'],
+                    'range_label' => $item['range_label'],
+                    'note' => $item['note'],
+                ])->all(),
+            ];
+        }
 
         $sugarByContext = collect(GlucoseContext::cases())
             ->map(function (GlucoseContext $context) use ($glucoseReadings, $profile, $unit): array {

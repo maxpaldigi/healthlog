@@ -85,14 +85,22 @@ const slotTitles = {
 </script>
 
 <template>
-    <div class="visit-report space-y-6 text-base">
-        <header class="flex items-start gap-3">
+    <div class="visit-report relative space-y-6 text-base">
+        <div class="visit-report-watermark" aria-hidden="true">
+            <img src="/logo.png" alt="" />
+            <p>HealthyMe</p>
+        </div>
+
+        <header class="visit-report-header flex items-center gap-4">
             <img
                 src="/logo.png"
                 alt="HealthyMe"
-                class="size-12 shrink-0 rounded-full object-cover"
+                class="visit-report-logo size-20 shrink-0 rounded-full object-cover"
             />
-            <div class="space-y-1">
+            <div class="min-w-0 space-y-1">
+                <p class="text-primary text-sm font-semibold tracking-wide uppercase">
+                    HealthyMe
+                </p>
                 <h1 class="text-2xl font-semibold">Clinic visit report</h1>
                 <p class="text-lg font-medium">{{ report.profile.name }}</p>
                 <p class="text-muted-foreground">{{ report.range.label }}</p>
@@ -136,6 +144,15 @@ const slotTitles = {
 
         <section>
             <h2 class="mb-2 text-lg font-semibold">Blood pressure by time of day</h2>
+            <p
+                v-if="
+                    report.insights.summary.bp_count === 0 &&
+                    report.insights.summary.glucose_count === 0
+                "
+                class="text-muted-foreground mb-3"
+            >
+                No blood pressure or sugar in this range.
+            </p>
             <div class="overflow-x-auto">
                 <table class="w-full min-w-[28rem] border-collapse text-left">
                     <caption class="sr-only">
@@ -184,11 +201,6 @@ const slotTitles = {
                                     </p>
                                 </template>
                                 <span v-else class="text-muted-foreground">—</span>
-                            </td>
-                        </tr>
-                        <tr v-if="report.days.length === 0">
-                            <td colspan="4" class="border px-2 py-3">
-                                No blood pressure or sugar in this range.
                             </td>
                         </tr>
                     </tbody>

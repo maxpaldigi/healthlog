@@ -214,13 +214,58 @@
         outline-offset: 3px;
     }
 
+    .app-tour-hole {
+        box-shadow: 0 0 0 9999px rgb(20 24 40 / 0.62);
+        outline: 4px solid white;
+        outline-offset: 0;
+    }
+
+    .visit-report-watermark {
+        position: absolute;
+        inset: 6rem 0 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .visit-report-watermark img {
+        width: min(16rem, 58vw);
+        height: auto;
+        opacity: 0.07;
+    }
+
+    .visit-report-watermark p {
+        margin: 0;
+        font-size: 2.25rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--primary);
+        opacity: 0.08;
+    }
+
+    .visit-report-header,
+    .visit-report section,
+    .visit-report > p {
+        position: relative;
+        z-index: 1;
+    }
+
     @media print {
         .no-print {
             display: none !important;
         }
 
-        body {
-            background: white;
+        html,
+        body,
+        .min-h-dvh {
+            min-height: 0 !important;
+            height: auto !important;
+            background: white !important;
             color: black;
         }
 
@@ -231,6 +276,25 @@
 
         .hl-card {
             box-shadow: none;
+        }
+
+        .visit-report,
+        .visit-report img {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+
+        .visit-report-watermark img {
+            opacity: 0.1;
+        }
+
+        .visit-report-watermark p {
+            opacity: 0.1;
+        }
+
+        .visit-report-logo {
+            width: 5.5rem;
+            height: 5.5rem;
         }
     }
 

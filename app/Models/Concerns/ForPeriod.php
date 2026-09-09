@@ -17,6 +17,9 @@ trait ForPeriod
             ? $this->periodColumn
             : 'measured_at';
 
-        return $query->whereBetween($column, [$from, $to]);
+        return $query->whereBetween($column, [
+            Carbon::parse($from)->utc(),
+            Carbon::parse($to)->utc(),
+        ]);
     }
 }

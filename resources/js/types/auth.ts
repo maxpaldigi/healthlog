@@ -12,6 +12,7 @@ export type User = {
 
 export type Auth = {
     user: User;
+    show_guide: boolean;
 };
 
 export type Passkey = {

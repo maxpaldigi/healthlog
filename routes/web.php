@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\MagicLinkController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BpReadingController;
 use App\Http\Controllers\ClinicController;
+use App\Http\Controllers\CompleteOnboardingController;
 use App\Http\Controllers\CurrentProfileController;
 use App\Http\Controllers\GlucoseReadingController;
 use App\Http\Controllers\HistoryController;
@@ -46,6 +47,7 @@ Route::post('logout', [LoginController::class, 'destroy'])
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::redirect('dashboard', '/')->name('dashboard');
+    Route::post('onboarding', CompleteOnboardingController::class)->name('onboarding.complete');
 
     Route::get('history', HistoryController::class)->name('history');
     Route::get('trends', TrendsController::class)->name('trends');

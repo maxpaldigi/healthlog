@@ -44,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->useUtcDatabaseSession();
         $this->configureRateLimiting();
     }
 
@@ -83,6 +84,19 @@ class AppServiceProvider extends ServiceProvider
 
         if (config('mail.default') === 'smtp' && in_array($smtpHost, ['127.0.0.1', 'localhost'], true)) {
             config(['mail.default' => 'log']);
+        }
+    }
+
+    private function useUtcDatabaseSession(): void
+    {
+        try {
+            if (DB::getDriverName() !== 'pgsql') {
+                return;
+            }
+
+            DB::statement("SET TIME ZONE 'UTC'");
+        } catch (\Throwable) {
+            // Package discovery and first-run artisan may not have a database yet.
         }
     }
 

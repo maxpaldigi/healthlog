@@ -4,6 +4,7 @@ import { CalendarDays } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import LoggingTabBar from '@/components/LoggingTabBar.vue';
+import OnboardingGuide from '@/components/OnboardingGuide.vue';
 import { Toaster } from '@/components/ui/sonner';
 import { home } from '@/routes';
 
@@ -67,6 +68,7 @@ const dateLabel = computed(() =>
         <header
             class="no-print mx-auto flex w-full items-center justify-between gap-3 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-2"
             :class="wide ? 'max-w-3xl' : 'max-w-md'"
+            data-tour="brand"
         >
             <Link
                 :href="home()"
@@ -100,6 +102,7 @@ const dateLabel = computed(() =>
         </main>
 
         <LoggingTabBar class="no-print" />
+        <OnboardingGuide />
         <Toaster />
     </div>
 </template>
