@@ -130,6 +130,7 @@ it('shows an open-login-link button after a known email is submitted', function 
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('auth/CheckEmail')
+            ->where('sendsRealMail', false)
             ->where('loginUrl', fn (?string $url): bool => is_string($url) && str_contains($url, '/login/magic/')));
 });
 

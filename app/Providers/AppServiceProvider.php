@@ -48,6 +48,10 @@ class AppServiceProvider extends ServiceProvider
             app()->isProduction(),
         );
 
+        if (config('mail.default') === 'resend' && blank(config('services.resend.key'))) {
+            config(['mail.default' => 'log']);
+        }
+
         Password::defaults(fn (): ?Password => app()->isProduction()
             ? Password::min(12)
                 ->mixedCase()

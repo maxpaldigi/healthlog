@@ -13,6 +13,7 @@ defineOptions({
 
 defineProps<{
     loginUrl?: string | null;
+    sendsRealMail?: boolean;
 }>();
 </script>
 
@@ -21,8 +22,14 @@ defineProps<{
 
     <div class="flex flex-col gap-6">
         <p class="text-muted-foreground text-center text-base leading-relaxed">
-            This app signs you in with a link, not an OTP code. On this computer
-            mail is not sent to a real inbox yet.
+            This app signs you in with a link, not an OTP code.
+            <template v-if="sendsRealMail">
+                Check your inbox (and spam). The link expires in 15 minutes and
+                works once.
+            </template>
+            <template v-else>
+                On this computer mail is not sent to a real inbox yet.
+            </template>
         </p>
 
         <a v-if="loginUrl" :href="loginUrl" class="block">
