@@ -25,6 +25,9 @@ import {
     queueReading,
     readingSummary,
 } from '@/lib/offlineQueue';
+import { clientUuid as newClientUuid } from '@/lib/clientId';
+import { compressPhoto } from '@/lib/compressPhoto';
+import { postPhoto } from '@/lib/postPhoto';
 import { systemDateTimeLocal } from '@/lib/systemClock';
 import { speak } from '@/composables/useReadAloud';
 import { home } from '@/routes';
@@ -63,7 +66,7 @@ const source = props.source ?? 'manual';
 const showMore = ref(Boolean(props.reading?.note));
 
 const formBind = props.reading ? update.form(props.reading.id) : store.form();
-const clientUuid = crypto.randomUUID();
+const clientUuid = newClientUuid();
 
 const maybeQueueOffline = (): boolean => {
     if (props.reading !== null || navigator.onLine) {
@@ -113,16 +116,36 @@ const confirmDelete = (event: Event): void => {
 };
 
 const photoLabel = ref('Take a photo of the screen');
+const preparingPhoto = ref(false);
 
-const onMeterPhoto = (event: Event): void => {
+const onMeterPhoto = async (event: Event): Promise<void> => {
     const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
 
-    if (!input.files?.length) {
+    if (!file) {
         return;
     }
 
+    preparingPhoto.value = true;
     photoLabel.value = 'Reading the photo…';
-    input.form?.requestSubmit();
+
+    try {
+        const compressed = await compressPhoto(file);
+
+        postPhoto(scanStore.url(), compressed, { expect: 'glucose' }, {
+            onFinish: () => {
+                preparingPhoto.value = false;
+            },
+            onFail: () => {
+                preparingPhoto.value = false;
+                photoLabel.value = 'Take a photo of the screen';
+            },
+        });
+    } catch {
+        preparingPhoto.value = false;
+        photoLabel.value = 'Take a photo of the screen';
+    }
 };
 </script>
 
@@ -170,26 +193,21 @@ const onMeterPhoto = (event: Event): void => {
             {{ extractionNote || 'Check these numbers, then Save.' }}
         </p>
 
-        <Form
+        <div
             v-if="!reading && source !== 'photo'"
-            v-bind="scanStore.form()"
-            v-slot="{ processing }"
             class="grid gap-2"
         >
             <label
                 class="hl-card border-primary/40 flex min-h-20 cursor-pointer items-center justify-center gap-3 border-2 border-dashed px-4 text-center text-lg font-semibold"
-                :class="processing ? 'opacity-70' : ''"
+                :class="preparingPhoto ? 'opacity-70' : ''"
             >
-                <Spinner v-if="processing" />
+                <Spinner v-if="preparingPhoto" />
                 <Camera v-else class="text-primary size-6" aria-hidden="true" />
-                {{ processing ? 'Reading the photo…' : photoLabel }}
+                {{ preparingPhoto ? 'Reading the photo…' : photoLabel }}
                 <input
                     type="file"
-                    name="photo"
-                    accept="image/jpeg,image/png,image/heic,image/heif"
-                    capture="environment"
+                    accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
                     class="sr-only"
-                    :disabled="processing"
                     :aria-label="photoLabel"
                     data-test="sugar-meter-photo"
                     @change="onMeterPhoto"
@@ -198,7 +216,7 @@ const onMeterPhoto = (event: Event): void => {
             <p class="text-muted-foreground text-center text-base">
                 Or type the number below
             </p>
-        </Form>
+        </div>
 
         <Form
             id="log-sugar-form"

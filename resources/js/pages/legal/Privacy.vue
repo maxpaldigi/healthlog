@@ -52,6 +52,19 @@ import { data as aboutData } from '@/routes/about';
                 birth. The food you save stays in your account.
             </p>
             <p>
+                When you look up a medication name, we send the search words to
+                the U.S. National Library of Medicine RxNorm service. We do not
+                send your name, email, or date of birth. You can still save a
+                name we do not find.
+            </p>
+            <p>
+                If you make a share link, anyone with that link can see the
+                readings in the dates you chose until the link expires. A clinic
+                reply link also lets them leave a note on the log and optional
+                sugar targets. You will see that note at home and on the visit
+                report. They cannot write after the link expires.
+            </p>
+            <p>
                 If you invite a helper, we email them a link. They can view and
                 add readings for that log. The person whose readings these are
                 can always see who has access and can remove it.

@@ -11,6 +11,7 @@ use App\Models\Weight;
 use App\Support\BodyWeight;
 use App\Support\CurrentProfile;
 use App\Support\ReadingTimeline;
+use App\Support\RxNorm;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -44,6 +45,7 @@ class ClinicController extends Controller
             'medications' => $profile->medications()->orderByDesc('is_active')->orderBy('name')->get()->map(fn (Medication $medication): array => [
                 'id' => $medication->id,
                 'name' => $medication->name,
+                'rxcui' => $medication->rxcui,
                 'dose' => $medication->dose,
                 'schedule' => $medication->schedule,
                 'is_active' => $medication->is_active,
@@ -103,13 +105,18 @@ class ClinicController extends Controller
         return to_route('clinic.index');
     }
 
-    public function storeMedication(StoreMedicationRequest $request, CurrentProfile $currentProfile): RedirectResponse
+    public function storeMedication(StoreMedicationRequest $request, CurrentProfile $currentProfile, RxNorm $rxNorm): RedirectResponse
     {
         $profile = $currentProfile->handle($request->user(), $request);
         $data = $request->validated();
+        $resolved = $rxNorm->resolveForSave(
+            isset($data['rxcui']) ? (string) $data['rxcui'] : null,
+            (string) $data['name'],
+        );
 
         $profile->medications()->create([
-            'name' => $data['name'],
+            'name' => $resolved['name'],
+            'rxcui' => $resolved['rxcui'],
             'dose' => filled($data['dose'] ?? null) ? $data['dose'] : null,
             'schedule' => filled($data['schedule'] ?? null) ? $data['schedule'] : null,
             'is_active' => $request->boolean('is_active', true),
@@ -120,14 +127,19 @@ class ClinicController extends Controller
         return to_route('clinic.index');
     }
 
-    public function updateMedication(StoreMedicationRequest $request, Medication $medication): RedirectResponse
+    public function updateMedication(StoreMedicationRequest $request, Medication $medication, RxNorm $rxNorm): RedirectResponse
     {
         $this->authorize('update', $medication);
 
         $data = $request->validated();
+        $resolved = $rxNorm->resolveForSave(
+            isset($data['rxcui']) ? (string) $data['rxcui'] : null,
+            (string) $data['name'],
+        );
 
         $medication->update([
-            'name' => $data['name'],
+            'name' => $resolved['name'],
+            'rxcui' => $resolved['rxcui'],
             'dose' => filled($data['dose'] ?? null) ? $data['dose'] : null,
             'schedule' => filled($data['schedule'] ?? null) ? $data['schedule'] : null,
             'is_active' => $request->boolean('is_active', true),

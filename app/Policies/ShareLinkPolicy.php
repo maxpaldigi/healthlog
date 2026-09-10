@@ -17,4 +17,9 @@ class ShareLinkPolicy
     {
         return ! $shareLink->isExpired();
     }
+
+    public function respond(?User $user, ShareLink $shareLink): bool
+    {
+        return $shareLink->canReceiveResponse();
+    }
 }

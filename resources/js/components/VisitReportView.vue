@@ -70,6 +70,12 @@ type Report = {
         schedule: string | null;
         is_active: boolean;
     }[];
+    clinic_note?: {
+        instruction: string | null;
+        acknowledged_on: string;
+        targets_line: string | null;
+        set_by: string;
+    } | null;
     disclaimer: string;
 };
 
@@ -107,6 +113,23 @@ const slotTitles = {
                 <p class="text-muted-foreground">{{ report.range.label }}</p>
             </div>
         </header>
+
+        <section
+            v-if="report.clinic_note"
+            class="hl-card space-y-2 px-4 py-4"
+            data-test="clinic-note"
+        >
+            <h2 class="text-lg font-semibold">Note from clinic</h2>
+            <p class="text-muted-foreground">
+                Looked at this log on {{ report.clinic_note.acknowledged_on }}.
+            </p>
+            <p v-if="report.clinic_note.instruction" class="leading-relaxed">
+                {{ report.clinic_note.instruction }}
+            </p>
+            <p v-if="report.clinic_note.targets_line" class="leading-relaxed">
+                {{ report.clinic_note.targets_line }}
+            </p>
+        </section>
 
         <section class="grid grid-cols-2 gap-3">
             <div class="hl-card px-3 py-3">

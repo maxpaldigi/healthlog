@@ -33,11 +33,11 @@ class StoreFoodPhotoRequest extends FormRequest
 
             $mime = (string) $file->getMimeType();
             $extension = strtolower((string) $file->getClientOriginalExtension());
-            $allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'image/heif'];
-            $allowedExtensions = ['jpg', 'jpeg', 'png', 'heic', 'heif'];
+            $allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'image/heif', 'image/webp'];
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'heic', 'heif', 'webp'];
 
             if (! in_array($mime, $allowedMimes, true) && ! in_array($extension, $allowedExtensions, true)) {
-                $validator->errors()->add('photo', 'Use a JPEG, PNG, or HEIC photo under 10 MB.');
+                $validator->errors()->add('photo', 'Use a JPEG, PNG, WebP, or HEIC photo under 10 MB.');
             }
         });
     }

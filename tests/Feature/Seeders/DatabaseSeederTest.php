@@ -1,10 +1,21 @@
 <?php
 
+use App\Enums\ConsentType;
 use App\Models\BpReading;
 use App\Models\GlucoseReading;
 use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+
+it('does not seed a demo user in production', function () {
+    $this->app['env'] = 'production';
+
+    $this->seed();
+
+    expect(User::query()->where('email', 'demo@healthlog.test')->exists())->toBeFalse()
+        ->and(Profile::query()->count())->toBe(0)
+        ->and(BpReading::query()->count())->toBe(0);
+});
 
 it('seeds a demo user with thirty days of readings', function () {
     $this->seed();
@@ -12,7 +23,8 @@ it('seeds a demo user with thirty days of readings', function () {
     $user = User::query()->where('email', 'demo@healthlog.test')->first();
 
     expect($user)->not->toBeNull()
-        ->and($user->password)->toBeNull();
+        ->and($user->password)->toBeNull()
+        ->and($user->hasGrantedConsent(ConsentType::HealthData))->toBeFalse();
 
     $profile = $user->defaultProfile;
 

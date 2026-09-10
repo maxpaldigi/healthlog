@@ -19,8 +19,9 @@ defineOptions({
     },
 });
 
-defineProps<{
+const props = defineProps<{
     status?: string;
+    demoEmail?: string | null;
 }>();
 
 const email = ref('');
@@ -99,5 +100,27 @@ const rememberEmail = (): void => {
             Don't have an account?
             <TextLink :href="register()">Create one</TextLink>
         </div>
+    </Form>
+
+    <Form
+        v-if="props.demoEmail"
+        v-bind="store.form()"
+        v-slot="{ processing }"
+        class="mt-4"
+    >
+        <input type="hidden" name="email" :value="props.demoEmail" />
+        <Button
+            type="submit"
+            variant="secondary"
+            class="h-14 w-full rounded-full text-lg"
+            :disabled="processing"
+            data-test="demo-login-button"
+        >
+            <Spinner v-if="processing" />
+            Open the demo
+        </Button>
+        <p class="text-muted-foreground mt-3 text-center text-base leading-relaxed">
+            Uses {{ props.demoEmail }} on this computer. No email is sent.
+        </p>
     </Form>
 </template>

@@ -2,6 +2,7 @@
 
 use App\Enums\GlucoseContext;
 use App\Enums\GlucoseUnit;
+use App\Enums\TargetSetBy;
 use App\Models\BpReading;
 use App\Models\GlucoseReading;
 use App\Models\Profile;
@@ -131,6 +132,32 @@ it('counts sugar readings inside the persons own targets', function () {
         ->and($row['total'])->toBe(4)
         ->and($row['percent'])->toBe(50)
         ->and($row['line'])->toBe('2 of 4 sugar readings were inside your targets (50%).');
+});
+
+it('names clinic targets when the active numbers came from a clinic reply', function () {
+    $profile = userWithProfile([], [
+        'timezone' => 'UTC',
+        'glucose_low_mg_dl' => '70.00',
+        'glucose_high_mg_dl' => '180.00',
+        'glucose_target_set_by' => TargetSetBy::Clinician,
+    ])->defaultProfile;
+
+    $glucose = collect([
+        GlucoseReading::factory()->for($profile)->make([
+            'value_mg_dl' => '100.00',
+            'context' => GlucoseContext::Fasting,
+            'measured_at' => Carbon::parse('2026-01-01 07:00:00', 'UTC'),
+        ]),
+        GlucoseReading::factory()->for($profile)->make([
+            'value_mg_dl' => '210.00',
+            'context' => GlucoseContext::PostMeal2h,
+            'measured_at' => Carbon::parse('2026-01-01 14:00:00', 'UTC'),
+        ]),
+    ]);
+
+    $row = insightsFor($profile, collect(), $glucose)['stats']['time_in_range'];
+
+    expect($row['line'])->toBe('1 of 2 sugar readings were inside the clinic targets (50%).');
 });
 
 it('does not compute time in range when no targets are set', function () {

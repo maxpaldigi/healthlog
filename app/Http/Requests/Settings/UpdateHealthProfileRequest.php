@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Settings;
 
 use App\Enums\GlucoseUnit;
+use App\Enums\TargetSetBy;
 use App\Enums\WeightUnit;
 use App\Support\Glucose;
 use Illuminate\Foundation\Http\FormRequest;
@@ -76,6 +77,7 @@ class UpdateHealthProfileRequest extends FormRequest
             'weight_unit' => WeightUnit::from($this->validated('weight_unit')),
             'glucose_low_mg_dl' => $this->convertedTarget('glucose_low', $unit),
             'glucose_high_mg_dl' => $this->convertedTarget('glucose_high', $unit),
+            'glucose_target_set_by' => TargetSetBy::Self,
             'reminders_enabled' => $this->boolean('reminders_enabled'),
             'reminder_morning' => $this->validated('reminder_morning'),
             'reminder_afternoon' => $this->validated('reminder_afternoon'),

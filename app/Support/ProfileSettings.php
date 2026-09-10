@@ -28,6 +28,7 @@ final class ProfileSettings
             'glucose_high' => $profile->glucose_high_mg_dl === null
                 ? ''
                 : Glucose::fromMgDl((string) $profile->glucose_high_mg_dl, $profile->glucose_unit),
+            'glucose_target_set_by' => $profile->glucose_target_set_by->value,
             'reminders_enabled' => $profile->reminders_enabled,
             'reminder_morning' => $profile->reminder_morning ?: '08:00',
             'reminder_afternoon' => $profile->reminder_afternoon ?: '14:00',

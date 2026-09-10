@@ -23,6 +23,8 @@ class ProcessFoodPhoto
 
     public function handle(UploadedFile $photo, string $locale): RedirectResponse
     {
+        set_time_limit(45);
+
         $path = $photo->store('scans', 'local');
 
         if ($path === false) {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\BpDaySlot;
 use App\Enums\ProfileRole;
 use App\Support\CareAlerts;
+use App\Support\ClinicianNote;
 use App\Support\CurrentProfile;
 use App\Support\FoodResponse;
 use App\Support\ReadingReminders;
@@ -76,6 +77,7 @@ class HomeController extends Controller
             'summarySpeech' => ReadingSpeech::home(count($filledSlots), 3, $todaySlots),
             'recent' => $recent,
             'foodResponse' => FoodResponse::make($profile),
+            'clinicNote' => ClinicianNote::current($profile),
             'reminders' => [
                 'enabled' => $profile->reminders_enabled,
                 'timezone' => $profile->timezone,

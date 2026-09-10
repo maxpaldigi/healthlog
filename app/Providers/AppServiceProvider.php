@@ -124,5 +124,13 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('food-lookup', function (Request $request) {
             return Limit::perMinute(30)->by((string) ($request->user()?->getAuthIdentifier() ?: $request->ip()));
         });
+
+        RateLimiter::for('rxnorm-lookup', function (Request $request) {
+            return Limit::perMinute(30)->by((string) ($request->user()?->getAuthIdentifier() ?: $request->ip()));
+        });
+
+        RateLimiter::for('share-respond', function (Request $request) {
+            return Limit::perMinute(10)->by((string) $request->ip());
+        });
     }
 }

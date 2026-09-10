@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Enums\BpDaySlot;
 use App\Enums\GlucoseContext;
+use App\Enums\TargetSetBy;
 use App\Models\BpReading;
 use App\Models\GlucoseReading;
 use App\Models\Profile;
@@ -237,7 +238,7 @@ final class ReadingInsights
     }
 
     /**
-     * Share of sugar readings inside the person's own targets.
+     * Share of sugar readings inside the active targets on the profile.
      * Display only — never a diagnosis.
      *
      * @param  Collection<int, GlucoseReading>  $glucoseReadings
@@ -257,11 +258,15 @@ final class ReadingInsights
 
         $percent = (int) self::roundPlaces(bcmul(bcdiv((string) $inRange, (string) $total, 6), '100', 4), 0);
 
+        $whose = $profile->glucose_target_set_by === TargetSetBy::Clinician
+            ? 'the clinic targets'
+            : 'your targets';
+
         return [
             'in_range' => $inRange,
             'total' => $total,
             'percent' => $percent,
-            'line' => $inRange.' of '.$total.' sugar readings were inside your targets ('.$percent.'%).',
+            'line' => $inRange.' of '.$total.' sugar readings were inside '.$whose.' ('.$percent.'%).',
         ];
     }
 

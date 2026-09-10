@@ -104,7 +104,7 @@ const dateLabel = computed(() =>
 
         <main
             id="main"
-            class="mx-auto flex w-full flex-1 flex-col px-4 pt-2 pb-36"
+            class="mx-auto flex w-full flex-1 flex-col overflow-y-auto px-4 pt-2 pb-36"
             :class="wide ? 'max-w-3xl' : 'max-w-md'"
         >
             <slot />

@@ -23,13 +23,15 @@ use JsonException;
 class ExtractReadingFromImage implements ExtractsDeviceReading
 {
     public const PROMPT = <<<'PROMPT'
-You are reading the digital display of a home medical device from a photograph. Report only what is actually printed on the screen. Decide device_type from the display itself.
+You are reading the digital display of a home medical device from a photograph. Report only digits that are actually visible on the screen. Decide device_type from the display itself.
+
+The photo may be from a phone camera, chosen from a computer, a screenshot, or a picture of a picture of the meter. Still read the LCD or OLED digits if they are visible, even if the device is on a desk, slightly rotated, or only the screen fills part of the frame.
 
 If it is a blood pressure monitor, there are usually two or three numbers: systolic (largest, top), diastolic (middle), and often pulse (bottom, marked with a heart). Systolic is always greater than diastolic. Set device_type to blood_pressure_monitor.
 
 If it is a glucometer, there is usually a single glucose number, and the unit mg/dL or mmol/L may be printed next to it. Set device_type to glucometer. Never treat one glucose number as blood pressure.
 
-Rules: Do not guess. If a digit is unclear, blurred, cut off, or obscured by glare, set that field to null and set confidence to "low". If the image does not show a medical device display at all, set device_type to "unknown" and every value to null. Never estimate, infer, or complete a partially visible number. Use the notes field to say briefly what you saw or why you could not read it.
+Rules: Do not invent missing digits. If every digit of a number is readable, report it even if the brand name is not visible. If a digit is cut off or unreadable, set that field to null and set confidence to "low". If the image does not show a medical device display at all, set device_type to "unknown" and every value to null. Use the notes field to say briefly what you saw or why you could not read it.
 PROMPT;
 
     public function __construct(private Client $client) {}

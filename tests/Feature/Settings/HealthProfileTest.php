@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\GlucoseUnit;
+use App\Enums\TargetSetBy;
 use App\Enums\WeightUnit;
 use App\Models\Profile;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -39,7 +40,8 @@ it('lets the user edit timezone, units, sugar targets, and reminders', function 
         ->and($profile->weight_unit)->toBe(WeightUnit::Lb)
         ->and((string) $profile->glucose_low_mg_dl)->toBe('70.00')
         ->and($profile->reminders_enabled)->toBeTrue()
-        ->and($profile->reminder_morning)->toBe('07:30');
+        ->and($profile->reminder_morning)->toBe('07:30')
+        ->and($profile->glucose_target_set_by)->toBe(TargetSetBy::Self);
 });
 
 it('adds another health profile for a parent', function () {

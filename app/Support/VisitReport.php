@@ -130,6 +130,7 @@ final class VisitReport
                 'schedule' => $medication->schedule,
                 'is_active' => $medication->is_active,
             ])->values()->all(),
+            'clinic_note' => ClinicianNote::current($profile),
             'disclaimer' => 'This page is a record of what was logged. It is not a medical device and does not replace a doctor. If a reading is 180/120 or higher, or if you feel unwell, seek immediate medical attention.',
         ];
     }

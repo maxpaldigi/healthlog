@@ -208,6 +208,21 @@ it('rejects a photo larger than 10 MB', function () {
         ->assertSessionHasErrors('photo');
 });
 
+it('accepts a webp meter photo', function () {
+    Storage::fake('local');
+    $user = userWithProfile();
+
+    $this->mock(ExtractsDeviceReading::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('handle')->once()->andReturn(extractedReading());
+    });
+
+    $this->actingAs($user)
+        ->post(route('scan.store'), [
+            'photo' => UploadedFile::fake()->image('meter.webp', 80, 80),
+        ])
+        ->assertRedirect(route('bp.create'));
+});
+
 it('opens a sugar-meter scan screen and returns to log sugar if the photo cannot be read', function () {
     Storage::fake('local');
     $user = userWithProfile();

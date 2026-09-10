@@ -44,6 +44,13 @@ import { home, privacy } from '@/routes';
                 with “Data from Open Food Facts (ODbL)”. We send the barcode or
                 search words only — not your name, email, or date of birth.
             </li>
+            <li>
+                <span class="font-semibold">RxNorm (NLM).</span>
+                U.S. National Library of Medicine medication names. Autocomplete
+                and official names only — not combination checking. Shown with
+                “Names from RxNorm (NLM)”. We send the search words only — not
+                your name, email, or date of birth.
+            </li>
         </ul>
         <p class="mt-8 text-base">
             <Link :href="privacy()" class="font-semibold underline">

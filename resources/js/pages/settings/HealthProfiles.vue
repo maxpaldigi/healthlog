@@ -35,6 +35,7 @@ defineProps<{
         is_default: boolean;
         glucose_low: string;
         glucose_high: string;
+        glucose_target_set_by: string;
         reminders_enabled: boolean;
         reminder_morning: string;
         reminder_afternoon: string;
@@ -249,6 +250,14 @@ defineProps<{
                     Optional. These only highlight numbers on your log. They are
                     not medical advice. Many people use 70 and 180 mg/dL as a
                     starting point after asking their clinic.
+                </p>
+                <p
+                    v-if="current.glucose_target_set_by === 'clinician'"
+                    class="text-base leading-relaxed"
+                    data-test="clinic-targets-note"
+                >
+                    These numbers were last saved from a clinic reply. Saving
+                    this form keeps them as yours.
                 </p>
                 <div class="grid grid-cols-2 gap-3">
                     <div class="grid gap-2">

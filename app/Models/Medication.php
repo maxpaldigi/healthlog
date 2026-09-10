@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $profile_id
  * @property string $name
+ * @property string|null $rxcui
  * @property string|null $dose
  * @property string|null $schedule
  * @property Carbon|null $started_on
@@ -22,6 +23,7 @@ use Illuminate\Support\Carbon;
 #[Fillable([
     'profile_id',
     'name',
+    'rxcui',
     'dose',
     'schedule',
     'started_on',

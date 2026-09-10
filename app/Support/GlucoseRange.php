@@ -7,7 +7,8 @@ use App\Models\Profile;
 final class GlucoseRange
 {
     /**
-     * Plain-language flag against the person's own targets.
+     * Plain-language flag against the active targets on the profile
+     * (the person's own, or clinic-set numbers saved onto the profile).
      * Null when no targets are set or the value is inside them.
      * Display only — never a diagnosis.
      */

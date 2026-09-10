@@ -81,6 +81,12 @@ const props = defineProps<{
         times: { morning: string; afternoon: string; evening: string };
         due: { key: string; label: string; time: string }[];
     };
+    clinicNote?: {
+        instruction: string | null;
+        acknowledged_on: string;
+        targets_line: string | null;
+        set_by: string;
+    } | null;
 }>();
 
 const reminders = computed(
@@ -194,6 +200,31 @@ const slotIcons: Record<string, Component> = {
                 </Button>
             </Form>
         </div>
+
+        <section
+            v-if="clinicNote"
+            class="border-primary/30 bg-card rounded-[1.5rem] border px-4 py-4"
+            data-test="clinic-note"
+        >
+            <p class="text-lg font-semibold">Note from clinic</p>
+            <p class="text-muted-foreground mt-1 text-base leading-relaxed">
+                Looked at this log on {{ clinicNote.acknowledged_on }}.
+            </p>
+            <p
+                v-if="clinicNote.instruction"
+                class="mt-2 text-base leading-relaxed"
+                data-test="clinic-note-text"
+            >
+                {{ clinicNote.instruction }}
+            </p>
+            <p
+                v-if="clinicNote.targets_line"
+                class="mt-2 text-base leading-relaxed"
+                data-test="clinic-note-targets"
+            >
+                {{ clinicNote.targets_line }}
+            </p>
+        </section>
 
         <section
             v-if="access.is_owner && access.caregivers.length > 0"

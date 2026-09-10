@@ -4,7 +4,9 @@ namespace App\Actions\Readings;
 
 use App\Contracts\ExtractsDeviceReading;
 use App\Exceptions\CouldNotReadPhotoException;
+use App\Support\DownsizeVisionImage;
 use App\Support\ExtractedReading;
+use App\Support\GeminiVision;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
@@ -13,19 +15,9 @@ use JsonException;
 
 class ExtractReadingFromGemini implements ExtractsDeviceReading
 {
-    /**
-     * @var list<string>
-     */
-    private const FALLBACK_MODELS = [
-        'gemini-2.5-flash',
-        'gemini-2.0-flash',
-        'gemini-2.5-flash-lite',
-        'gemini-flash-latest',
-    ];
-
     public function handle(string $absolutePath, string $mediaType, ?string $expect = null): ExtractedReading
     {
-        $apiKey = $this->apiKey();
+        $apiKey = GeminiVision::apiKey();
 
         if (blank($apiKey)) {
             throw CouldNotReadPhotoException::make(
@@ -36,18 +28,19 @@ class ExtractReadingFromGemini implements ExtractsDeviceReading
         $prepared = $this->prepareImage($absolutePath, $mediaType);
         $lastError = 'Gemini did not return meter numbers.';
 
-        foreach ($this->models() as $model) {
+        foreach (GeminiVision::models() as $model) {
             try {
                 $response = $this->request($apiKey, $model, $prepared['data'], $prepared['media_type'], $expect);
             } catch (ConnectionException $exception) {
                 report($exception);
-                $lastError = 'Could not reach Gemini.';
 
-                continue;
+                throw CouldNotReadPhotoException::make(
+                    'Could not read that photo in time. Please type the numbers.',
+                );
             }
 
             if ($response->status() === 404) {
-                $lastError = 'Gemini model '.$model.' was not found.';
+                Log::warning('Gemini model was not found', ['model' => $model]);
 
                 continue;
             }
@@ -87,36 +80,11 @@ class ExtractReadingFromGemini implements ExtractsDeviceReading
             return ExtractedReading::fromArray($payload);
         }
 
-        throw CouldNotReadPhotoException::make($lastError.' Please type the numbers.');
-    }
+        Log::error('Gemini photo read exhausted models', ['last_error' => $lastError]);
 
-    /**
-     * @return list<string>
-     */
-    private function models(): array
-    {
-        $preferred = $this->runtime('GEMINI_MODEL')
-            ?? config('services.gemini.model')
-            ?? 'gemini-2.0-flash';
-
-        return array_values(array_unique([
-            (string) $preferred,
-            ...self::FALLBACK_MODELS,
-        ]));
-    }
-
-    private function apiKey(): ?string
-    {
-        $key = config('services.gemini.key') ?: $this->runtime('GEMINI_API_KEY');
-
-        return filled($key) ? (string) $key : null;
-    }
-
-    private function runtime(string $name): ?string
-    {
-        $value = $_ENV[$name] ?? $_SERVER[$name] ?? getenv($name);
-
-        return is_string($value) && $value !== '' ? $value : null;
+        throw CouldNotReadPhotoException::make(
+            "Couldn't read that photo. Please type the numbers.",
+        );
     }
 
     /**
@@ -130,53 +98,12 @@ class ExtractReadingFromGemini implements ExtractsDeviceReading
             throw CouldNotReadPhotoException::make();
         }
 
-        $resized = $this->downsizeJpeg($binary, $mediaType);
+        $resized = DownsizeVisionImage::handle($binary, $mediaType);
 
         return [
             'data' => str_replace(["\r", "\n"], '', base64_encode($resized['binary'])),
             'media_type' => $resized['media_type'],
         ];
-    }
-
-    /**
-     * @return array{binary: string, media_type: string}
-     */
-    private function downsizeJpeg(string $binary, string $mediaType): array
-    {
-        if (! function_exists('imagecreatefromstring') || strlen($binary) < 400_000) {
-            return ['binary' => $binary, 'media_type' => $mediaType];
-        }
-
-        $image = @imagecreatefromstring($binary);
-
-        if ($image === false) {
-            return ['binary' => $binary, 'media_type' => $mediaType];
-        }
-
-        $width = imagesx($image);
-        $height = imagesy($image);
-        $max = 1280;
-
-        if ($width <= $max && $height <= $max) {
-            imagedestroy($image);
-
-            return ['binary' => $binary, 'media_type' => $mediaType];
-        }
-
-        $scale = $max / max($width, $height);
-        $resized = imagescale($image, (int) round($width * $scale), (int) round($height * $scale));
-        imagedestroy($image);
-
-        if ($resized === false) {
-            return ['binary' => $binary, 'media_type' => $mediaType];
-        }
-
-        ob_start();
-        imagejpeg($resized, null, 82);
-        $jpeg = (string) ob_get_clean();
-        imagedestroy($resized);
-
-        return ['binary' => $jpeg !== '' ? $jpeg : $binary, 'media_type' => 'image/jpeg'];
     }
 
     private function request(
@@ -188,7 +115,8 @@ class ExtractReadingFromGemini implements ExtractsDeviceReading
     ): Response {
         $url = 'https://generativelanguage.googleapis.com/v1beta/models/'.$model.':generateContent';
 
-        return Http::timeout(45)
+        return Http::connectTimeout(GeminiVision::CONNECT_TIMEOUT_SECONDS)
+            ->timeout(GeminiVision::TIMEOUT_SECONDS)
             ->acceptJson()
             ->asJson()
             ->withHeaders(['x-goog-api-key' => $apiKey])

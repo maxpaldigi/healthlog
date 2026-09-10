@@ -15,6 +15,7 @@ defineProps<{
     loginUrl?: string | null;
     sendsRealMail?: boolean;
     mailFailed?: boolean;
+    demoLogin?: boolean;
 }>();
 </script>
 
@@ -53,7 +54,9 @@ defineProps<{
             <TextLink :href="login()">Try again</TextLink>
             or
             <TextLink :href="register()">create an account</TextLink>
-            first. The demo login is demo@healthlog.test.
+            first.<template v-if="demoLogin">
+                On this computer you can also open the demo from Log in.
+            </template>
         </p>
     </div>
 </template>

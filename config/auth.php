@@ -114,4 +114,11 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    | Instant demo sign-in. Never true in production, even if the env flag
+    | is set. Default on only for APP_ENV=local.
+    */
+    'demo_instant_login' => env('APP_ENV') !== 'production'
+        && (bool) env('DEMO_INSTANT_LOGIN', env('APP_ENV') === 'local'),
+
 ];

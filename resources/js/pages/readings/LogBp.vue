@@ -26,6 +26,7 @@ import {
     queueReading,
     readingSummary,
 } from '@/lib/offlineQueue';
+import { clientUuid as newClientUuid } from '@/lib/clientId';
 import { systemDateTimeLocal } from '@/lib/systemClock';
 import { speak } from '@/composables/useReadAloud';
 import { home } from '@/routes';
@@ -79,7 +80,7 @@ const showMore = ref(
 );
 
 const formBind = props.reading ? update.form(props.reading.id) : store.form();
-const clientUuid = crypto.randomUUID();
+const clientUuid = newClientUuid();
 
 const maybeQueueOffline = (): boolean => {
     if (props.reading !== null || navigator.onLine) {

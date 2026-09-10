@@ -13,6 +13,7 @@ use App\Models\BpReading;
 use App\Models\GlucoseReading;
 use App\Models\Profile;
 use App\Models\User;
+use App\Support\DemoAccount;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
@@ -23,14 +24,22 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        $user = User::factory()->create([
-            'name' => 'Priya Sharma',
-            'email' => 'demo@healthlog.test',
-            'password' => null,
-        ]);
+        if (app()->isProduction()) {
+            return;
+        }
 
-        $profile = Profile::factory()->for($user)->create([
-            'name' => 'Priya Sharma',
+        $user = User::query()->firstOrCreate(
+            ['email' => DemoAccount::EMAIL],
+            [
+                'name' => 'Priya Sharma',
+                'password' => null,
+                'email_verified_at' => now(),
+            ],
+        );
+
+        $profile = $user->defaultProfile ?? Profile::query()->create([
+            'user_id' => $user->id,
+            'name' => $user->name,
             'date_of_birth' => '1974-03-12',
             'timezone' => 'Asia/Kolkata',
             'glucose_unit' => GlucoseUnit::MgDl,
@@ -38,7 +47,9 @@ class DatabaseSeeder extends Seeder
             'is_default' => true,
         ]);
 
-        $this->seedReadings($profile);
+        if (BpReading::query()->where('profile_id', $profile->id)->doesntExist()) {
+            $this->seedReadings($profile);
+        }
     }
 
     private function seedReadings(Profile $profile): void

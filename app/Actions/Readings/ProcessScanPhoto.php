@@ -10,11 +10,14 @@ use App\Support\ValidateExtractedReading;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
 use Inertia\Inertia;
+use Throwable;
 
 class ProcessScanPhoto
 {
     public function handle(UploadedFile $photo, Profile $profile, ?string $expect = null): RedirectResponse
     {
+        set_time_limit(45);
+
         $path = $photo->store('scans', 'local');
 
         if ($path === false) {
@@ -29,6 +32,10 @@ class ProcessScanPhoto
             }
         } catch (CouldNotReadPhotoException $exception) {
             return $this->failed($expect, $exception->getMessage());
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return $this->failed($expect);
         }
 
         $decision = ValidateExtractedReading::handle($extracted, $profile);

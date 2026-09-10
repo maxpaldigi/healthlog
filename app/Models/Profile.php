@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\GlucoseUnit;
 use App\Enums\ProfileRole;
+use App\Enums\TargetSetBy;
 use App\Enums\WeightUnit;
 use App\Support\SystemTimezone;
 use Carbon\CarbonInterface;
@@ -25,6 +26,7 @@ use Illuminate\Support\Carbon;
  * @property WeightUnit $weight_unit
  * @property string|null $glucose_low_mg_dl
  * @property string|null $glucose_high_mg_dl
+ * @property TargetSetBy $glucose_target_set_by
  * @property bool $reminders_enabled
  * @property string $reminder_morning
  * @property string $reminder_afternoon
@@ -44,6 +46,7 @@ use Illuminate\Support\Carbon;
     'weight_unit',
     'glucose_low_mg_dl',
     'glucose_high_mg_dl',
+    'glucose_target_set_by',
     'reminders_enabled',
     'reminder_morning',
     'reminder_afternoon',
@@ -92,6 +95,7 @@ class Profile extends Model
             'weight_unit' => WeightUnit::class,
             'glucose_low_mg_dl' => 'decimal:2',
             'glucose_high_mg_dl' => 'decimal:2',
+            'glucose_target_set_by' => TargetSetBy::class,
             'reminders_enabled' => 'boolean',
             'is_default' => 'boolean',
             'alert_inactivity_days' => 'integer',
@@ -153,6 +157,14 @@ class Profile extends Model
     public function shareLinks(): HasMany
     {
         return $this->hasMany(ShareLink::class);
+    }
+
+    /**
+     * @return HasMany<ClinicianTarget, $this>
+     */
+    public function clinicianTargets(): HasMany
+    {
+        return $this->hasMany(ClinicianTarget::class);
     }
 
     /**

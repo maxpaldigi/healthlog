@@ -15,11 +15,13 @@ use App\Http\Controllers\FoodLookupController;
 use App\Http\Controllers\GlucoseReadingController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\MedicationLookupController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PrivacyController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportExportController;
+use App\Http\Controllers\ReportFhirController;
 use App\Http\Controllers\ReportPdfController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\ShareLinkController;
@@ -72,6 +74,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('report', ReportController::class)->name('report');
     Route::get('report.csv', ReportExportController::class)->name('report.export');
     Route::get('report.pdf', ReportPdfController::class)->name('report.pdf');
+    Route::get('report.fhir.json', ReportFhirController::class)->name('report.fhir');
     Route::post('share-links', [ShareLinkController::class, 'store'])->name('share-links.store');
 
     Route::get('clinic', [ClinicController::class, 'index'])->name('clinic.index');
@@ -82,6 +85,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('medications', [ClinicController::class, 'storeMedication'])->name('medications.store');
     Route::put('medications/{medication}', [ClinicController::class, 'updateMedication'])->name('medications.update');
     Route::delete('medications/{medication}', [ClinicController::class, 'destroyMedication'])->name('medications.destroy');
+    Route::get('medications/search', [MedicationLookupController::class, 'search'])
+        ->middleware('throttle:rxnorm-lookup')
+        ->name('medications.search');
     Route::get('scan', [ScanController::class, 'create'])->name('scan');
     Route::post('scan', [ScanController::class, 'store'])
         ->middleware('throttle:scan-photo')
@@ -119,6 +125,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::get('shared/{token}', [ShareLinkController::class, 'show'])->name('shared.show');
 Route::get('shared/{token}/pdf', [ShareLinkController::class, 'pdf'])->name('shared.pdf');
+Route::get('shared/{token}/fhir', [ShareLinkController::class, 'fhir'])->name('shared.fhir');
+Route::post('shared/{token}/respond', [ShareLinkController::class, 'respond'])
+    ->middleware('throttle:share-respond')
+    ->name('shared.respond');
 Route::get('invites/{member}', AcceptCaregiverInviteController::class)
     ->middleware('signed')
     ->name('invites.accept');

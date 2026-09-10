@@ -221,3 +221,66 @@ it('downloads a pdf from a share link and rejects an expired one', function () {
 
     $this->travelBack();
 });
+
+it('downloads fhir json of the same date range', function () {
+    $this->travelTo(Carbon::parse('2026-09-08 12:00:00', 'Asia/Kolkata'));
+
+    $user = userWithProfile(['email' => 'parent@example.com'], [
+        'timezone' => 'Asia/Kolkata',
+        'name' => 'Ramesh',
+        'date_of_birth' => '1950-01-15',
+    ]);
+    BpReading::factory()->for($user->defaultProfile)->create([
+        'systolic' => 120,
+        'diastolic' => 80,
+        'measured_at' => Carbon::parse('2026-09-08 08:00:00', 'Asia/Kolkata')->utc(),
+    ]);
+
+    $response = $this->actingAs($user)
+        ->get(route('report.fhir', ['from' => '2026-09-08', 'to' => '2026-09-08']))
+        ->assertOk()
+        ->assertHeader('content-type', 'application/fhir+json; charset=UTF-8');
+
+    $json = $response->getContent();
+
+    expect($json)
+        ->toContain('"resourceType":"Bundle"')
+        ->toContain('8480-6')
+        ->toContain('8462-4')
+        ->not->toContain('parent@example.com')
+        ->not->toContain('1950-01-15');
+
+    $this->travelBack();
+});
+
+it('downloads fhir json from a share link and rejects an expired one', function () {
+    $this->travelTo(Carbon::parse('2026-09-08 12:00:00', 'UTC'));
+
+    $user = userWithProfile([], ['timezone' => 'UTC', 'name' => 'Meena']);
+    $profile = $user->defaultProfile;
+    BpReading::factory()->for($profile)->create([
+        'systolic' => 118,
+        'diastolic' => 76,
+        'measured_at' => Carbon::parse('2026-09-08 08:00:00', 'UTC'),
+    ]);
+
+    $link = $profile->shareLinks()->create([
+        'token' => 'sharetokenforthevisitfhir1sharetokenforthevisitfhir',
+        'starts_on' => '2026-09-08',
+        'ends_on' => '2026-09-08',
+        'expires_at' => now()->addDay(),
+    ]);
+
+    $json = $this->get(route('shared.fhir', $link->token))
+        ->assertOk()
+        ->assertHeader('content-type', 'application/fhir+json; charset=UTF-8')
+        ->getContent();
+
+    expect($json)->toContain('8480-6');
+
+    $link->update(['expires_at' => now()->subMinute()]);
+
+    $this->get(route('shared.fhir', $link->token))->assertStatus(410);
+
+    $this->travelBack();
+});

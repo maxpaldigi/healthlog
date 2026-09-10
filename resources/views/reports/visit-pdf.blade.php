@@ -30,6 +30,17 @@
         <p class="muted">{{ $report['range']['label'] }}</p>
     </div>
 
+    @if (! empty($report['clinic_note']))
+        <h2>Note from clinic</h2>
+        <p>Looked at this log on {{ $report['clinic_note']['acknowledged_on'] }}.</p>
+        @if (! empty($report['clinic_note']['instruction']))
+            <p>{{ $report['clinic_note']['instruction'] }}</p>
+        @endif
+        @if (! empty($report['clinic_note']['targets_line']))
+            <p>{{ $report['clinic_note']['targets_line'] }}</p>
+        @endif
+    @endif
+
     <p>{{ $report['insights']['summary_text'] }}</p>
 
     @if (! empty($report['insights']['stats_lines']))

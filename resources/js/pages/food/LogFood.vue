@@ -11,6 +11,8 @@ import {
     barcodeScanAvailable,
     detectBarcodeFromVideo,
 } from '@/lib/barcode';
+import { compressPhoto } from '@/lib/compressPhoto';
+import { postPhoto } from '@/lib/postPhoto';
 import { systemDateTimeLocal } from '@/lib/systemClock';
 import {
     barcode as barcodeRoute,
@@ -253,16 +255,36 @@ const confirmDelete = (event: Event): void => {
 };
 
 const photoLabel = ref('Photograph the food');
+const preparingPhoto = ref(false);
 
-const onFoodPhoto = (event: Event): void => {
+const onFoodPhoto = async (event: Event): Promise<void> => {
     const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
 
-    if (!input.files?.length) {
+    if (!file) {
         return;
     }
 
+    preparingPhoto.value = true;
     photoLabel.value = 'Looking at the photo…';
-    input.form?.requestSubmit();
+
+    try {
+        const compressed = await compressPhoto(file);
+
+        postPhoto(photoRoute.url(), compressed, {}, {
+            onFinish: () => {
+                preparingPhoto.value = false;
+            },
+            onFail: () => {
+                preparingPhoto.value = false;
+                photoLabel.value = 'Photograph the food';
+            },
+        });
+    } catch {
+        preparingPhoto.value = false;
+        photoLabel.value = 'Photograph the food';
+    }
 };
 
 onMounted(() => {
@@ -311,42 +333,38 @@ onMounted(() => {
             {{ identified.note }}
         </p>
 
-        <Form
-            v-if="!selected"
-            v-bind="photoRoute.form()"
-            v-slot="{ processing }"
-            class="grid gap-2"
-        >
+        <div v-if="!selected" class="grid gap-2">
             <label
                 class="bg-nav text-nav-foreground flex min-h-40 cursor-pointer flex-col items-center justify-center gap-3 rounded-[1.75rem] px-5 text-center shadow-[0_16px_40px_-18px_rgb(28_25_23_/_0.45)]"
-                :class="processing ? 'opacity-70' : ''"
+                :class="preparingPhoto ? 'opacity-70' : ''"
             >
                 <span
                     class="bg-cta text-cta-foreground flex size-16 items-center justify-center rounded-full"
                     aria-hidden="true"
                 >
-                    <Spinner v-if="processing" class="size-7" />
+                    <Spinner v-if="preparingPhoto" class="size-7" />
                     <Camera v-else class="size-8" />
                 </span>
                 <span class="text-xl font-bold">
-                    {{ processing ? 'Looking at the photo…' : photoLabel }}
+                    {{
+                        preparingPhoto
+                            ? 'Looking at the photo…'
+                            : photoLabel
+                    }}
                 </span>
                 <span class="text-nav-muted text-base leading-relaxed">
-                    An apple, a plate, or a packet
+                    An apple, a plate, or a packet. On a computer, choose a photo.
                 </span>
                 <input
                     type="file"
-                    name="photo"
-                    accept="image/jpeg,image/png,image/heic,image/heif"
-                    capture="environment"
+                    accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
                     class="sr-only"
-                    :disabled="processing"
                     :aria-label="photoLabel"
                     data-test="food-photo"
                     @change="onFoodPhoto"
                 />
             </label>
-        </Form>
+        </div>
 
         <div v-if="!selected" class="grid gap-2">
             <Label for="food-search" class="text-base">Or type the name</Label>

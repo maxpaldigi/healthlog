@@ -18,6 +18,7 @@ class StoreMedicationRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:80'],
+            'rxcui' => ['nullable', 'string', 'max:20', 'regex:/^\d+$/'],
             'dose' => ['nullable', 'string', 'max:80'],
             'schedule' => ['nullable', 'string', 'max:80'],
             'is_active' => ['sometimes', 'boolean'],

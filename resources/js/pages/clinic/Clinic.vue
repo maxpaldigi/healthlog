@@ -1,14 +1,22 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
 import { FlaskConical, Pill, Scale, Trash2 } from '@lucide/vue';
+import { onUnmounted, ref, watch } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { destroy as destroyHba1c, store as storeHba1c } from '@/routes/hba1c';
-import { destroy as destroyMedication, store as storeMedication, update as updateMedication } from '@/routes/medications';
+import {
+    destroy as destroyMedication,
+    search as searchMedications,
+    store as storeMedication,
+    update as updateMedication,
+} from '@/routes/medications';
 import { systemDate, systemDateTimeLocal } from '@/lib/systemClock';
 import { destroy as destroyWeight, store as storeWeight } from '@/routes/weights';
+
+type MedicationSuggestion = { rxcui: string; name: string };
 
 defineProps<{
     unit: string;
@@ -18,11 +26,73 @@ defineProps<{
     medications: {
         id: number;
         name: string;
+        rxcui: string | null;
         dose: string | null;
         schedule: string | null;
         is_active: boolean;
     }[];
 }>();
+
+const medName = ref('');
+const medRxcui = ref('');
+const medResults = ref<MedicationSuggestion[]>([]);
+const searchingMeds = ref(false);
+let lastPickedName = '';
+let medSearchTimer: number | null = null;
+
+const runMedSearch = async (): Promise<void> => {
+    const term = medName.value.trim();
+
+    if (term.length < 2) {
+        medResults.value = [];
+
+        return;
+    }
+
+    searchingMeds.value = true;
+
+    try {
+        const response = await fetch(searchMedications.url({ query: { q: term } }), {
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin',
+        });
+        const data = (await response.json()) as { results: MedicationSuggestion[] };
+        medResults.value = data.results ?? [];
+    } finally {
+        searchingMeds.value = false;
+    }
+};
+
+watch(medName, (value) => {
+    if (value === lastPickedName) {
+        medResults.value = [];
+
+        return;
+    }
+
+    medRxcui.value = '';
+
+    if (medSearchTimer !== null) {
+        window.clearTimeout(medSearchTimer);
+    }
+
+    medSearchTimer = window.setTimeout(() => {
+        void runMedSearch();
+    }, 400);
+});
+
+const chooseMedication = (item: MedicationSuggestion): void => {
+    lastPickedName = item.name;
+    medName.value = item.name;
+    medRxcui.value = item.rxcui;
+    medResults.value = [];
+};
+
+onUnmounted(() => {
+    if (medSearchTimer !== null) {
+        window.clearTimeout(medSearchTimer);
+    }
+});
 </script>
 
 <template>
@@ -175,8 +245,40 @@ defineProps<{
             >
                 <div class="grid gap-2">
                     <Label for="med_name">Name</Label>
-                    <Input id="med_name" name="name" required class="h-14 text-lg" />
+                    <Input
+                        id="med_name"
+                        v-model="medName"
+                        name="name"
+                        required
+                        autocomplete="off"
+                        class="h-14 text-lg"
+                        data-test="medication-name"
+                    />
+                    <input type="hidden" name="rxcui" :value="medRxcui" />
+                    <p class="text-muted-foreground text-base">
+                        Pick a match from RxNorm, or save the name you typed.
+                    </p>
+                    <p v-if="searchingMeds" class="text-muted-foreground text-base">
+                        Searching…
+                    </p>
+                    <ul
+                        v-if="medResults.length > 0"
+                        class="grid gap-2"
+                        aria-label="Medication name matches"
+                    >
+                        <li v-for="item in medResults" :key="item.rxcui">
+                            <button
+                                type="button"
+                                class="hl-card flex min-h-14 w-full cursor-pointer items-center px-4 py-3 text-left text-lg font-semibold"
+                                :data-test="`medication-result-${item.rxcui}`"
+                                @click="chooseMedication(item)"
+                            >
+                                {{ item.name }}
+                            </button>
+                        </li>
+                    </ul>
                     <InputError :message="errors.name" />
+                    <InputError :message="errors.rxcui" />
                 </div>
                 <div class="grid gap-2">
                     <Label for="med_dose">Dose (optional)</Label>
@@ -211,6 +313,7 @@ defineProps<{
                     <div class="flex gap-2">
                         <Form v-bind="updateMedication.form(item.id)">
                             <input type="hidden" name="name" :value="item.name" />
+                            <input type="hidden" name="rxcui" :value="item.rxcui ?? ''" />
                             <input type="hidden" name="dose" :value="item.dose ?? ''" />
                             <input type="hidden" name="schedule" :value="item.schedule ?? ''" />
                             <input

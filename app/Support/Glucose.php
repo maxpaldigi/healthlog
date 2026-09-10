@@ -40,6 +40,14 @@ final class Glucose
         return bccomp($mgDl, '20', 2) >= 0 && bccomp($mgDl, '700', 2) <= 0;
     }
 
+    /**
+     * True when $left is strictly below $right.
+     */
+    public static function isLowerThan(string $left, string $right): bool
+    {
+        return bccomp($left, $right, 2) < 0;
+    }
+
     private static function scale(string $value): string
     {
         $adjustment = bccomp($value, '0', 8) >= 0 ? '0.005' : '-0.005';

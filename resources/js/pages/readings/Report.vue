@@ -50,6 +50,9 @@ const csvUrl = (): string =>
 const pdfUrl = (): string =>
     `/report.pdf?from=${encodeURIComponent(props.filters.from)}&to=${encodeURIComponent(props.filters.to)}`;
 
+const fhirUrl = (): string =>
+    `/report.fhir.json?from=${encodeURIComponent(props.filters.from)}&to=${encodeURIComponent(props.filters.to)}`;
+
 const copied = ref(false);
 let copiedTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -123,6 +126,14 @@ const copyShare = async (): Promise<void> => {
                 <Download class="size-5" aria-hidden="true" />
                 Download CSV
             </a>
+            <a
+                :href="fhirUrl()"
+                class="inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl border text-lg font-medium"
+                data-test="download-fhir"
+            >
+                <Download class="size-5" aria-hidden="true" />
+                Download FHIR JSON
+            </a>
             <Form
                 v-bind="storeShare.form()"
                 class="grid gap-2"
@@ -131,6 +142,7 @@ const copyShare = async (): Promise<void> => {
                 <input type="hidden" name="from" :value="filters.from" />
                 <input type="hidden" name="to" :value="filters.to" />
                 <input type="hidden" name="days" value="7" />
+                <input type="hidden" name="scope" value="read" />
                 <Button
                     type="submit"
                     variant="outline"
@@ -139,7 +151,27 @@ const copyShare = async (): Promise<void> => {
                     data-test="create-share"
                 >
                     <Share2 class="size-5" aria-hidden="true" />
-                    Make a 7-day share link
+                    Make a 7-day view link
+                </Button>
+            </Form>
+            <Form
+                v-bind="storeShare.form()"
+                class="grid gap-2"
+                v-slot="{ processing }"
+            >
+                <input type="hidden" name="from" :value="filters.from" />
+                <input type="hidden" name="to" :value="filters.to" />
+                <input type="hidden" name="days" value="7" />
+                <input type="hidden" name="scope" value="respond" />
+                <Button
+                    type="submit"
+                    variant="outline"
+                    class="h-14 w-full text-lg"
+                    :disabled="processing"
+                    data-test="create-respond-share"
+                >
+                    <Share2 class="size-5" aria-hidden="true" />
+                    Make a 7-day clinic reply link
                 </Button>
             </Form>
             <div v-if="share_url" class="grid gap-2">

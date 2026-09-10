@@ -1,5 +1,7 @@
 <?php
 
+use App\Actions\Auth\EnterDemoAccount;
+use App\Enums\ConsentType;
 use App\Enums\GlucoseUnit;
 use App\Enums\WeightUnit;
 use App\Models\LoginToken;
@@ -13,8 +15,86 @@ use Illuminate\Support\Facades\URL;
 use Inertia\Testing\AssertableInertia as Assert;
 
 it('renders the login and register screens', function () {
-    $this->get(route('login'))->assertOk();
+    $this->get(route('login'))
+        ->assertOk()
+        ->assertHeader('X-Frame-Options', 'DENY')
+        ->assertHeader('X-Content-Type-Options', 'nosniff')
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('auth/Login')
+            ->where('demoEmail', null));
     $this->get(route('register'))->assertOk();
+});
+
+it('never shows or accepts demo login in production', function () {
+    $this->app['env'] = 'production';
+    config(['auth.demo_instant_login' => true]);
+    Notification::fake();
+
+    $this->get(route('login'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('auth/Login')
+            ->where('demoEmail', null));
+
+    $this->post(route('login.store'), [
+        'email' => 'demo@healthlog.test',
+    ])->assertRedirect(route('login.check-email'));
+
+    $this->assertGuest();
+    Notification::assertNothingSent();
+});
+
+it('opens the app for the demo email without sending mail or recording consent', function () {
+    config(['auth.demo_instant_login' => true]);
+    Notification::fake();
+
+    $this->post(route('login.store'), [
+        'email' => 'demo@healthlog.test',
+    ])->assertRedirect(route('home'));
+
+    $this->assertAuthenticated();
+    expect(auth()->user()?->email)->toBe('demo@healthlog.test')
+        ->and(auth()->user()?->hasGrantedConsent(ConsentType::HealthData))->toBeFalse();
+
+    $this->get(route('home'))->assertRedirect(route('consent.health-data'));
+
+    Notification::assertNothingSent();
+});
+
+it('does not open the app for the demo email when instant login is off', function () {
+    config(['auth.demo_instant_login' => false]);
+    Notification::fake();
+
+    $this->post(route('login.store'), [
+        'email' => 'demo@healthlog.test',
+    ])->assertRedirect(route('login.check-email'));
+
+    $this->assertGuest();
+    Notification::assertNothingSent();
+});
+
+it('does not record health-data consent when entering the demo account', function () {
+    config(['auth.demo_instant_login' => true]);
+
+    $user = app(EnterDemoAccount::class)->handle();
+
+    expect($user->email)->toBe('demo@healthlog.test')
+        ->and($user->hasGrantedConsent(ConsentType::HealthData))->toBeFalse()
+        ->and($user->defaultProfile)->not->toBeNull();
+});
+
+it('does not instant-login a real account email', function () {
+    config(['auth.demo_instant_login' => true]);
+    Notification::fake();
+
+    $user = User::factory()->create(['email' => 'parent@example.com']);
+
+    $this->post(route('login.store'), [
+        'email' => $user->email,
+    ])->assertRedirect(route('login.check-email'));
+
+    $this->assertGuest();
+    Notification::assertSentTo($user, MagicLinkNotification::class);
 });
 
 it('registers a passwordless user with a default profile and sends a magic link', function () {
@@ -129,6 +209,7 @@ it('shows an open-login-link button after a known email is submitted', function 
         ->assertInertia(fn (Assert $page) => $page
             ->component('auth/CheckEmail')
             ->where('sendsRealMail', false)
+            ->where('demoLogin', false)
             ->where('loginUrl', fn (?string $url): bool => is_string($url) && str_contains($url, '/login/magic/')));
 });
 
