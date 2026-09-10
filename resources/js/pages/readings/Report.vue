@@ -10,6 +10,7 @@ import { index as clinic } from '@/routes/clinic';
 import { store as storeShare } from '@/routes/share-links';
 
 type Filters = {
+    type: string;
     from: string;
     to: string;
     from_label: string;
@@ -45,6 +46,9 @@ const printPage = (): void => {
 
 const csvUrl = (): string =>
     `/report.csv?from=${encodeURIComponent(props.filters.from)}&to=${encodeURIComponent(props.filters.to)}`;
+
+const pdfUrl = (): string =>
+    `/report.pdf?from=${encodeURIComponent(props.filters.from)}&to=${encodeURIComponent(props.filters.to)}`;
 
 const copied = ref(false);
 let copiedTimer: ReturnType<typeof setTimeout> | undefined;
@@ -93,14 +97,23 @@ const copyShare = async (): Promise<void> => {
         <VisitReportView :report="(report as any)" />
 
         <div class="no-print grid gap-2">
+            <a
+                :href="pdfUrl()"
+                class="bg-primary text-primary-foreground inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl text-lg font-medium"
+                data-test="download-pdf"
+            >
+                <Download class="size-5" aria-hidden="true" />
+                Download PDF
+            </a>
             <Button
                 type="button"
+                variant="outline"
                 class="h-14 w-full text-lg"
                 data-test="print-report"
                 @click="printPage"
             >
                 <Printer class="size-5" aria-hidden="true" />
-                Print or save as PDF
+                Print
             </Button>
             <a
                 :href="csvUrl()"

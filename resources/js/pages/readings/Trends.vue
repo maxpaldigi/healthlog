@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { Activity, Droplet, Printer } from '@lucide/vue';
+import { Activity, Droplet, Printer, Utensils } from '@lucide/vue';
 import { computed, onMounted, ref } from 'vue';
 import HistoryDateRange from '@/components/HistoryDateRange.vue';
 import TrendBarChart from '@/components/TrendBarChart.vue';
@@ -10,6 +10,7 @@ import { create as logSugar } from '@/routes/glucose';
 import { report, trends } from '@/routes';
 
 type Filters = {
+    type: string;
     from: string;
     to: string;
     from_label: string;
@@ -46,8 +47,27 @@ type Insights = {
     summary_text: string;
 };
 
+type FoodResponse = {
+    after_meals: {
+        label: string;
+        sample_count: number;
+        average: string;
+        unit: string;
+        line: string;
+    }[];
+    morning_blood_pressure: {
+        label: string;
+        sample_count: number;
+        average: string;
+        line: string;
+    }[];
+    intro: string;
+    hint: string;
+};
+
 const props = defineProps<{
     insights: Insights;
+    foodResponse: FoodResponse;
     filters: Filters;
     presets: { key: string; label: string; from: string; to: string }[];
     month: {
@@ -331,6 +351,56 @@ onMounted(() => {
                 </details>
             </section>
         </template>
+
+        <section class="hl-card px-4 py-4" data-test="food-response">
+            <h2 class="flex items-center gap-2 text-lg font-semibold">
+                <Utensils class="size-5" aria-hidden="true" />
+                After food
+            </h2>
+            <p class="text-muted-foreground mt-1 text-base leading-relaxed">
+                {{ foodResponse.intro }}
+            </p>
+            <p class="text-muted-foreground mt-1 text-sm leading-relaxed">
+                From all your logs, not just this date range.
+            </p>
+            <ul
+                v-if="foodResponse.after_meals.length > 0"
+                class="mt-3 space-y-2 text-base leading-relaxed"
+                data-test="food-response-meals"
+            >
+                <li
+                    v-for="row in foodResponse.after_meals"
+                    :key="row.line"
+                    class="tabular-nums"
+                >
+                    {{ row.line }}
+                </li>
+            </ul>
+            <p
+                v-else
+                class="text-muted-foreground mt-3 text-base leading-relaxed"
+                data-test="food-response-hint"
+            >
+                {{ foodResponse.hint }}
+            </p>
+            <template v-if="foodResponse.morning_blood_pressure.length > 0">
+                <h3 class="mt-4 text-base font-semibold">
+                    Morning blood pressure
+                </h3>
+                <ul
+                    class="mt-2 space-y-2 text-base leading-relaxed"
+                    data-test="food-response-morning-bp"
+                >
+                    <li
+                        v-for="row in foodResponse.morning_blood_pressure"
+                        :key="row.line"
+                        class="tabular-nums"
+                    >
+                        {{ row.line }}
+                    </li>
+                </ul>
+            </template>
+        </section>
 
         <p class="text-muted-foreground text-sm leading-relaxed">
             These charts are a record of what you logged. They are not a

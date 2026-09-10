@@ -20,6 +20,7 @@ use App\Http\Controllers\PrivacyController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportExportController;
+use App\Http\Controllers\ReportPdfController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\ShareLinkController;
 use App\Http\Controllers\TermsController;
@@ -70,6 +71,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('trends', TrendsController::class)->name('trends');
     Route::get('report', ReportController::class)->name('report');
     Route::get('report.csv', ReportExportController::class)->name('report.export');
+    Route::get('report.pdf', ReportPdfController::class)->name('report.pdf');
     Route::post('share-links', [ShareLinkController::class, 'store'])->name('share-links.store');
 
     Route::get('clinic', [ClinicController::class, 'index'])->name('clinic.index');
@@ -116,6 +118,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::get('shared/{token}', [ShareLinkController::class, 'show'])->name('shared.show');
+Route::get('shared/{token}/pdf', [ShareLinkController::class, 'pdf'])->name('shared.pdf');
 Route::get('invites/{member}', AcceptCaregiverInviteController::class)
     ->middleware('signed')
     ->name('invites.accept');

@@ -2,6 +2,7 @@
 
 namespace App\Actions\Readings;
 
+use App\Actions\Food\LinkFoodToGlucose;
 use App\Actions\Readings\Concerns\NormalizesReadingNote;
 use App\Enums\GlucoseContext;
 use App\Models\GlucoseReading;
@@ -11,6 +12,8 @@ use Illuminate\Support\Carbon;
 class UpdateGlucoseReading
 {
     use NormalizesReadingNote;
+
+    public function __construct(private LinkFoodToGlucose $linkFoodToGlucose) {}
 
     /**
      * @param  array{value: mixed, context: string, measured_at: string, note?: string|null}  $data
@@ -25,6 +28,8 @@ class UpdateGlucoseReading
             'measured_at' => Carbon::parse($data['measured_at'], $profile->clockTimezone())->utc(),
             'note' => self::note($data['note'] ?? null),
         ]);
+
+        $this->linkFoodToGlucose->handle($profile);
 
         return $reading->refresh();
     }

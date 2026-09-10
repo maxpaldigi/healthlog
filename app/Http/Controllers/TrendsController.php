@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\CurrentProfile;
+use App\Support\FoodResponse;
 use App\Support\HistoryDateRange;
 use App\Support\ReadingInsights;
 use Illuminate\Http\Request;
@@ -31,6 +32,7 @@ class TrendsController extends Controller
 
         return Inertia::render('readings/Trends', [
             'insights' => ReadingInsights::make($profile, $bp, $glucose),
+            'foodResponse' => FoodResponse::make($profile),
             'filters' => $range['filters'],
             'presets' => $range['presets'],
             'month' => $range['month'],

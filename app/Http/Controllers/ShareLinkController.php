@@ -9,11 +9,13 @@ use App\Models\User;
 use App\Support\CurrentProfile;
 use App\Support\HistoryDateRange;
 use App\Support\VisitReport;
+use App\Support\VisitReportPdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class ShareLinkController extends Controller
 {
@@ -65,31 +67,55 @@ class ShareLinkController extends Controller
             $link->ends_on->toDateString(),
         );
 
-        $fromLocal = Carbon::parse($link->starts_on->toDateString(), $profile->timezone)->startOfDay();
-        $toLocal = Carbon::parse($link->ends_on->toDateString(), $profile->timezone)->startOfDay();
-
-        $bp = $profile->bpReadings()->forPeriod($range['from'], $range['to'])->orderBy('measured_at')->get();
-        $glucose = $profile->glucoseReadings()->forPeriod($range['from'], $range['to'])->orderBy('measured_at')->get();
-        $weights = $profile->weights()->forPeriod($range['from'], $range['to'])->orderByDesc('measured_at')->get();
-        $hba1c = $profile->hba1cResults()->forPeriod($range['from'], $range['to'])->orderByDesc('tested_at')->get();
-        $medications = $profile->medications()->orderByDesc('is_active')->orderBy('name')->get();
-
         return Inertia::render('shared/Report', [
-            'report' => VisitReport::make(
-                $profile,
-                $fromLocal,
-                $toLocal,
-                $bp,
-                $glucose,
-                $weights,
-                $hba1c,
-                $medications,
-            ),
+            'report' => $this->reportFor($link),
             'filters' => $range['filters'],
             'presets' => $range['presets'],
             'month' => $range['month'],
             'shared' => true,
+            'share_token' => $link->token,
             'expires_at' => $link->expires_at->timezone($profile->timezone)->format('j M Y, g:ia'),
         ]);
+    }
+
+    public function pdf(string $token): HttpResponse
+    {
+        $link = ShareLink::query()->where('token', $token)->firstOrFail();
+
+        abort_if($link->isExpired(), 410, 'This share link has expired.');
+
+        $report = $this->reportFor($link);
+
+        return response(VisitReportPdf::render($report), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.VisitReportPdf::filename($report).'"',
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function reportFor(ShareLink $link): array
+    {
+        $profile = $link->profile;
+        $range = HistoryDateRange::make(
+            $profile,
+            $link->starts_on->toDateString(),
+            $link->ends_on->toDateString(),
+        );
+
+        $fromLocal = Carbon::parse($link->starts_on->toDateString(), $profile->timezone)->startOfDay();
+        $toLocal = Carbon::parse($link->ends_on->toDateString(), $profile->timezone)->startOfDay();
+
+        return VisitReport::make(
+            $profile,
+            $fromLocal,
+            $toLocal,
+            $profile->bpReadings()->forPeriod($range['from'], $range['to'])->orderBy('measured_at')->get(),
+            $profile->glucoseReadings()->forPeriod($range['from'], $range['to'])->orderBy('measured_at')->get(),
+            $profile->weights()->forPeriod($range['from'], $range['to'])->orderByDesc('measured_at')->get(),
+            $profile->hba1cResults()->forPeriod($range['from'], $range['to'])->orderByDesc('tested_at')->get(),
+            $profile->medications()->orderByDesc('is_active')->orderBy('name')->get(),
+        );
     }
 }

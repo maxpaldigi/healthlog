@@ -6,6 +6,7 @@ use App\Enums\BpDaySlot;
 use App\Enums\ProfileRole;
 use App\Support\CareAlerts;
 use App\Support\CurrentProfile;
+use App\Support\FoodResponse;
 use App\Support\ReadingReminders;
 use App\Support\ReadingSpeech;
 use App\Support\ReadingTimeline;
@@ -74,6 +75,7 @@ class HomeController extends Controller
             'todaySlots' => $todaySlots,
             'summarySpeech' => ReadingSpeech::home(count($filledSlots), 3, $todaySlots),
             'recent' => $recent,
+            'foodResponse' => FoodResponse::make($profile),
             'reminders' => [
                 'enabled' => $profile->reminders_enabled,
                 'timezone' => $profile->timezone,

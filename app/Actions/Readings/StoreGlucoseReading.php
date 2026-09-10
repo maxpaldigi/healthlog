@@ -2,6 +2,7 @@
 
 namespace App\Actions\Readings;
 
+use App\Actions\Food\LinkFoodToGlucose;
 use App\Actions\Readings\Concerns\NormalizesReadingNote;
 use App\Enums\GlucoseContext;
 use App\Enums\ReadingSource;
@@ -14,6 +15,8 @@ use Illuminate\Support\Carbon;
 class StoreGlucoseReading
 {
     use NormalizesReadingNote;
+
+    public function __construct(private LinkFoodToGlucose $linkFoodToGlucose) {}
 
     /**
      * @param  array{value: mixed, context: string, measured_at: string, note?: string|null, source?: string, client_uuid?: string|null}  $data
@@ -31,21 +34,27 @@ class StoreGlucoseReading
         $clientUuid = $data['client_uuid'] ?? null;
 
         if (! is_string($clientUuid) || $clientUuid === '') {
-            return $profile->glucoseReadings()->create($attributes);
+            $reading = $profile->glucoseReadings()->create($attributes);
+            $this->linkFoodToGlucose->handle($profile);
+
+            return $reading;
         }
 
         $attributes['client_uuid'] = $clientUuid;
 
         try {
-            return $profile->glucoseReadings()->updateOrCreate(
+            $reading = $profile->glucoseReadings()->updateOrCreate(
                 ['client_uuid' => $clientUuid],
                 $attributes,
             );
         } catch (UniqueConstraintViolationException) {
             $reading = $profile->glucoseReadings()->where('client_uuid', $clientUuid)->firstOrFail();
             $reading->update($attributes);
-
-            return $reading->refresh();
+            $reading = $reading->refresh();
         }
+
+        $this->linkFoodToGlucose->handle($profile);
+
+        return $reading;
     }
 }

@@ -25,9 +25,27 @@ import TodayGauge from '@/components/TodayGauge.vue';
 import { create as logBp } from '@/routes/bp';
 import { create as logFood } from '@/routes/food';
 import { create as logSugar } from '@/routes/glucose';
-import { home, scan } from '@/routes';
+import { home, scan, trends } from '@/routes';
 import { edit as editHealth } from '@/routes/health-profiles';
 import { current as switchProfile } from '@/routes/profiles';
+
+type FoodResponse = {
+    after_meals: {
+        label: string;
+        sample_count: number;
+        average: string;
+        unit: string;
+        line: string;
+    }[];
+    morning_blood_pressure: {
+        label: string;
+        sample_count: number;
+        average: string;
+        line: string;
+    }[];
+    intro: string;
+    hint: string;
+};
 
 type TimelineItem = {
     id: number;
@@ -49,6 +67,7 @@ const props = defineProps<{
     todayTarget: number;
     todaySlots: { key: string; label: string; filled: boolean }[];
     recent: TimelineItem[];
+    foodResponse?: FoodResponse;
     role?: string | null;
     access?: {
         is_owner: boolean;
@@ -83,6 +102,20 @@ const access = computed(
 );
 
 const alerts = computed(() => props.alerts ?? []);
+
+const foodResponse = computed(
+    () =>
+        props.foodResponse ?? {
+            after_meals: [],
+            morning_blood_pressure: [],
+            intro: 'Your numbers after these foods. Check with your clinic.',
+            hint: '',
+        },
+);
+
+const afterMealsPreview = computed(() =>
+    foodResponse.value.after_meals.slice(0, 3),
+);
 
 const firstName = computed(
     () => props.profile.name.trim().split(/\s+/)[0] || 'there',
@@ -385,6 +418,32 @@ const slotIcons: Record<string, Component> = {
                 <Volume2 class="size-5" aria-hidden="true" />
                 Read today's summary
             </button>
+        </section>
+
+        <section
+            v-if="afterMealsPreview.length > 0"
+            class="hl-card px-4 py-4"
+            data-test="food-response"
+        >
+            <h2 class="text-xl font-bold">After food</h2>
+            <p class="text-muted-foreground mt-1 text-base leading-relaxed">
+                {{ foodResponse.intro }}
+            </p>
+            <ul class="mt-3 space-y-2 text-base leading-relaxed">
+                <li
+                    v-for="row in afterMealsPreview"
+                    :key="row.line"
+                    class="tabular-nums"
+                >
+                    {{ row.line }}
+                </li>
+            </ul>
+            <Link
+                :href="trends()"
+                class="text-primary mt-3 inline-flex min-h-14 items-center text-base font-medium underline-offset-4 hover:underline"
+            >
+                See all on Trends
+            </Link>
         </section>
 
         <section v-if="recent.length > 0" class="space-y-3">

@@ -10,7 +10,10 @@ use Illuminate\Support\Carbon;
 
 class StoreFoodLog
 {
-    public function __construct(private OpenFoodFacts $openFoodFacts) {}
+    public function __construct(
+        private OpenFoodFacts $openFoodFacts,
+        private LinkFoodToGlucose $linkFoodToGlucose,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data
@@ -49,6 +52,9 @@ class StoreFoodLog
             $attributes['label'] = $label !== '' ? mb_substr($label, 0, 180) : 'Food';
         }
 
-        return $profile->foodLogs()->create($attributes);
+        $log = $profile->foodLogs()->create($attributes);
+        $this->linkFoodToGlucose->handle($profile);
+
+        return $log->refresh();
     }
 }

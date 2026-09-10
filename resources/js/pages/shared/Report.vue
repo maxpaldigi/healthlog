@@ -1,18 +1,22 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import { Printer } from '@lucide/vue';
+import { Download, Printer } from '@lucide/vue';
 import VisitReportView from '@/components/VisitReportView.vue';
 import { Button } from '@/components/ui/button';
 
-defineProps<{
+const props = defineProps<{
     report: Record<string, unknown>;
     shared: boolean;
+    share_token?: string;
     expires_at?: string | null;
 }>();
 
 const printPage = (): void => {
     window.print();
 };
+
+const pdfUrl = (): string =>
+    `/shared/${encodeURIComponent(props.share_token ?? '')}/pdf`;
 </script>
 
 <template>
@@ -25,13 +29,23 @@ const printPage = (): void => {
                     Read-only shared report
                     <span v-if="expires_at"> · expires {{ expires_at }}</span>
                 </p>
+                <a
+                    v-if="share_token"
+                    :href="pdfUrl()"
+                    class="bg-primary text-primary-foreground inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl text-lg font-medium"
+                    data-test="download-pdf"
+                >
+                    <Download class="size-5" aria-hidden="true" />
+                    Download PDF
+                </a>
                 <Button
                     type="button"
+                    variant="outline"
                     class="h-14 w-full text-lg"
                     @click="printPage"
                 >
                     <Printer class="size-5" aria-hidden="true" />
-                    Print or save as PDF
+                    Print
                 </Button>
             </div>
             <VisitReportView :report="(report as any)" />

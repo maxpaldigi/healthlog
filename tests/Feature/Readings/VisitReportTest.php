@@ -125,3 +125,99 @@ it('downloads a csv of the same date range', function () {
 
     $this->travelBack();
 });
+
+it('includes range numbers on the visit report', function () {
+    $this->travelTo(Carbon::parse('2026-01-02 12:00:00', 'UTC'));
+
+    $user = userWithProfile([], [
+        'timezone' => 'UTC',
+        'name' => 'Ramesh',
+        'glucose_low_mg_dl' => '70.00',
+        'glucose_high_mg_dl' => '180.00',
+    ]);
+    $profile = $user->defaultProfile;
+
+    BpReading::factory()->for($profile)->create([
+        'systolic' => 120,
+        'diastolic' => 80,
+        'measured_at' => Carbon::parse('2026-01-01 08:00:00', 'UTC'),
+    ]);
+    BpReading::factory()->for($profile)->create([
+        'systolic' => 128,
+        'diastolic' => 82,
+        'measured_at' => Carbon::parse('2026-01-01 20:00:00', 'UTC'),
+    ]);
+    GlucoseReading::factory()->for($profile)->create([
+        'value_mg_dl' => '100.00',
+        'context' => GlucoseContext::Fasting,
+        'measured_at' => Carbon::parse('2026-01-01 07:00:00', 'UTC'),
+    ]);
+    GlucoseReading::factory()->for($profile)->create([
+        'value_mg_dl' => '140.00',
+        'context' => GlucoseContext::PostMeal2h,
+        'measured_at' => Carbon::parse('2026-01-01 14:00:00', 'UTC'),
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('report', ['from' => '2026-01-01', 'to' => '2026-01-01']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('report.insights.stats.bp_variability.sd_systolic', '5.7')
+            ->where('report.insights.stats.morning_minus_evening.difference', -8)
+            ->where('report.insights.stats.time_in_range.percent', 100)
+            ->where('report.insights.stats.post_meal_minus_fasting.line', 'Mean 2-hour after-meal sugar was 40 mg/dL above mean fasting.')
+            ->has('report.insights.stats_lines', 4));
+
+    $this->travelBack();
+});
+
+it('downloads a pdf of the visit report', function () {
+    $this->travelTo(Carbon::parse('2026-09-08 12:00:00', 'Asia/Kolkata'));
+
+    $user = userWithProfile([], ['timezone' => 'Asia/Kolkata', 'name' => 'Ramesh']);
+    BpReading::factory()->for($user->defaultProfile)->create([
+        'systolic' => 120,
+        'diastolic' => 80,
+        'measured_at' => Carbon::parse('2026-09-08 08:00:00', 'Asia/Kolkata')->utc(),
+    ]);
+
+    $pdf = $this->actingAs($user)
+        ->get(route('report.pdf', ['from' => '2026-09-08', 'to' => '2026-09-08']))
+        ->assertOk()
+        ->assertHeader('content-type', 'application/pdf');
+
+    expect($pdf->getContent())->toStartWith('%PDF');
+
+    $this->travelBack();
+});
+
+it('downloads a pdf from a share link and rejects an expired one', function () {
+    $this->travelTo(Carbon::parse('2026-09-08 12:00:00', 'UTC'));
+
+    $user = userWithProfile([], ['timezone' => 'UTC', 'name' => 'Meena']);
+    $profile = $user->defaultProfile;
+    BpReading::factory()->for($profile)->create([
+        'systolic' => 118,
+        'diastolic' => 76,
+        'measured_at' => Carbon::parse('2026-09-08 08:00:00', 'UTC'),
+    ]);
+
+    $link = $profile->shareLinks()->create([
+        'token' => 'sharetokenforthevisitpdf1sharetokenforthevisitpdf',
+        'starts_on' => '2026-09-08',
+        'ends_on' => '2026-09-08',
+        'expires_at' => now()->addDay(),
+    ]);
+
+    $pdf = $this->get(route('shared.pdf', $link->token))
+        ->assertOk()
+        ->assertHeader('content-type', 'application/pdf');
+
+    expect($pdf->getContent())->toStartWith('%PDF');
+
+    $link->update(['expires_at' => now()->subMinute()]);
+
+    $this->get(route('shared.pdf', $link->token))->assertStatus(410);
+
+    $this->travelBack();
+});

@@ -24,6 +24,7 @@ type Report = {
             days_with_three_bp: number;
         };
         summary_text: string;
+        stats_lines?: string[];
         bp_slots: {
             key: string;
             label: string;
@@ -141,6 +142,19 @@ const slotTitles = {
         </section>
 
         <p>{{ report.insights.summary_text }}</p>
+
+        <section v-if="(report.insights.stats_lines ?? []).length > 0">
+            <h2 class="mb-2 text-lg font-semibold">Numbers from this range</h2>
+            <ul class="grid gap-2">
+                <li
+                    v-for="line in report.insights.stats_lines"
+                    :key="line"
+                    class="text-base leading-relaxed"
+                >
+                    {{ line }}
+                </li>
+            </ul>
+        </section>
 
         <section>
             <h2 class="mb-2 text-lg font-semibold">Blood pressure by time of day</h2>
