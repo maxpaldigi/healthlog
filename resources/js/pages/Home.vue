@@ -22,6 +22,7 @@ import TodayGauge from '@/components/TodayGauge.vue';
 import { create as logBp } from '@/routes/bp';
 import { create as logSugar } from '@/routes/glucose';
 import { home, scan } from '@/routes';
+import { edit as editHealth } from '@/routes/health-profiles';
 import { current as switchProfile } from '@/routes/profiles';
 
 type TimelineItem = {
@@ -44,6 +45,12 @@ const props = defineProps<{
     todayTarget: number;
     todaySlots: { key: string; label: string; filled: boolean }[];
     recent: TimelineItem[];
+    role?: string | null;
+    access?: {
+        is_owner: boolean;
+        caregivers: { id: number; email: string; label: string }[];
+    };
+    alerts?: { key: string; message: string }[];
     reminders?: {
         enabled: boolean;
         timezone: string;
@@ -61,6 +68,16 @@ const reminders = computed(
             due: [],
         },
 );
+
+const access = computed(
+    () =>
+        props.access ?? {
+            is_owner: true,
+            caregivers: [],
+        },
+);
+
+const alerts = computed(() => props.alerts ?? []);
 
 const firstName = computed(
     () => props.profile.name.trim().split(/\s+/)[0] || 'there',
@@ -141,6 +158,52 @@ const slotIcons: Record<string, Component> = {
                 </Button>
             </Form>
         </div>
+
+        <section
+            v-if="access.is_owner && access.caregivers.length > 0"
+            class="border-primary/30 bg-card rounded-[1.5rem] border px-4 py-4"
+            data-test="caregiver-access"
+        >
+            <p class="text-lg font-semibold">People who can see this log</p>
+            <p class="text-muted-foreground mt-1 text-base leading-relaxed">
+                {{
+                    access.caregivers.map((person) => person.email).join(', ')
+                }}. You can remove access in Health profiles.
+            </p>
+            <Link
+                :href="editHealth()"
+                class="text-primary mt-2 inline-flex min-h-11 items-center text-base underline-offset-4 hover:underline"
+            >
+                Manage access
+            </Link>
+        </section>
+
+        <section
+            v-else-if="!access.is_owner"
+            class="border-primary/30 bg-card rounded-[1.5rem] border px-4 py-4"
+            data-test="helping-banner"
+        >
+            <p class="text-lg font-semibold">
+                You are helping {{ profile.name }}
+            </p>
+            <p class="text-muted-foreground mt-1 text-base leading-relaxed">
+                They can see that you have access, and they can remove it at any
+                time.
+            </p>
+        </section>
+
+        <section
+            v-if="alerts.length > 0"
+            class="rounded-[1.5rem] border border-amber-500 bg-amber-50 px-4 py-4 text-amber-950"
+            data-test="care-alerts"
+        >
+            <p class="text-lg font-semibold">Attention</p>
+            <ul class="mt-2 space-y-1 text-base leading-relaxed">
+                <li v-for="alert in alerts" :key="alert.key">
+                    {{ alert.message }}
+                </li>
+            </ul>
+        </section>
 
         <section
             v-if="reminders.enabled && reminders.due.length > 0"

@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use App\Enums\ConsentType;
+use App\Enums\ProfileRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -72,6 +74,52 @@ class User extends Authenticatable implements PasskeyUser
     public function profiles(): HasMany
     {
         return $this->hasMany(Profile::class);
+    }
+
+    /**
+     * @return HasMany<ProfileMember, $this>
+     */
+    public function memberships(): HasMany
+    {
+        return $this->hasMany(ProfileMember::class);
+    }
+
+    /**
+     * Profiles this user may open after accepting an invite, plus profiles they own.
+     *
+     * @return BelongsToMany<Profile, $this>
+     */
+    public function accessibleProfiles(): BelongsToMany
+    {
+        return $this->belongsToMany(Profile::class, 'profile_members')
+            ->withPivot(['role', 'invited_at', 'accepted_at'])
+            ->withTimestamps()
+            ->whereNotNull('profile_members.accepted_at');
+    }
+
+    public function canAccessProfile(Profile|int $profile): bool
+    {
+        $id = $profile instanceof Profile ? $profile->id : $profile;
+
+        return $this->memberships()
+            ->accepted()
+            ->where('profile_id', $id)
+            ->exists();
+    }
+
+    public function isOwnerOf(Profile $profile): bool
+    {
+        return $this->roleOn($profile) === ProfileRole::Owner;
+    }
+
+    public function roleOn(Profile $profile): ?ProfileRole
+    {
+        $role = $this->memberships()
+            ->accepted()
+            ->where('profile_id', $profile->id)
+            ->value('role');
+
+        return is_string($role) ? ProfileRole::tryFrom($role) : ($role instanceof ProfileRole ? $role : null);
     }
 
     /**

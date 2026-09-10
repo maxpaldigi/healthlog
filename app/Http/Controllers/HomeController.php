@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\BpDaySlot;
+use App\Enums\ProfileRole;
+use App\Support\CareAlerts;
 use App\Support\CurrentProfile;
 use App\Support\ReadingReminders;
 use App\Support\ReadingTimeline;
@@ -12,9 +14,10 @@ use Inertia\Response;
 
 class HomeController extends Controller
 {
-    public function __invoke(Request $request, CurrentProfile $currentProfile, ReadingReminders $reminders): Response
+    public function __invoke(Request $request, CurrentProfile $currentProfile, ReadingReminders $reminders, CareAlerts $alerts): Response
     {
-        $profile = $currentProfile->handle($request->user(), $request);
+        $user = $request->user();
+        $profile = $currentProfile->handle($user, $request);
         $todayStart = $profile->nowInTimezone()->startOfDay()->utc();
         $todayEnd = $profile->nowInTimezone()->endOfDay()->utc();
 
@@ -38,7 +41,13 @@ class HomeController extends Controller
         $recentGlucose = $profile->glucoseReadings()->orderByDesc('measured_at')->limit(3)->get();
         $recent = array_slice(ReadingTimeline::merge($profile, $recentBp, $recentGlucose), 0, 3);
 
-        $profiles = $request->user()->profiles()->orderBy('name')->get(['id', 'name']);
+        $profiles = $user->accessibleProfiles()->orderBy('name')->get();
+        $role = $user->roleOn($profile);
+        $caregivers = $profile->members()
+            ->accepted()
+            ->where('role', ProfileRole::Caregiver)
+            ->orderBy('email')
+            ->get(['id', 'email', 'role']);
 
         return Inertia::render('Home', [
             'profile' => [
@@ -46,6 +55,16 @@ class HomeController extends Controller
                 'name' => $profile->name,
             ],
             'profiles' => $profiles,
+            'role' => $role?->value,
+            'access' => [
+                'is_owner' => $role === ProfileRole::Owner,
+                'caregivers' => $caregivers->map(fn ($member): array => [
+                    'id' => $member->id,
+                    'email' => $member->email,
+                    'label' => $member->email,
+                ])->values()->all(),
+            ],
+            'alerts' => $alerts->active($profile),
             'todayCount' => count($filledSlots),
             'todayTarget' => 3,
             'todaySlots' => $todaySlots,

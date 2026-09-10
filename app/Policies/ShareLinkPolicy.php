@@ -10,7 +10,7 @@ class ShareLinkPolicy
 {
     public function create(User $user, Profile $profile): bool
     {
-        return $user->is($profile->user);
+        return $user->isOwnerOf($profile);
     }
 
     public function view(?User $user, ShareLink $shareLink): bool

@@ -9,7 +9,7 @@ class WeightPolicy
 {
     public function update(User $user, Weight $weight): bool
     {
-        return $user->profiles()->whereKey($weight->profile_id)->exists();
+        return $user->canAccessProfile($weight->profile_id);
     }
 
     public function delete(User $user, Weight $weight): bool

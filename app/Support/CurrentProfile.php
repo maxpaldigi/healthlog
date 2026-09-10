@@ -12,7 +12,7 @@ class CurrentProfile
 {
     public function handle(User $user, Request $request): Profile
     {
-        $profiles = $user->profiles()->get();
+        $profiles = $user->accessibleProfiles()->orderBy('name')->get();
 
         $sessionId = $request->session()->get('current_profile_id');
 
@@ -24,7 +24,8 @@ class CurrentProfile
             }
         }
 
-        $profile = $profiles->firstWhere('is_default', true) ?? $profiles->first();
+        $owned = $profiles->firstWhere('user_id', $user->id);
+        $profile = $profiles->firstWhere('is_default', true) ?? $owned ?? $profiles->first();
 
         if ($profile === null) {
             $profile = $user->profiles()->create([

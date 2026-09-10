@@ -21,6 +21,10 @@ const title = computed(() => {
         return 'Today';
     }
 
+    if (page.component === 'People') {
+        return 'People';
+    }
+
     if (page.component === 'readings/History') {
         return 'History';
     }

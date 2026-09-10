@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\MagicLinkController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BpReadingController;
+use App\Http\Controllers\Care\AcceptCaregiverInviteController;
 use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\CompleteOnboardingController;
 use App\Http\Controllers\Consent\HealthDataConsentController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\CurrentProfileController;
 use App\Http\Controllers\GlucoseReadingController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PrivacyController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\ReportController;
@@ -62,6 +64,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('onboarding', CompleteOnboardingController::class)->name('onboarding.complete');
 
     Route::get('history', HistoryController::class)->name('history');
+    Route::get('people', PeopleController::class)->name('people');
     Route::get('trends', TrendsController::class)->name('trends');
     Route::get('report', ReportController::class)->name('report');
     Route::get('report.csv', ReportExportController::class)->name('report.export');
@@ -98,5 +101,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::get('shared/{token}', [ShareLinkController::class, 'show'])->name('shared.show');
+Route::get('invites/{member}', AcceptCaregiverInviteController::class)
+    ->middleware('signed')
+    ->name('invites.accept');
 
 require __DIR__.'/settings.php';

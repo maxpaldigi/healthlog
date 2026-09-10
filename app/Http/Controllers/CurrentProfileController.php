@@ -14,6 +14,10 @@ class CurrentProfileController extends Controller
 
         $request->session()->put('current_profile_id', $profile->id);
 
+        if ($request->input('then') === 'home') {
+            return to_route('home');
+        }
+
         return back();
     }
 }

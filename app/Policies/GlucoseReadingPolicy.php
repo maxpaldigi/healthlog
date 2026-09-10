@@ -9,7 +9,7 @@ class GlucoseReadingPolicy
 {
     public function view(User $user, GlucoseReading $glucoseReading): bool
     {
-        return $user->profiles()->whereKey($glucoseReading->profile_id)->exists();
+        return $user->canAccessProfile($glucoseReading->profile_id);
     }
 
     public function update(User $user, GlucoseReading $glucoseReading): bool

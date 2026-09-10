@@ -12,6 +12,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property int $profile_id
+ * @property int|null $user_id
  * @property string $endpoint
  * @property string $p256dh
  * @property string $auth
@@ -22,6 +23,7 @@ use Illuminate\Support\Carbon;
  */
 #[Fillable([
     'profile_id',
+    'user_id',
     'endpoint',
     'p256dh',
     'auth',

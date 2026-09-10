@@ -47,6 +47,11 @@ import { data as aboutData } from '@/routes/about';
                 the app can upload them.
             </p>
             <p>
+                If you invite a helper, we email them a link. They can view and
+                add readings for that log. The person whose readings these are
+                can always see who has access and can remove it.
+            </p>
+            <p>
                 You can log out on a shared phone. You can ask us to delete your
                 account from Account settings.
             </p>

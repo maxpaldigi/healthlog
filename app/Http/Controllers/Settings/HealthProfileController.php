@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Enums\GlucoseUnit;
+use App\Enums\ProfileRole;
 use App\Enums\WeightUnit;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\StoreHealthProfileRequest;
@@ -21,10 +22,25 @@ class HealthProfileController extends Controller
     public function edit(Request $request, CurrentProfile $currentProfile): Response
     {
         $current = $currentProfile->handle($request->user(), $request);
-        $profiles = $request->user()->profiles()->orderBy('name')->get();
+        $user = $request->user();
+        $profiles = $user->accessibleProfiles()->orderBy('name')->get();
+        $ownedCount = $user->profiles()->count();
+        $role = $user->roleOn($current);
+        $members = $current->members()->orderBy('role')->orderBy('email')->get();
 
         return Inertia::render('settings/HealthProfiles', [
             'current' => ProfileSettings::payload($current),
+            'role' => $role?->value,
+            'canManage' => $role === ProfileRole::Owner,
+            'canInvite' => $user->can('invite', $current),
+            'members' => $members->map(fn ($member): array => [
+                'id' => $member->id,
+                'email' => $member->email,
+                'role' => $member->role->value,
+                'role_label' => $member->role->label(),
+                'accepted' => $member->isAccepted(),
+                'can_revoke' => $user->can('revokeMember', [$current, $member]),
+            ])->values()->all(),
             'profiles' => $profiles->map(fn (Profile $profile): array => [
                 'id' => $profile->id,
                 'name' => $profile->name,
@@ -34,7 +50,7 @@ class HealthProfileController extends Controller
             'timezones' => Timezones::common($current->timezone),
             'glucoseUnits' => ProfileSettings::glucoseUnits(),
             'weightUnits' => ProfileSettings::weightUnits(),
-            'canDelete' => $profiles->count() > 1,
+            'canDelete' => $role === ProfileRole::Owner && $ownedCount > 1,
         ]);
     }
 

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Care\InviteCaregiverController;
+use App\Http\Controllers\Care\RevokeCaregiverController;
 use App\Http\Controllers\Settings\HealthProfileController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
@@ -16,6 +18,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('settings/health', [HealthProfileController::class, 'store'])->name('health-profiles.store');
     Route::patch('settings/health/{profile}', [HealthProfileController::class, 'update'])->name('health-profiles.update');
     Route::delete('settings/health/{profile}', [HealthProfileController::class, 'destroy'])->name('health-profiles.destroy');
+    Route::post('settings/health/{profile}/invites', [InviteCaregiverController::class, 'store'])->name('health-profiles.invites.store');
+    Route::delete('settings/health/{profile}/members/{member}', [RevokeCaregiverController::class, 'destroy'])->name('health-profiles.members.destroy');
 
     Route::get('settings/security', [SecurityController::class, 'edit'])->name('security.edit');
 

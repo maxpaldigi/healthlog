@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
-import { CircleHelp, LogOut, Settings } from '@lucide/vue';
+import { CircleHelp, LogOut, Settings, Users } from '@lucide/vue';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -8,7 +8,7 @@ import {
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import UserInfo from '@/components/UserInfo.vue';
-import { home, logout } from '@/routes';
+import { home, logout, people } from '@/routes';
 import { edit as editHealth } from '@/routes/health-profiles';
 import { edit } from '@/routes/profile';
 import type { User } from '@/types';
@@ -39,7 +39,17 @@ defineProps<Props>();
             </Link>
         </DropdownMenuItem>
         <DropdownMenuItem :as-child="true">
-            <Link class="block w-full cursor-pointer" :href="editHealth()" prefetch>
+            <Link class="block w-full cursor-pointer" :href="people()" prefetch>
+                <Users class="mr-2 h-4 w-4" />
+                People
+            </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem :as-child="true">
+            <Link
+                class="block w-full cursor-pointer"
+                :href="editHealth()"
+                prefetch
+            >
                 <Settings class="mr-2 h-4 w-4" />
                 Health profiles
             </Link>

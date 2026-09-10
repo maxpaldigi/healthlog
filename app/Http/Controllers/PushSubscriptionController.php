@@ -23,7 +23,7 @@ class PushSubscriptionController extends Controller
         /** @var array{endpoint: string, keys: array{p256dh: string, auth: string}} $data */
         $data = $request->validated();
 
-        $storePushSubscription->handle($profile, $data, $request->userAgent());
+        $storePushSubscription->handle($profile, $data, $request->user(), $request->userAgent());
 
         return response()->noContent();
     }

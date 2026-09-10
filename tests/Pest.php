@@ -1,6 +1,8 @@
 <?php
 
+use App\Enums\ProfileRole;
 use App\Models\Profile;
+use App\Models\ProfileMember;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -64,6 +66,26 @@ function userWithProfile(array $user = [], array $profile = [], bool $consent = 
     }
 
     return $user->fresh(['profiles', 'defaultProfile']);
+}
+
+/**
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
+function caregiverFor(Profile $profile, array $user = []): User
+{
+    $caregiver = userWithProfile($user);
+
+    ProfileMember::query()->create([
+        'profile_id' => $profile->id,
+        'user_id' => $caregiver->id,
+        'email' => mb_strtolower($caregiver->email),
+        'role' => ProfileRole::Caregiver,
+        'invited_at' => now(),
+        'accepted_at' => now(),
+    ]);
+
+    return $caregiver->fresh(['profiles', 'defaultProfile']);
 }
 
 /**

@@ -34,6 +34,7 @@ class EnsureHealthDataConsent
             'login.magic',
             'register',
             'register.store',
+            'invites.accept',
         ])) {
             return $next($request);
         }

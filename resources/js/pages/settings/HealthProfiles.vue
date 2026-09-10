@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { current as switchProfile } from '@/routes/profiles';
 import { edit } from '@/routes/health-profiles';
+import { store as invite } from '@/routes/health-profiles/invites';
+import { destroy as revokeMember } from '@/routes/health-profiles/members';
 
 defineOptions({
     layout: {
@@ -38,11 +40,27 @@ defineProps<{
         reminder_afternoon: string;
         reminder_evening: string;
     };
-    profiles: { id: number; name: string; is_default: boolean; is_current: boolean }[];
+    profiles: {
+        id: number;
+        name: string;
+        is_default: boolean;
+        is_current: boolean;
+    }[];
     timezones: Record<string, string>;
     glucoseUnits: { value: string; label: string }[];
     weightUnits: { value: string; label: string }[];
     canDelete: boolean;
+    role?: string | null;
+    canManage?: boolean;
+    canInvite?: boolean;
+    members?: {
+        id: number;
+        email: string;
+        role: string;
+        role_label: string;
+        accepted: boolean;
+        can_revoke: boolean;
+    }[];
 }>();
 </script>
 
@@ -72,7 +90,85 @@ defineProps<{
             </Form>
         </div>
 
+        <section class="space-y-3" data-test="access-list">
+            <h2 class="text-lg font-semibold">Who can see this log</h2>
+            <p class="text-muted-foreground text-base leading-relaxed">
+                Helpers can add readings. Only the owner can change settings or
+                remove access. Silent monitoring is not allowed.
+            </p>
+            <ul class="space-y-2">
+                <li
+                    v-for="member in members ?? []"
+                    :key="member.id"
+                    class="flex min-h-12 flex-wrap items-center justify-between gap-2 rounded-2xl border px-3 py-2"
+                >
+                    <span class="text-base">
+                        {{ member.email }}
+                        <span class="text-muted-foreground">
+                            · {{ member.role_label }}
+                            <template v-if="!member.accepted">
+                                · invite sent</template
+                            >
+                        </span>
+                    </span>
+                    <Form
+                        v-if="member.can_revoke"
+                        v-bind="
+                            revokeMember.form({
+                                profile: current.id,
+                                member: member.id,
+                            })
+                        "
+                    >
+                        <Button
+                            type="submit"
+                            variant="outline"
+                            class="h-11 text-base"
+                            data-test="revoke-member"
+                        >
+                            Remove access
+                        </Button>
+                    </Form>
+                </li>
+            </ul>
+            <Form
+                v-if="canInvite"
+                v-bind="invite.form(current.id)"
+                class="grid gap-2"
+                v-slot="{ errors, processing }"
+            >
+                <Label for="invite_email">Invite by email</Label>
+                <Input
+                    id="invite_email"
+                    name="email"
+                    type="email"
+                    required
+                    class="h-12 text-lg"
+                    placeholder="family@example.com"
+                    data-test="invite-email"
+                />
+                <InputError :message="errors.email" />
+                <Button
+                    type="submit"
+                    variant="outline"
+                    class="h-12"
+                    :disabled="processing"
+                    data-test="send-invite"
+                >
+                    Send invite
+                </Button>
+            </Form>
+        </section>
+
+        <p
+            v-if="!canManage"
+            class="text-muted-foreground text-base leading-relaxed"
+        >
+            Only the owner can change targets, reminders, or delete this log.
+        </p>
+
         <Form
+            v-if="canManage"
             v-bind="HealthProfileController.update.form(current.id)"
             class="space-y-6"
             v-slot="{ errors, processing }"
@@ -243,18 +339,24 @@ defineProps<{
         </Form>
 
         <Form
+            v-if="canManage"
             v-bind="HealthProfileController.store.form()"
             class="space-y-4 border-t pt-6"
             v-slot="{ errors, processing }"
         >
             <h2 class="text-lg font-semibold">Add another person</h2>
             <p class="text-muted-foreground text-base">
-                Use this for a parent or anyone you help. Their readings stay
-                on their own log.
+                Use this for a parent or anyone you help. Their readings stay on
+                their own log.
             </p>
             <div class="grid gap-2">
                 <Label for="new_name">Name</Label>
-                <Input id="new_name" name="name" required class="h-12 text-lg" />
+                <Input
+                    id="new_name"
+                    name="name"
+                    required
+                    class="h-12 text-lg"
+                />
                 <InputError :message="errors.name" />
             </div>
             <div class="grid gap-2">
@@ -274,9 +376,22 @@ defineProps<{
                     </option>
                 </select>
             </div>
-            <input type="hidden" name="glucose_unit" :value="current.glucose_unit" />
-            <input type="hidden" name="weight_unit" :value="current.weight_unit" />
-            <Button type="submit" variant="outline" class="h-12" :disabled="processing">
+            <input
+                type="hidden"
+                name="glucose_unit"
+                :value="current.glucose_unit"
+            />
+            <input
+                type="hidden"
+                name="weight_unit"
+                :value="current.weight_unit"
+            />
+            <Button
+                type="submit"
+                variant="outline"
+                class="h-12"
+                :disabled="processing"
+            >
                 Add health profile
             </Button>
         </Form>
@@ -288,7 +403,11 @@ defineProps<{
             v-slot="{ processing }"
             @submit="
                 (event) => {
-                    if (!window.confirm('Remove this health profile and its readings?')) {
+                    if (
+                        !window.confirm(
+                            'Remove this health profile and its readings?',
+                        )
+                    ) {
                         event.preventDefault();
                     }
                 }

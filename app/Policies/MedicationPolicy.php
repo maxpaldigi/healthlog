@@ -9,7 +9,7 @@ class MedicationPolicy
 {
     public function update(User $user, Medication $medication): bool
     {
-        return $user->profiles()->whereKey($medication->profile_id)->exists();
+        return $user->canAccessProfile($medication->profile_id);
     }
 
     public function delete(User $user, Medication $medication): bool

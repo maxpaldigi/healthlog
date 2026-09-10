@@ -17,6 +17,7 @@ void createInertiaApp({
             case name === 'Welcome' || name.startsWith('legal/'):
                 return null;
             case name === 'Home' ||
+                name === 'People' ||
                 name.startsWith('readings/') ||
                 name.startsWith('clinic/'):
                 return LoggingLayout;

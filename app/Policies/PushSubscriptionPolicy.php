@@ -10,11 +10,15 @@ class PushSubscriptionPolicy
 {
     public function create(User $user, Profile $profile): bool
     {
-        return $user->is($profile->user);
+        return $user->canAccessProfile($profile);
     }
 
     public function delete(User $user, PushSubscription $pushSubscription): bool
     {
-        return $user->profiles()->whereKey($pushSubscription->profile_id)->exists();
+        if ($pushSubscription->user_id !== null) {
+            return $user->id === (int) $pushSubscription->user_id;
+        }
+
+        return $user->canAccessProfile($pushSubscription->profile_id);
     }
 }

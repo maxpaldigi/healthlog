@@ -9,7 +9,7 @@ class Hba1cResultPolicy
 {
     public function update(User $user, Hba1cResult $hba1cResult): bool
     {
-        return $user->profiles()->whereKey($hba1cResult->profile_id)->exists();
+        return $user->canAccessProfile($hba1cResult->profile_id);
     }
 
     public function delete(User $user, Hba1cResult $hba1cResult): bool

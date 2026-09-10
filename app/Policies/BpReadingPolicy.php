@@ -9,7 +9,7 @@ class BpReadingPolicy
 {
     public function view(User $user, BpReading $bpReading): bool
     {
-        return $user->profiles()->whereKey($bpReading->profile_id)->exists();
+        return $user->canAccessProfile($bpReading->profile_id);
     }
 
     public function update(User $user, BpReading $bpReading): bool

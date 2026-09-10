@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\GlucoseUnit;
+use App\Enums\ProfileRole;
 use App\Enums\WeightUnit;
 use App\Support\SystemTimezone;
 use Carbon\CarbonInterface;
@@ -29,6 +30,8 @@ use Illuminate\Support\Carbon;
  * @property string $reminder_afternoon
  * @property string $reminder_evening
  * @property bool $is_default
+ * @property int $alert_inactivity_days
+ * @property int $alert_streak
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -46,11 +49,37 @@ use Illuminate\Support\Carbon;
     'reminder_afternoon',
     'reminder_evening',
     'is_default',
+    'alert_inactivity_days',
+    'alert_streak',
 ])]
 class Profile extends Model
 {
     /** @use HasFactory<ProfileFactory> */
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::created(function (Profile $profile): void {
+            $user = $profile->user;
+
+            if ($user === null) {
+                return;
+            }
+
+            ProfileMember::query()->firstOrCreate(
+                [
+                    'profile_id' => $profile->id,
+                    'user_id' => $user->id,
+                ],
+                [
+                    'email' => mb_strtolower($user->email),
+                    'role' => ProfileRole::Owner,
+                    'invited_at' => now(),
+                    'accepted_at' => now(),
+                ],
+            );
+        });
+    }
 
     /**
      * @return array<string, string>
@@ -65,6 +94,8 @@ class Profile extends Model
             'glucose_high_mg_dl' => 'decimal:2',
             'reminders_enabled' => 'boolean',
             'is_default' => 'boolean',
+            'alert_inactivity_days' => 'integer',
+            'alert_streak' => 'integer',
         ];
     }
 
@@ -122,6 +153,14 @@ class Profile extends Model
     public function shareLinks(): HasMany
     {
         return $this->hasMany(ShareLink::class);
+    }
+
+    /**
+     * @return HasMany<ProfileMember, $this>
+     */
+    public function members(): HasMany
+    {
+        return $this->hasMany(ProfileMember::class);
     }
 
     /**
