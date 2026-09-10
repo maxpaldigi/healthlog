@@ -2,8 +2,8 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { Activity, Camera, Droplet } from '@lucide/vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
-import { login } from '@/routes';
-import { register } from '@/routes';
+import { login, privacy, register } from '@/routes';
+import { data as aboutData } from '@/routes/about';
 </script>
 
 <template>
@@ -82,8 +82,13 @@ import { register } from '@/routes';
                     Log in
                 </Link>
                 <p class="text-muted-foreground text-center text-sm leading-relaxed">
-                    This is a record-keeping tool, not a medical device, and does
-                    not provide medical advice.
+                    This is a record-keeping tool, not a medical device. It does
+                    not provide medical advice and does not replace a doctor.
+                </p>
+                <p class="text-muted-foreground text-center text-sm">
+                    <Link :href="privacy()" class="underline">Privacy</Link>
+                    ·
+                    <Link :href="aboutData()" class="underline">Data sources</Link>
                 </p>
             </div>
         </div>

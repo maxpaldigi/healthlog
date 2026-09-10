@@ -334,7 +334,7 @@ onMounted(() => {
 
         <p class="text-muted-foreground text-sm leading-relaxed">
             These charts are a record of what you logged. They are not a
-            diagnosis or medical advice.
+            medical device and do not replace a doctor.
         </p>
     </div>
 </template>

@@ -49,7 +49,7 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function userWithProfile(array $user = [], array $profile = []): User
+function userWithProfile(array $user = [], array $profile = [], bool $consent = true): User
 {
     $user = User::factory()->create($user);
 
@@ -59,5 +59,27 @@ function userWithProfile(array $user = [], array $profile = []): User
         ...$profile,
     ]);
 
+    if (! $consent) {
+        $user->consents()->delete();
+    }
+
     return $user->fresh(['profiles', 'defaultProfile']);
+}
+
+/**
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
+function registerAttributes(array $overrides = []): array
+{
+    return [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'timezone' => 'Asia/Kolkata',
+        'glucose_unit' => 'mg_dl',
+        'weight_unit' => 'kg',
+        'accept_terms' => '1',
+        'health_data_consent' => '1',
+        ...$overrides,
+    ];
 }

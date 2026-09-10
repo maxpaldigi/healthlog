@@ -6,6 +6,7 @@ import AuthLayout from '@/layouts/AuthLayout.vue';
 import LoggingLayout from '@/layouts/LoggingLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
+import { initializeOfflineQueue } from '@/lib/offlineQueue';
 
 const appName = import.meta.env.VITE_APP_NAME || 'HealthyMe';
 
@@ -13,7 +14,7 @@ void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     layout: (name) => {
         switch (true) {
-            case name === 'Welcome':
+            case name === 'Welcome' || name.startsWith('legal/'):
                 return null;
             case name === 'Home' ||
                 name.startsWith('readings/') ||
@@ -21,7 +22,7 @@ void createInertiaApp({
                 return LoggingLayout;
             case name.startsWith('shared/'):
                 return null;
-            case name.startsWith('auth/'):
+            case name.startsWith('auth/') || name.startsWith('consent/'):
                 return AuthLayout;
             case name.startsWith('settings/'):
                 return [AppLayout, SettingsLayout];
@@ -50,3 +51,13 @@ if (systemTimezone !== '') {
 
 // This will listen for flash toast data from the server...
 initializeFlashToast();
+
+initializeOfflineQueue();
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {
+            // Install still works without a worker.
+        });
+    });
+}

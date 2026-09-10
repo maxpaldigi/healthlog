@@ -1,10 +1,22 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
-import { Activity, Camera, ChevronRight, Droplet, Moon, Plus, Sun, Sunrise } from '@lucide/vue';
+import {
+    Activity,
+    Camera,
+    ChevronRight,
+    Clock,
+    Droplet,
+    Moon,
+    Plus,
+    Sun,
+    Sunrise,
+} from '@lucide/vue';
 import type { Component } from 'vue';
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { Button } from '@/components/ui/button';
+import { usePendingReadings } from '@/composables/usePendingReadings';
 import { useSlotReminders } from '@/composables/useSlotReminders';
+import { useWebPush } from '@/composables/useWebPush';
 import ReadingRow from '@/components/ReadingRow.vue';
 import TodayGauge from '@/components/TodayGauge.vue';
 import { create as logBp } from '@/routes/bp';
@@ -71,6 +83,23 @@ const todayStatusText = computed(() => {
 });
 
 const { permission, enableBrowser } = useSlotReminders(reminders.value);
+const { subscribe } = useWebPush();
+const { items: pending } = usePendingReadings();
+
+const enableReminders = async (): Promise<void> => {
+    await enableBrowser();
+    await subscribe();
+};
+
+onMounted(() => {
+    if (
+        reminders.value.enabled &&
+        typeof Notification !== 'undefined' &&
+        Notification.permission === 'granted'
+    ) {
+        void subscribe();
+    }
+});
 
 const slotIcons: Record<string, Component> = {
     morning: Sunrise,
@@ -133,14 +162,37 @@ const slotIcons: Record<string, Component> = {
                 v-if="permission === 'default'"
                 type="button"
                 class="mt-2 block min-h-11 text-base underline"
-                @click="enableBrowser"
+                @click="enableReminders"
             >
                 Also notify me in this browser
             </button>
         </section>
 
         <section
-            class="hl-card px-5 pb-5 pt-6"
+            v-if="pending.length > 0"
+            class="rounded-[1.5rem] border border-amber-500 bg-amber-50 px-4 py-4 text-amber-950"
+            data-test="pending-readings"
+        >
+            <p class="text-lg font-semibold">Waiting to upload</p>
+            <p class="mt-1 text-base leading-relaxed">
+                These readings are saved on this phone and will upload when you
+                are online.
+            </p>
+            <ul class="mt-3 space-y-2">
+                <li
+                    v-for="item in pending"
+                    :key="item.id"
+                    class="flex min-h-11 items-center gap-2 text-base"
+                >
+                    <Clock class="size-5 shrink-0" aria-hidden="true" />
+                    <span>{{ item.summary }}</span>
+                    <span class="sr-only">Waiting to upload</span>
+                </li>
+            </ul>
+        </section>
+
+        <section
+            class="hl-card px-5 pt-6 pb-5"
             aria-live="polite"
             data-tour="today"
         >
@@ -166,7 +218,9 @@ const slotIcons: Record<string, Component> = {
                         class="size-5"
                         aria-hidden="true"
                     />
-                    <span class="mt-1 text-sm font-medium">{{ slot.label }}</span>
+                    <span class="mt-1 text-sm font-medium">{{
+                        slot.label
+                    }}</span>
                     <span class="sr-only">
                         {{ slot.filled ? 'logged' : 'not yet' }}
                     </span>
@@ -204,7 +258,7 @@ const slotIcons: Record<string, Component> = {
             <div class="grid grid-cols-2 gap-3">
                 <Link
                     :href="logBp()"
-                    class="hl-card flex min-h-44 cursor-pointer flex-col items-start gap-2 border-t-4 border-t-primary px-3 py-4 transition-transform duration-200 active:scale-[0.98] sm:px-4"
+                    class="hl-card border-t-primary flex min-h-44 cursor-pointer flex-col items-start gap-2 border-t-4 px-3 py-4 transition-transform duration-200 active:scale-[0.98] sm:px-4"
                     data-test="log-bp"
                 >
                     <span
@@ -213,10 +267,12 @@ const slotIcons: Record<string, Component> = {
                     >
                         <Activity class="size-6" />
                     </span>
-                    <span class="text-lg font-bold leading-tight">
+                    <span class="text-lg leading-tight font-bold">
                         Add blood pressure
                     </span>
-                    <span class="text-muted-foreground text-base leading-relaxed">
+                    <span
+                        class="text-muted-foreground text-base leading-relaxed"
+                    >
                         Arm cuff
                     </span>
                     <span class="text-base font-medium tabular-nums">
@@ -232,7 +288,7 @@ const slotIcons: Record<string, Component> = {
 
                 <Link
                     :href="logSugar()"
-                    class="hl-card flex min-h-44 cursor-pointer flex-col items-start gap-2 border-t-4 border-t-success px-3 py-4 transition-transform duration-200 active:scale-[0.98] sm:px-4"
+                    class="hl-card border-t-success flex min-h-44 cursor-pointer flex-col items-start gap-2 border-t-4 px-3 py-4 transition-transform duration-200 active:scale-[0.98] sm:px-4"
                     data-test="log-sugar"
                 >
                     <span
@@ -241,10 +297,12 @@ const slotIcons: Record<string, Component> = {
                     >
                         <Droplet class="size-6" />
                     </span>
-                    <span class="text-lg font-bold leading-tight">
+                    <span class="text-lg leading-tight font-bold">
                         Add blood sugar
                     </span>
-                    <span class="text-muted-foreground text-base leading-relaxed">
+                    <span
+                        class="text-muted-foreground text-base leading-relaxed"
+                    >
                         Sugar meter
                     </span>
                     <span class="text-base font-medium tabular-nums">
@@ -277,8 +335,8 @@ const slotIcons: Record<string, Component> = {
 
         <p class="text-muted-foreground mt-auto pt-2 text-sm leading-relaxed">
             This app is a record-keeping tool, not a medical device, and does
-            not provide medical advice. If a reading is 180/120 or higher, or
-            if you feel unwell, seek immediate medical attention.
+            not provide medical advice. If a reading is 180/120 or higher, or if
+            you feel unwell, seek immediate medical attention.
         </p>
     </div>
 </template>

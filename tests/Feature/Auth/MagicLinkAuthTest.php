@@ -20,13 +20,7 @@ it('renders the login and register screens', function () {
 it('registers a passwordless user with a default profile and sends a magic link', function () {
     Notification::fake();
 
-    $this->post(route('register.store'), [
-        'name' => 'Test User',
-        'email' => 'test@example.com',
-        'timezone' => 'Asia/Kolkata',
-        'glucose_unit' => GlucoseUnit::MgDl->value,
-        'weight_unit' => WeightUnit::Kg->value,
-    ])
+    $this->post(route('register.store'), registerAttributes())
         ->assertRedirect(route('login.check-email'));
 
     $this->assertGuest();
@@ -143,13 +137,9 @@ it('does not 500 when the login email cannot be sent', function () {
         throw new RuntimeException('Request to Resend API failed.');
     });
 
-    $this->post(route('register.store'), [
-        'name' => 'Test User',
+    $this->post(route('register.store'), registerAttributes([
         'email' => 'mailfail@example.com',
-        'timezone' => 'Asia/Kolkata',
-        'glucose_unit' => GlucoseUnit::MgDl->value,
-        'weight_unit' => WeightUnit::Kg->value,
-    ])->assertRedirect(route('login.check-email'));
+    ]))->assertRedirect(route('login.check-email'));
 
     $this->assertDatabaseHas('users', ['email' => 'mailfail@example.com']);
 

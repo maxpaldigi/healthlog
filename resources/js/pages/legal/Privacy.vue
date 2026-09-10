@@ -1,0 +1,77 @@
+<script setup lang="ts">
+import { Head, Link } from '@inertiajs/vue3';
+import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import { home, privacy } from '@/routes';
+import { data as aboutData } from '@/routes/about';
+</script>
+
+<template>
+    <Head title="Privacy" />
+
+    <div
+        class="bg-background text-foreground mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 py-[max(1.5rem,env(safe-area-inset-bottom))]"
+    >
+        <Link :href="home()" class="self-start">
+            <AppLogoIcon class="size-16" />
+        </Link>
+        <h1 class="mt-6 text-3xl font-bold">Privacy notice</h1>
+        <p class="text-muted-foreground mt-2 text-base leading-relaxed">
+            Version 2026-09-10. HealthyMe is a record-keeping tool, not a
+            medical device, and does not replace a doctor.
+        </p>
+        <div class="mt-6 space-y-4 text-base leading-relaxed">
+            <p>
+                We store your name, email, health profile settings, and the
+                readings you add (blood pressure, sugar, optional weight, HbA1c,
+                and medication names). Health data is only stored after a
+                separate, unticked consent.
+            </p>
+            <p>
+                Meter photos are sent to Google Gemini to read the numbers on
+                the screen. We send the image only — not your name, email, or
+                date of birth — and we delete the photo after the reading is
+                extracted, whether that works or not.
+            </p>
+            <p>
+                Login emails are sent through Resend. The app is hosted on
+                Laravel Cloud.
+            </p>
+            <p>
+                If you allow reminders on this phone, your browser gives us a
+                push address so we can send “time to log” notices. We do not
+                send your readings in that notice. You can turn this off in the
+                browser settings.
+            </p>
+            <p>
+                Readings typed while you are offline stay on this phone until
+                the app can upload them.
+            </p>
+            <p>
+                You can log out on a shared phone. You can ask us to delete your
+                account from Account settings.
+            </p>
+        </div>
+        <p class="text-muted-foreground mt-8 text-base">
+            <Link
+                :href="aboutData()"
+                class="text-foreground font-semibold underline"
+            >
+                Data sources and licences
+            </Link>
+            <span> · </span>
+            <Link
+                :href="home()"
+                class="text-foreground font-semibold underline"
+            >
+                Home
+            </Link>
+            <span> · </span>
+            <Link
+                :href="privacy()"
+                class="text-foreground font-semibold underline"
+            >
+                Privacy
+            </Link>
+        </p>
+    </div>
+</template>

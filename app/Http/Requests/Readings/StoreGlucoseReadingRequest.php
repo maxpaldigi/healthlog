@@ -4,6 +4,7 @@ namespace App\Http\Requests\Readings;
 
 use App\Enums\GlucoseContext;
 use App\Enums\ReadingSource;
+use App\Http\Requests\Readings\Concerns\ValidatesClientUuid;
 use App\Http\Requests\Readings\Concerns\ValidatesMeasuredAt;
 use App\Support\CurrentProfile;
 use App\Support\Glucose;
@@ -13,7 +14,7 @@ use Illuminate\Validation\Validator;
 
 class StoreGlucoseReadingRequest extends FormRequest
 {
-    use ValidatesMeasuredAt;
+    use ValidatesClientUuid, ValidatesMeasuredAt;
 
     public function authorize(): bool
     {
@@ -31,7 +32,13 @@ class StoreGlucoseReadingRequest extends FormRequest
             'measured_at' => ['required', 'date_format:Y-m-d\TH:i'],
             'note' => ['nullable', 'string', 'max:240'],
             'source' => ['nullable', Rule::enum(ReadingSource::class)],
+            ...$this->clientUuidRules(),
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->prepareClientUuid();
     }
 
     public function withValidator(Validator $validator): void

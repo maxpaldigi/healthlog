@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { rememberSystemTimezone, systemTimezone } from '@/lib/systemClock';
-import { login } from '@/routes';
+import { login, privacy, terms } from '@/routes';
 import { store } from '@/routes/register';
 
 const props = defineProps<{
@@ -157,6 +157,38 @@ defineOptions({
                 </div>
                 <InputError :message="errors.weight_unit" />
             </div>
+
+            <label class="flex items-start gap-3 text-base leading-relaxed">
+                <input
+                    type="checkbox"
+                    name="accept_terms"
+                    value="1"
+                    class="mt-1 size-6 shrink-0"
+                    data-test="accept-terms"
+                />
+                <span>
+                    I agree to the
+                    <TextLink :href="terms()">terms of use</TextLink>.
+                    This is not permission to store health readings.
+                </span>
+            </label>
+            <InputError :message="errors.accept_terms" />
+
+            <label class="flex items-start gap-3 text-base leading-relaxed">
+                <input
+                    type="checkbox"
+                    name="health_data_consent"
+                    value="1"
+                    class="mt-1 size-6 shrink-0"
+                    data-test="health-data-consent"
+                />
+                <span>
+                    I agree that HealthyMe may store my blood pressure and sugar
+                    readings. Read the
+                    <TextLink :href="privacy()">privacy notice</TextLink>.
+                </span>
+            </label>
+            <InputError :message="errors.health_data_consent" />
 
             <Button
                 type="submit"

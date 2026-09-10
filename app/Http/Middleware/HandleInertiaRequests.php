@@ -44,6 +44,9 @@ class HandleInertiaRequests extends Middleware
                     && $request->user()->onboarding_completed_at === null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'vapidPublicKey' => filled(config('webpush.vapid.public_key'))
+                ? (string) config('webpush.vapid.public_key')
+                : null,
         ];
     }
 }

@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('healthlog:send-reminders')->everyFifteenMinutes();
+Schedule::command('healthlog:prune-scans')->hourly();

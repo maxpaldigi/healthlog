@@ -6,6 +6,9 @@ use Anthropic\Client;
 use App\Actions\Readings\ExtractReadingFromGemini;
 use App\Actions\Readings\ExtractReadingFromImage;
 use App\Contracts\ExtractsDeviceReading;
+use App\Contracts\SendsWebPush;
+use App\Support\RecordingWebPush;
+use App\Support\SendWebPush;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -35,6 +38,14 @@ class AppServiceProvider extends ServiceProvider
             }
 
             return $this->app->make(ExtractReadingFromImage::class);
+        });
+
+        $this->app->singleton(SendsWebPush::class, function (): SendsWebPush {
+            if ($this->app->environment('testing')) {
+                return new RecordingWebPush;
+            }
+
+            return $this->app->make(SendWebPush::class);
         });
     }
 

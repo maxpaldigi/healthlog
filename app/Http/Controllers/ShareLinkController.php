@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Auth\RecordConsent;
+use App\Enums\ConsentType;
 use App\Models\ShareLink;
+use App\Models\User;
 use App\Support\CurrentProfile;
 use App\Support\HistoryDateRange;
 use App\Support\VisitReport;
@@ -14,9 +17,14 @@ use Inertia\Response;
 
 class ShareLinkController extends Controller
 {
-    public function store(Request $request, CurrentProfile $currentProfile): RedirectResponse
+    public function store(Request $request, CurrentProfile $currentProfile, RecordConsent $recordConsent): RedirectResponse
     {
-        $profile = $currentProfile->handle($request->user(), $request);
+        $user = $request->user();
+        abort_unless($user instanceof User, 403);
+
+        $profile = $currentProfile->handle($user, $request);
+
+        $this->authorize('create', [ShareLink::class, $profile]);
 
         $validated = $request->validate([
             'from' => ['nullable', 'date_format:Y-m-d'],
@@ -36,6 +44,8 @@ class ShareLinkController extends Controller
             'ends_on' => $range['filters']['to'],
             'expires_at' => now()->addDays((int) ($validated['days'] ?? 7)),
         ]);
+
+        $recordConsent->handle($user, ConsentType::ShareLink);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Share link ready. It expires in '.($validated['days'] ?? 7).' days.']);
 

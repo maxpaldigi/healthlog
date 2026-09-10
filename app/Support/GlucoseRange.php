@@ -9,6 +9,7 @@ final class GlucoseRange
     /**
      * Plain-language flag against the person's own targets.
      * Null when no targets are set or the value is inside them.
+     * Display only — never a diagnosis.
      */
     public static function label(Profile $profile, string $mgDl): ?string
     {

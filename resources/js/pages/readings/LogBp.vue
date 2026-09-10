@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, router } from '@inertiajs/vue3';
+import { toast } from 'vue-sonner';
 import {
     Activity,
     Check,
@@ -20,7 +21,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import {
+    formDataToPayload,
+    queueReading,
+    readingSummary,
+} from '@/lib/offlineQueue';
 import { systemDateTimeLocal } from '@/lib/systemClock';
+import { home } from '@/routes';
 import { destroy, store, update } from '@/routes/bp';
 
 type Tag = { value: string; label: string };
@@ -66,9 +73,38 @@ const pulse = ref(
 const tag = ref(props.reading?.tag ?? props.defaults?.tag ?? 'none');
 const source = props.source ?? 'manual';
 
-const formBind = props.reading
-    ? update.form(props.reading.id)
-    : store.form();
+const formBind = props.reading ? update.form(props.reading.id) : store.form();
+const clientUuid = crypto.randomUUID();
+
+const maybeQueueOffline = (): boolean => {
+    if (props.reading !== null || navigator.onLine) {
+        return true;
+    }
+
+    const form = document.getElementById('log-bp-form');
+
+    if (!(form instanceof HTMLFormElement)) {
+        return true;
+    }
+
+    const payload = formDataToPayload(new FormData(form));
+
+    void queueReading({
+        id: payload.client_uuid || clientUuid,
+        type: 'bp',
+        url: store.url(),
+        payload,
+        summary: readingSummary('bp', payload),
+        queuedAt: new Date().toISOString(),
+    }).then(() => {
+        toast.success(
+            'Saved on this phone. It will upload when you are online.',
+        );
+        router.visit(home.url());
+    });
+
+    return false;
+};
 
 watch(systolic, (value) => {
     if (value.replace(/\D/g, '').length >= 3) {
@@ -98,16 +134,32 @@ const confirmDelete = (event: Event): void => {
 </script>
 
 <template>
-    <Head :title="reading ? 'Edit BP' : source === 'photo' ? 'Check BP' : 'Add blood pressure'" />
+    <Head
+        :title="
+            reading
+                ? 'Edit BP'
+                : source === 'photo'
+                  ? 'Check BP'
+                  : 'Add blood pressure'
+        "
+    />
 
     <Form
+        id="log-bp-form"
         v-bind="formBind"
         v-slot="{ errors, processing }"
         class="flex flex-1 flex-col gap-6"
+        :on-before="maybeQueueOffline"
     >
         <h1 class="flex items-center gap-2 text-2xl font-semibold">
             <Activity class="size-7" aria-hidden="true" />
-            {{ reading ? 'Edit BP' : source === 'photo' ? 'Check these numbers' : 'Add blood pressure' }}
+            {{
+                reading
+                    ? 'Edit BP'
+                    : source === 'photo'
+                      ? 'Check these numbers'
+                      : 'Add blood pressure'
+            }}
         </h1>
         <p
             v-if="scanStatus"
@@ -125,12 +177,18 @@ const confirmDelete = (event: Event): void => {
         </p>
         <p
             v-if="source === 'photo'"
-            class="rounded-2xl border border-primary/30 bg-card px-4 py-3 text-base leading-relaxed"
+            class="border-primary/30 bg-card rounded-2xl border px-4 py-3 text-base leading-relaxed"
             data-test="extraction-note"
         >
             {{ extractionNote || 'Check these numbers, then Save.' }}
         </p>
         <input type="hidden" name="source" :value="source" />
+        <input
+            v-if="!reading"
+            type="hidden"
+            name="client_uuid"
+            :value="clientUuid"
+        />
         <div class="grid grid-cols-3 gap-3">
             <div class="grid gap-2">
                 <Label

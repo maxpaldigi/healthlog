@@ -29,7 +29,7 @@ class CurrentProfile
         if ($profile === null) {
             $profile = $user->profiles()->create([
                 'name' => $user->name,
-                'timezone' => 'UTC',
+                'timezone' => SystemTimezone::detected() ?? (string) config('app.timezone'),
                 'glucose_unit' => GlucoseUnit::MgDl,
                 'weight_unit' => WeightUnit::Kg,
                 'is_default' => true,

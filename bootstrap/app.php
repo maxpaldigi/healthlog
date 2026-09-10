@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\DetectSystemTimezone;
+use App\Http\Middleware\EnsureHealthDataConsent;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
@@ -23,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             DetectSystemTimezone::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+            EnsureHealthDataConsent::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ConsentType;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -47,6 +48,22 @@ class User extends Authenticatable implements PasskeyUser
             'two_factor_confirmed_at' => 'datetime',
             'onboarding_completed_at' => 'datetime',
         ];
+    }
+
+    public function hasGrantedConsent(ConsentType $type): bool
+    {
+        return $this->consents()
+            ->where('type', $type)
+            ->whereNull('revoked_at')
+            ->exists();
+    }
+
+    /**
+     * @return HasMany<Consent, $this>
+     */
+    public function consents(): HasMany
+    {
+        return $this->hasMany(Consent::class);
     }
 
     /**

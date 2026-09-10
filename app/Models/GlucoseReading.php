@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $measured_at
  * @property string|null $note
  * @property ReadingSource $source
+ * @property string|null $client_uuid
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -30,6 +31,7 @@ use Illuminate\Support\Carbon;
     'measured_at',
     'note',
     'source',
+    'client_uuid',
 ])]
 class GlucoseReading extends Model
 {

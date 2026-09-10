@@ -3,6 +3,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { CalendarDays } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import InstallAppBanner from '@/components/InstallAppBanner.vue';
 import LoggingTabBar from '@/components/LoggingTabBar.vue';
 import OnboardingGuide from '@/components/OnboardingGuide.vue';
 import { Toaster } from '@/components/ui/sonner';
@@ -72,7 +73,7 @@ const dateLabel = computed(() =>
         >
             <Link
                 :href="home()"
-                class="flex min-h-11 min-w-0 items-center gap-2.5 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                class="focus-visible:ring-ring flex min-h-11 min-w-0 items-center gap-2.5 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
                 aria-label="HealthyMe home"
             >
                 <AppLogoIcon
@@ -80,7 +81,7 @@ const dateLabel = computed(() =>
                     alt=""
                 />
                 <span
-                    class="text-foreground truncate text-lg font-bold leading-tight"
+                    class="text-foreground truncate text-lg leading-tight font-bold"
                 >
                     {{ isHome ? 'HealthyMe' : title }}
                 </span>
@@ -102,6 +103,7 @@ const dateLabel = computed(() =>
         </main>
 
         <LoggingTabBar class="no-print" />
+        <InstallAppBanner />
         <OnboardingGuide />
         <Toaster />
     </div>

@@ -26,6 +26,8 @@ class RegisterUserRequest extends FormRequest
             'detected_timezone' => ['nullable', 'timezone:all'],
             'glucose_unit' => ['required', Rule::enum(GlucoseUnit::class)],
             'weight_unit' => ['required', Rule::enum(WeightUnit::class)],
+            'accept_terms' => ['accepted'],
+            'health_data_consent' => ['accepted'],
         ];
     }
 }

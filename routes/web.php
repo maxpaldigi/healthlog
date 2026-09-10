@@ -1,19 +1,24 @@
 <?php
 
+use App\Http\Controllers\AboutDataController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\MagicLinkController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BpReadingController;
 use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\CompleteOnboardingController;
+use App\Http\Controllers\Consent\HealthDataConsentController;
 use App\Http\Controllers\CurrentProfileController;
 use App\Http\Controllers\GlucoseReadingController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PrivacyController;
+use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportExportController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\ShareLinkController;
+use App\Http\Controllers\TermsController;
 use App\Http\Controllers\TrendsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +31,10 @@ Route::get('/', function (Request $request) {
 
     return Inertia::render('Welcome');
 })->name('home');
+
+Route::get('privacy', PrivacyController::class)->name('privacy');
+Route::get('terms', TermsController::class)->name('terms');
+Route::get('about/data', AboutDataController::class)->name('about.data');
 
 Route::middleware('guest')->group(function () {
     Route::get('login', [LoginController::class, 'create'])->name('login');
@@ -46,6 +55,9 @@ Route::post('logout', [LoginController::class, 'destroy'])
     ->name('logout');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('consent/health-data', [HealthDataConsentController::class, 'create'])->name('consent.health-data');
+    Route::post('consent/health-data', [HealthDataConsentController::class, 'store'])->name('consent.health-data.store');
+
     Route::redirect('dashboard', '/')->name('dashboard');
     Route::post('onboarding', CompleteOnboardingController::class)->name('onboarding.complete');
 
@@ -68,6 +80,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('throttle:scan-photo')
         ->name('scan.store');
     Route::put('profiles/{profile}/current', [CurrentProfileController::class, 'update'])->name('profiles.current');
+
+    Route::post('push-subscriptions', [PushSubscriptionController::class, 'store'])->name('push-subscriptions.store');
+    Route::delete('push-subscriptions', [PushSubscriptionController::class, 'destroy'])->name('push-subscriptions.destroy');
 
     Route::get('bp/log', [BpReadingController::class, 'create'])->name('bp.create');
     Route::post('bp', [BpReadingController::class, 'store'])->name('bp.store');

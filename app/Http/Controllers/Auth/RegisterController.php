@@ -27,7 +27,16 @@ class RegisterController extends Controller
         RegisterUser $registerUser,
         SendMagicLink $sendMagicLink,
     ): RedirectResponse {
-        $user = $registerUser->handle($request->validated());
+        $validated = $request->validated();
+
+        $user = $registerUser->handle([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'timezone' => $validated['timezone'] ?? null,
+            'detected_timezone' => $validated['detected_timezone'] ?? null,
+            'glucose_unit' => $validated['glucose_unit'],
+            'weight_unit' => $validated['weight_unit'],
+        ]);
 
         $sendMagicLink->handle($user->email);
 

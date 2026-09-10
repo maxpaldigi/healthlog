@@ -4,6 +4,7 @@ namespace App\Http\Requests\Readings;
 
 use App\Enums\ReadingSource;
 use App\Enums\ReadingTag;
+use App\Http\Requests\Readings\Concerns\ValidatesClientUuid;
 use App\Http\Requests\Readings\Concerns\ValidatesMeasuredAt;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -11,7 +12,7 @@ use Illuminate\Validation\Validator;
 
 class StoreBpReadingRequest extends FormRequest
 {
-    use ValidatesMeasuredAt;
+    use ValidatesClientUuid, ValidatesMeasuredAt;
 
     public function authorize(): bool
     {
@@ -31,7 +32,13 @@ class StoreBpReadingRequest extends FormRequest
             'tag' => ['required', Rule::enum(ReadingTag::class)],
             'note' => ['nullable', 'string', 'max:240'],
             'source' => ['nullable', Rule::enum(ReadingSource::class)],
+            ...$this->clientUuidRules(),
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->prepareClientUuid();
     }
 
     public function withValidator(Validator $validator): void

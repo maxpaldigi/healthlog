@@ -19,7 +19,7 @@ use Illuminate\Support\Carbon;
  * @property int $user_id
  * @property string $name
  * @property Carbon|null $date_of_birth
- * @property string $timezone
+ * @property string|null $timezone
  * @property GlucoseUnit $glucose_unit
  * @property WeightUnit $weight_unit
  * @property string|null $glucose_low_mg_dl
@@ -125,6 +125,14 @@ class Profile extends Model
     }
 
     /**
+     * @return HasMany<PushSubscription, $this>
+     */
+    public function pushSubscriptions(): HasMany
+    {
+        return $this->hasMany(PushSubscription::class);
+    }
+
+    /**
      * @return array<string, string>
      */
     public function reminderTimes(): array
@@ -138,7 +146,17 @@ class Profile extends Model
 
     public function clockTimezone(): string
     {
-        return SystemTimezone::detected() ?? $this->timezone;
+        $detected = SystemTimezone::detected();
+
+        if (is_string($detected) && $detected !== '') {
+            return $detected;
+        }
+
+        if (is_string($this->timezone) && $this->timezone !== '') {
+            return $this->timezone;
+        }
+
+        return (string) config('app.timezone');
     }
 
     public function nowInTimezone(): CarbonInterface

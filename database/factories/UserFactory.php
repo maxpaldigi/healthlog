@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Enums\ConsentType;
+use App\Models\Consent;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -34,6 +36,19 @@ class UserFactory extends Factory
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at' => null,
         ];
+    }
+
+    public function configure(): static
+    {
+        return $this->afterCreating(function (User $user): void {
+            Consent::query()->create([
+                'user_id' => $user->id,
+                'type' => ConsentType::HealthData,
+                'granted_at' => now(),
+                'ip_address' => '127.0.0.1',
+                'policy_version' => Consent::POLICY_VERSION,
+            ]);
+        });
     }
 
     /**

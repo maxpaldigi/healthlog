@@ -23,14 +23,12 @@ it('uses the device time zone from the request for today', function () {
 });
 
 it('saves the computer time zone when a person registers', function () {
-    $this->post(route('register.store'), [
+    $this->post(route('register.store'), registerAttributes([
         'name' => 'Pat',
         'email' => 'pat@example.com',
         'timezone' => 'Asia/Kolkata',
         'detected_timezone' => 'Europe/London',
-        'glucose_unit' => 'mg_dl',
-        'weight_unit' => 'kg',
-    ])->assertRedirect(route('login.check-email'));
+    ]))->assertRedirect(route('login.check-email'));
 
     expect(User::query()->where('email', 'pat@example.com')->first()?->defaultProfile?->timezone)
         ->toBe('Europe/London');
