@@ -20,7 +20,6 @@ const props = defineProps<{
         today: string;
         earliest: string;
         preset: string | null;
-        type?: string;
     };
     presets: Preset[];
     urlFor: (from: string, to: string) => string;
@@ -95,7 +94,7 @@ const onEnd = (event: Event): void => {
                 :key="preset.key"
                 :href="rangeUrl(preset.from, preset.to)"
                 preserve-scroll
-                class="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-xl border px-2 text-center text-base font-medium"
+                class="inline-flex min-h-14 cursor-pointer items-center justify-center rounded-xl border px-2 text-center text-base font-medium"
                 :class="
                     filters.preset === preset.key
                         ? 'bg-primary text-primary-foreground border-primary'
@@ -111,7 +110,7 @@ const onEnd = (event: Event): void => {
             <Link
                 :href="rangeUrl(month.prev_from, month.prev_to)"
                 preserve-scroll
-                class="inline-flex min-h-12 cursor-pointer items-center justify-center gap-1 rounded-xl border bg-background px-2 text-base font-medium"
+                class="inline-flex min-h-14 cursor-pointer items-center justify-center gap-1 rounded-xl border bg-background px-2 text-base font-medium"
                 :aria-label="`Earlier month, ${month.prev_label}`"
                 data-test="date-prev-month"
             >
@@ -125,7 +124,7 @@ const onEnd = (event: Event): void => {
                 v-if="month.can_next"
                 :href="rangeUrl(month.next_from, month.next_to)"
                 preserve-scroll
-                class="inline-flex min-h-12 cursor-pointer items-center justify-center gap-1 rounded-xl border bg-background px-2 text-base font-medium"
+                class="inline-flex min-h-14 cursor-pointer items-center justify-center gap-1 rounded-xl border bg-background px-2 text-base font-medium"
                 :aria-label="`Later month, ${month.next_label}`"
                 data-test="date-next-month"
             >
@@ -134,7 +133,7 @@ const onEnd = (event: Event): void => {
             </Link>
             <span
                 v-else
-                class="text-muted-foreground inline-flex min-h-12 items-center justify-center gap-1 rounded-xl border border-transparent px-2 text-base"
+                class="text-muted-foreground inline-flex min-h-14 items-center justify-center gap-1 rounded-xl border border-transparent px-2 text-base"
                 aria-disabled="true"
             >
                 {{ month.next_label }}

@@ -10,6 +10,7 @@ use App\Http\Requests\Readings\UpdateGlucoseReadingRequest;
 use App\Models\GlucoseReading;
 use App\Support\CurrentProfile;
 use App\Support\Glucose;
+use App\Support\ReadingSpeech;
 use App\Support\ReadingTimeline;
 use App\Support\SuggestGlucoseContext;
 use Illuminate\Http\RedirectResponse;
@@ -46,9 +47,13 @@ class GlucoseReadingController extends Controller
     {
         $profile = $currentProfile->handle($request->user(), $request);
 
-        $storeGlucoseReading->handle($profile, $request->validated());
+        $reading = $storeGlucoseReading->handle($profile, $request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Glucose recorded.']);
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => 'Glucose recorded.',
+            'speech' => ReadingSpeech::glucose($profile, $reading),
+        ]);
 
         return to_route('home');
     }
@@ -80,8 +85,13 @@ class GlucoseReadingController extends Controller
     public function update(UpdateGlucoseReadingRequest $request, GlucoseReading $glucoseReading, UpdateGlucoseReading $updateGlucoseReading): RedirectResponse
     {
         $updateGlucoseReading->handle($glucoseReading, $request->validated());
+        $glucoseReading->refresh();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Glucose updated.']);
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => 'Glucose updated.',
+            'speech' => ReadingSpeech::glucose($glucoseReading->profile, $glucoseReading),
+        ]);
 
         return to_route('history');
     }

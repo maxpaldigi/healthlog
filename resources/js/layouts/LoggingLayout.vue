@@ -37,6 +37,10 @@ const title = computed(() => {
         return 'Scan';
     }
 
+    if (page.component === 'food/LogFood') {
+        return 'Food';
+    }
+
     if (page.component === 'readings/Report') {
         return 'Visit report';
     }
@@ -77,7 +81,7 @@ const dateLabel = computed(() =>
         >
             <Link
                 :href="home()"
-                class="focus-visible:ring-ring flex min-h-11 min-w-0 items-center gap-2.5 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                class="focus-visible:ring-ring flex min-h-14 min-w-0 items-center gap-2.5 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
                 aria-label="HealthyMe home"
             >
                 <AppLogoIcon
@@ -91,7 +95,7 @@ const dateLabel = computed(() =>
                 </span>
             </Link>
             <p
-                class="text-muted-foreground flex min-h-11 shrink-0 items-center gap-1.5 text-sm font-medium"
+                class="text-muted-foreground flex min-h-14 shrink-0 items-center gap-1.5 text-sm font-medium"
             >
                 <CalendarDays class="size-4 shrink-0" aria-hidden="true" />
                 <time class="whitespace-nowrap">{{ dateLabel }}</time>

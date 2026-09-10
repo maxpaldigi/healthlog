@@ -22,7 +22,7 @@ const complete = computed(() => props.count >= props.target && props.target > 0)
 <template>
     <div class="flex flex-col items-center">
         <div
-            class="relative w-full max-w-[280px]"
+            class="relative w-full max-w-[220px]"
             role="img"
             :aria-label="statusText"
         >

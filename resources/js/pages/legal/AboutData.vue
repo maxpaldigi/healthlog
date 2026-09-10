@@ -15,14 +15,14 @@ import { home, privacy } from '@/routes';
         </Link>
         <h1 class="mt-6 text-3xl font-bold">Data sources and licences</h1>
         <p class="text-muted-foreground mt-2 text-base leading-relaxed">
-            Required so you can see who processes data, and so later food data
-            can be attributed under Open Database Licence (ODbL).
+            Required so you can see who processes data, and so food data is
+            attributed under Open Database Licence (ODbL).
         </p>
         <ul class="mt-6 space-y-4 text-base leading-relaxed">
             <li>
                 <span class="font-semibold">Google Gemini.</span>
-                Reads numbers from a meter photo. Images only. Deleted after
-                extract. Google API terms.
+                Reads numbers from a meter photo, or names food in a photo.
+                Images only. Deleted after extract. Google API terms.
             </li>
             <li>
                 <span class="font-semibold">Resend.</span>
@@ -40,8 +40,9 @@ import { home, privacy } from '@/routes';
             </li>
             <li>
                 <span class="font-semibold">Open Food Facts.</span>
-                Not used yet. When barcode lookup ships, product data will be
-                shown with “Data from Open Food Facts (ODbL)”.
+                Worldwide packaged-food database. Barcode and name search. Shown
+                with “Data from Open Food Facts (ODbL)”. We send the barcode or
+                search words only — not your name, email, or date of birth.
             </li>
         </ul>
         <p class="mt-8 text-base">

@@ -1,5 +1,7 @@
 import { createInertiaApp, router } from '@inertiajs/vue3';
 import { initializeTheme } from '@/composables/useAppearance';
+import { initializeLargeText } from '@/composables/useLargeText';
+import { initializeReadAloud } from '@/composables/useReadAloud';
 import { rememberSystemTimezone } from '@/lib/systemClock';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
@@ -19,6 +21,7 @@ void createInertiaApp({
             case name === 'Home' ||
                 name === 'People' ||
                 name.startsWith('readings/') ||
+                name.startsWith('food/') ||
                 name.startsWith('clinic/'):
                 return LoggingLayout;
             case name.startsWith('shared/'):
@@ -36,8 +39,10 @@ void createInertiaApp({
     },
 });
 
-// This will set light / dark mode on page load...
+// This will set light / dark mode and large text on page load...
 initializeTheme();
+initializeLargeText();
+initializeReadAloud();
 
 const systemTimezone = rememberSystemTimezone();
 

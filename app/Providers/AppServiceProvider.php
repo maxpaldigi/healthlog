@@ -3,9 +3,11 @@
 namespace App\Providers;
 
 use Anthropic\Client;
+use App\Actions\Food\IdentifyFoodFromGemini;
 use App\Actions\Readings\ExtractReadingFromGemini;
 use App\Actions\Readings\ExtractReadingFromImage;
 use App\Contracts\ExtractsDeviceReading;
+use App\Contracts\ExtractsFoodFromPhoto;
 use App\Contracts\SendsWebPush;
 use App\Support\RecordingWebPush;
 use App\Support\SendWebPush;
@@ -39,6 +41,8 @@ class AppServiceProvider extends ServiceProvider
 
             return $this->app->make(ExtractReadingFromImage::class);
         });
+
+        $this->app->bind(ExtractsFoodFromPhoto::class, IdentifyFoodFromGemini::class);
 
         $this->app->singleton(SendsWebPush::class, function (): SendsWebPush {
             if ($this->app->environment('testing')) {
@@ -115,6 +119,10 @@ class AppServiceProvider extends ServiceProvider
     {
         RateLimiter::for('scan-photo', function (Request $request) {
             return Limit::perMinute(10)->by((string) ($request->user()?->getAuthIdentifier() ?: $request->ip()));
+        });
+
+        RateLimiter::for('food-lookup', function (Request $request) {
+            return Limit::perMinute(30)->by((string) ($request->user()?->getAuthIdentifier() ?: $request->ip()));
         });
     }
 }

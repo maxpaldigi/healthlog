@@ -22,15 +22,15 @@ import { data as aboutData } from '@/routes/about';
         <div class="mt-6 space-y-4 text-base leading-relaxed">
             <p>
                 We store your name, email, health profile settings, and the
-                readings you add (blood pressure, sugar, optional weight, HbA1c,
-                and medication names). Health data is only stored after a
+                readings you add (blood pressure, sugar, food, optional weight,
+                HbA1c, and medication names). Health data is only stored after a
                 separate, unticked consent.
             </p>
             <p>
-                Meter photos are sent to Google Gemini to read the numbers on
-                the screen. We send the image only — not your name, email, or
-                date of birth — and we delete the photo after the reading is
-                extracted, whether that works or not.
+                Meter photos and food photos are sent to Google Gemini to read
+                the numbers on a meter or to name the food. We send the image
+                only — not your name, email, or date of birth — and we delete
+                the photo after extract, whether that works or not.
             </p>
             <p>
                 Login emails are sent through Resend. The app is hosted on
@@ -47,9 +47,18 @@ import { data as aboutData } from '@/routes/about';
                 the app can upload them.
             </p>
             <p>
+                When you look up a food, we send the barcode or the search words
+                to Open Food Facts. We do not send your name, email, or date of
+                birth. The food you save stays in your account.
+            </p>
+            <p>
                 If you invite a helper, we email them a link. They can view and
                 add readings for that log. The person whose readings these are
                 can always see who has access and can remove it.
+            </p>
+            <p>
+                If you turn on read aloud, this phone speaks saved numbers and
+                today’s summary. The speech never leaves the device.
             </p>
             <p>
                 You can log out on a shared phone. You can ask us to delete your

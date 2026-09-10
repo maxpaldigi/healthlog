@@ -172,6 +172,14 @@ class Profile extends Model
     }
 
     /**
+     * @return HasMany<FoodLog, $this>
+     */
+    public function foodLogs(): HasMany
+    {
+        return $this->hasMany(FoodLog::class);
+    }
+
+    /**
      * @return array<string, string>
      */
     public function reminderTimes(): array

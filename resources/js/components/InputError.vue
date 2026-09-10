@@ -1,12 +1,17 @@
 <script setup lang="ts">
 defineProps<{
     message?: string;
+    id?: string;
 }>();
 </script>
 
 <template>
     <div v-show="message">
-        <p class="text-sm text-red-600 dark:text-red-500">
+        <p
+            :id="id"
+            class="text-destructive text-base"
+            role="alert"
+        >
             {{ message }}
         </p>
     </div>

@@ -10,16 +10,20 @@ import {
     Plus,
     Sun,
     Sunrise,
+    Utensils,
+    Volume2,
 } from '@lucide/vue';
 import type { Component } from 'vue';
 import { computed, onMounted } from 'vue';
 import { Button } from '@/components/ui/button';
 import { usePendingReadings } from '@/composables/usePendingReadings';
+import { useReadAloud } from '@/composables/useReadAloud';
 import { useSlotReminders } from '@/composables/useSlotReminders';
 import { useWebPush } from '@/composables/useWebPush';
 import ReadingRow from '@/components/ReadingRow.vue';
 import TodayGauge from '@/components/TodayGauge.vue';
 import { create as logBp } from '@/routes/bp';
+import { create as logFood } from '@/routes/food';
 import { create as logSugar } from '@/routes/glucose';
 import { home, scan } from '@/routes';
 import { edit as editHealth } from '@/routes/health-profiles';
@@ -51,6 +55,7 @@ const props = defineProps<{
         caregivers: { id: number; email: string; label: string }[];
     };
     alerts?: { key: string; message: string }[];
+    summarySpeech?: string;
     reminders?: {
         enabled: boolean;
         timezone: string;
@@ -102,6 +107,7 @@ const todayStatusText = computed(() => {
 const { permission, enableBrowser } = useSlotReminders(reminders.value);
 const { subscribe } = useWebPush();
 const { items: pending } = usePendingReadings();
+const { readAloud, speak } = useReadAloud();
 
 const enableReminders = async (): Promise<void> => {
     await enableBrowser();
@@ -109,6 +115,10 @@ const enableReminders = async (): Promise<void> => {
 };
 
 onMounted(() => {
+    if (props.summarySpeech) {
+        speak(props.summarySpeech);
+    }
+
     if (
         reminders.value.enabled &&
         typeof Notification !== 'undefined' &&
@@ -131,16 +141,9 @@ const slotIcons: Record<string, Component> = {
     <div class="flex flex-1 flex-col gap-6">
         <header class="space-y-1">
             <h1 class="text-3xl font-bold">Hello, {{ firstName }}</h1>
-            <p class="text-muted-foreground text-lg">
-                Photograph the meter, or type the numbers.
+            <p class="text-muted-foreground text-lg leading-relaxed">
+                Photograph a meter, type a number, or add food.
             </p>
-            <Link
-                :href="home.url({ query: { guide: '1' } })"
-                class="text-primary inline-flex min-h-11 items-center text-base underline-offset-4 hover:underline"
-                data-test="open-guide"
-            >
-                How to use this app
-            </Link>
         </header>
 
         <div v-if="profiles.length > 1" class="flex flex-wrap gap-2">
@@ -151,7 +154,7 @@ const slotIcons: Record<string, Component> = {
             >
                 <Button
                     type="submit"
-                    class="h-12 min-w-12 cursor-pointer px-4 text-base"
+                    class="h-14 min-w-14 cursor-pointer px-4 text-base"
                     :variant="item.id === profile.id ? 'default' : 'outline'"
                 >
                     {{ item.name }}
@@ -172,7 +175,7 @@ const slotIcons: Record<string, Component> = {
             </p>
             <Link
                 :href="editHealth()"
-                class="text-primary mt-2 inline-flex min-h-11 items-center text-base underline-offset-4 hover:underline"
+                class="text-primary mt-2 inline-flex min-h-14 items-center text-base underline-offset-4 hover:underline"
             >
                 Manage access
             </Link>
@@ -217,14 +220,14 @@ const slotIcons: Record<string, Component> = {
             </p>
             <Link
                 :href="logBp()"
-                class="mt-3 inline-flex min-h-12 items-center justify-center rounded-2xl bg-amber-900 px-4 text-base font-medium text-white"
+                class="mt-3 inline-flex min-h-14 items-center justify-center rounded-2xl bg-amber-900 px-4 text-base font-medium text-white"
             >
                 Add blood pressure
             </Link>
             <button
                 v-if="permission === 'default'"
                 type="button"
-                class="mt-2 block min-h-11 text-base underline"
+                class="mt-2 block min-h-14 text-base underline"
                 @click="enableReminders"
             >
                 Also notify me in this browser
@@ -245,7 +248,7 @@ const slotIcons: Record<string, Component> = {
                 <li
                     v-for="item in pending"
                     :key="item.id"
-                    class="flex min-h-11 items-center gap-2 text-base"
+                    class="flex min-h-14 items-center gap-2 text-base"
                 >
                     <Clock class="size-5 shrink-0" aria-hidden="true" />
                     <span>{{ item.summary }}</span>
@@ -254,8 +257,91 @@ const slotIcons: Record<string, Component> = {
             </ul>
         </section>
 
+        <section class="space-y-3" data-tour="log-manual">
+            <Link
+                :href="scan()"
+                class="bg-nav text-nav-foreground flex min-h-20 cursor-pointer items-center gap-4 rounded-[1.75rem] px-5 text-left shadow-[0_10px_24px_-10px_rgb(28_25_23_/_0.45)] transition-transform duration-200 active:scale-[0.98]"
+                data-test="scan"
+                data-tour="scan-photo"
+            >
+                <span
+                    class="bg-cta text-cta-foreground flex size-14 shrink-0 items-center justify-center rounded-full"
+                    aria-hidden="true"
+                >
+                    <Camera class="size-7" />
+                </span>
+                <span class="min-w-0 flex-1">
+                    <span class="block text-xl font-bold">Photograph the meter</span>
+                    <span class="text-nav-muted mt-0.5 block text-base">
+                        Blood pressure or sugar screen
+                    </span>
+                </span>
+                <Plus class="size-6 shrink-0" aria-hidden="true" />
+            </Link>
+
+            <Link
+                :href="logBp()"
+                class="hl-card flex min-h-16 cursor-pointer items-center gap-3 px-4 py-3 transition-transform duration-200 active:scale-[0.98]"
+                data-test="log-bp"
+            >
+                <span
+                    class="bg-primary text-primary-foreground flex size-12 shrink-0 items-center justify-center rounded-full"
+                    aria-hidden="true"
+                >
+                    <Activity class="size-6" />
+                </span>
+                <span class="min-w-0 flex-1">
+                    <span class="block text-lg font-bold">Blood pressure</span>
+                    <span class="text-muted-foreground block text-base">
+                        Type the cuff numbers
+                    </span>
+                </span>
+                <ChevronRight class="size-6 shrink-0" aria-hidden="true" />
+            </Link>
+
+            <Link
+                :href="logSugar()"
+                class="hl-card flex min-h-16 cursor-pointer items-center gap-3 px-4 py-3 transition-transform duration-200 active:scale-[0.98]"
+                data-test="log-sugar"
+            >
+                <span
+                    class="bg-success text-success-foreground flex size-12 shrink-0 items-center justify-center rounded-full"
+                    aria-hidden="true"
+                >
+                    <Droplet class="size-6" />
+                </span>
+                <span class="min-w-0 flex-1">
+                    <span class="block text-lg font-bold">Blood sugar</span>
+                    <span class="text-muted-foreground block text-base">
+                        Type the meter number
+                    </span>
+                </span>
+                <ChevronRight class="size-6 shrink-0" aria-hidden="true" />
+            </Link>
+
+            <Link
+                :href="logFood()"
+                class="hl-card flex min-h-16 cursor-pointer items-center gap-3 px-4 py-3 transition-transform duration-200 active:scale-[0.98]"
+                data-test="log-food"
+            >
+                <span
+                    class="bg-accent text-accent-foreground flex size-12 shrink-0 items-center justify-center rounded-full"
+                    aria-hidden="true"
+                >
+                    <Utensils class="size-6" />
+                </span>
+                <span class="min-w-0 flex-1">
+                    <span class="block text-lg font-bold">Food</span>
+                    <span class="text-muted-foreground block text-base">
+                        Photograph, search, or barcode
+                    </span>
+                </span>
+                <ChevronRight class="size-6 shrink-0" aria-hidden="true" />
+            </Link>
+        </section>
+
         <section
-            class="hl-card px-5 pt-6 pb-5"
+            class="hl-card px-4 pt-5 pb-4"
             aria-live="polite"
             data-tour="today"
         >
@@ -265,7 +351,7 @@ const slotIcons: Record<string, Component> = {
                 :date-label="dateLabel"
                 :status-text="todayStatusText"
             />
-            <div class="mt-2 grid grid-cols-3 gap-2">
+            <div class="mt-1 grid grid-cols-3 gap-2">
                 <div
                     v-for="slot in todaySlots"
                     :key="slot.key"
@@ -289,106 +375,20 @@ const slotIcons: Record<string, Component> = {
                     </span>
                 </div>
             </div>
-        </section>
-
-        <Link
-            :href="scan()"
-            class="bg-nav text-nav-foreground flex min-h-16 cursor-pointer items-center justify-center gap-3 rounded-full px-5 text-xl font-bold shadow-[0_10px_24px_-10px_rgb(28_25_23_/_0.45)] transition-transform duration-200 active:scale-[0.98]"
-            data-test="scan"
-            data-tour="scan-photo"
-        >
-            <span
-                class="bg-cta text-cta-foreground flex size-11 items-center justify-center rounded-full"
-                aria-hidden="true"
+            <button
+                v-if="readAloud && summarySpeech"
+                type="button"
+                class="text-primary mt-2 inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl text-base font-medium underline-offset-4 hover:underline"
+                data-test="read-summary"
+                @click="speak(summarySpeech)"
             >
-                <Plus class="size-6" />
-            </span>
-            Take a photo
-            <Camera class="size-6" aria-hidden="true" />
-        </Link>
-        <p class="text-muted-foreground -mt-3 text-center text-base">
-            Point the camera at a BP monitor or sugar meter.
-        </p>
-
-        <section class="space-y-3" data-tour="log-manual">
-            <div class="space-y-1">
-                <h2 class="text-xl font-bold">Add a reading</h2>
-                <p class="text-muted-foreground text-base leading-relaxed">
-                    Choose what you measured. Tap a card to type the numbers.
-                </p>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <Link
-                    :href="logBp()"
-                    class="hl-card border-t-primary flex min-h-44 cursor-pointer flex-col items-start gap-2 border-t-4 px-3 py-4 transition-transform duration-200 active:scale-[0.98] sm:px-4"
-                    data-test="log-bp"
-                >
-                    <span
-                        class="bg-primary text-primary-foreground flex size-12 items-center justify-center rounded-full"
-                        aria-hidden="true"
-                    >
-                        <Activity class="size-6" />
-                    </span>
-                    <span class="text-lg leading-tight font-bold">
-                        Add blood pressure
-                    </span>
-                    <span
-                        class="text-muted-foreground text-base leading-relaxed"
-                    >
-                        Arm cuff
-                    </span>
-                    <span class="text-base font-medium tabular-nums">
-                        132 / 84
-                    </span>
-                    <span
-                        class="bg-primary text-primary-foreground mt-auto inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-full text-base font-semibold"
-                    >
-                        Add
-                        <ChevronRight class="size-5" aria-hidden="true" />
-                    </span>
-                </Link>
-
-                <Link
-                    :href="logSugar()"
-                    class="hl-card border-t-success flex min-h-44 cursor-pointer flex-col items-start gap-2 border-t-4 px-3 py-4 transition-transform duration-200 active:scale-[0.98] sm:px-4"
-                    data-test="log-sugar"
-                >
-                    <span
-                        class="bg-success text-success-foreground flex size-12 items-center justify-center rounded-full"
-                        aria-hidden="true"
-                    >
-                        <Droplet class="size-6" />
-                    </span>
-                    <span class="text-lg leading-tight font-bold">
-                        Add blood sugar
-                    </span>
-                    <span
-                        class="text-muted-foreground text-base leading-relaxed"
-                    >
-                        Sugar meter
-                    </span>
-                    <span class="text-base font-medium tabular-nums">
-                        110
-                    </span>
-                    <span
-                        class="bg-success text-success-foreground mt-auto inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-full text-base font-semibold"
-                    >
-                        Add
-                        <ChevronRight class="size-5" aria-hidden="true" />
-                    </span>
-                </Link>
-            </div>
+                <Volume2 class="size-5" aria-hidden="true" />
+                Read today's summary
+            </button>
         </section>
 
-        <section class="space-y-3">
+        <section v-if="recent.length > 0" class="space-y-3">
             <h2 class="text-xl font-bold">Last readings</h2>
-            <p
-                v-if="recent.length === 0"
-                class="text-muted-foreground text-base leading-relaxed"
-            >
-                Nothing here yet. Take a photo or type a reading above.
-            </p>
             <ReadingRow
                 v-for="entry in recent"
                 :key="`${entry.type}-${entry.id}`"
@@ -400,6 +400,13 @@ const slotIcons: Record<string, Component> = {
             This app is a record-keeping tool, not a medical device, and does
             not provide medical advice. If a reading is 180/120 or higher, or if
             you feel unwell, seek immediate medical attention.
+            <Link
+                :href="home.url({ query: { guide: '1' } })"
+                class="text-foreground ml-1 inline-flex min-h-11 items-center font-semibold underline-offset-4 hover:underline"
+                data-test="open-guide"
+            >
+                How to use this app
+            </Link>
         </p>
     </div>
 </template>

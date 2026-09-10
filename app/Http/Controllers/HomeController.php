@@ -7,6 +7,7 @@ use App\Enums\ProfileRole;
 use App\Support\CareAlerts;
 use App\Support\CurrentProfile;
 use App\Support\ReadingReminders;
+use App\Support\ReadingSpeech;
 use App\Support\ReadingTimeline;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -64,10 +65,14 @@ class HomeController extends Controller
                     'label' => $member->email,
                 ])->values()->all(),
             ],
-            'alerts' => $alerts->active($profile),
+            'alerts' => array_values(array_filter(
+                $alerts->active($profile),
+                fn (array $alert): bool => $alert['message'] !== 'No readings logged yet',
+            )),
             'todayCount' => count($filledSlots),
             'todayTarget' => 3,
             'todaySlots' => $todaySlots,
+            'summarySpeech' => ReadingSpeech::home(count($filledSlots), 3, $todaySlots),
             'recent' => $recent,
             'reminders' => [
                 'enabled' => $profile->reminders_enabled,

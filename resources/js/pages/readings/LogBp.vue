@@ -27,6 +27,7 @@ import {
     readingSummary,
 } from '@/lib/offlineQueue';
 import { systemDateTimeLocal } from '@/lib/systemClock';
+import { speak } from '@/composables/useReadAloud';
 import { home } from '@/routes';
 import { destroy, store, update } from '@/routes/bp';
 
@@ -72,6 +73,10 @@ const pulse = ref(
 );
 const tag = ref(props.reading?.tag ?? props.defaults?.tag ?? 'none');
 const source = props.source ?? 'manual';
+const showMore = ref(
+    Boolean(props.reading?.note) ||
+        ((props.reading?.tag ?? props.defaults?.tag ?? 'none') !== 'none'),
+);
 
 const formBind = props.reading ? update.form(props.reading.id) : store.form();
 const clientUuid = crypto.randomUUID();
@@ -97,9 +102,11 @@ const maybeQueueOffline = (): boolean => {
         summary: readingSummary('bp', payload),
         queuedAt: new Date().toISOString(),
     }).then(() => {
+        const spoken = readingSummary('bp', payload);
         toast.success(
             'Saved on this phone. It will upload when you are online.',
         );
+        speak(`${spoken}. Saved on this phone.`);
         router.visit(home.url());
     });
 
@@ -149,9 +156,10 @@ const confirmDelete = (event: Event): void => {
         v-bind="formBind"
         v-slot="{ errors, processing }"
         class="flex flex-1 flex-col gap-6"
+        aria-labelledby="log-bp-heading"
         :on-before="maybeQueueOffline"
     >
-        <h1 class="flex items-center gap-2 text-2xl font-semibold">
+        <h1 id="log-bp-heading" class="flex items-center gap-2 text-2xl font-semibold">
             <Activity class="size-7" aria-hidden="true" />
             {{
                 reading
@@ -172,8 +180,7 @@ const confirmDelete = (event: Event): void => {
             v-if="!reading && source !== 'photo'"
             class="text-muted-foreground text-base leading-relaxed"
         >
-            Type the top and bottom numbers from your arm cuff. Doctors often
-            want 3 readings a day: morning, afternoon, and evening.
+            Type the top and bottom numbers from the cuff.
         </p>
         <p
             v-if="source === 'photo'"
@@ -196,7 +203,8 @@ const confirmDelete = (event: Event): void => {
                     class="flex flex-col items-center gap-1 text-center text-base leading-tight"
                 >
                     <ChevronsUp class="size-5" aria-hidden="true" />
-                    Systolic
+                    Top
+                    <span class="sr-only">, systolic</span>
                 </Label>
                 <Input
                     id="systolic"
@@ -207,9 +215,17 @@ const confirmDelete = (event: Event): void => {
                     autocomplete="off"
                     required
                     autofocus
+                    aria-required="true"
+                    :aria-invalid="errors.systolic ? true : undefined"
+                    :aria-describedby="
+                        errors.systolic ? 'systolic-error' : 'systolic-hint'
+                    "
                     class="h-20 text-center text-3xl tabular-nums md:text-3xl"
                 />
-                <InputError :message="errors.systolic" />
+                <p id="systolic-hint" class="sr-only">
+                    Top number from the cuff.
+                </p>
+                <InputError id="systolic-error" :message="errors.systolic" />
             </div>
             <div class="grid gap-2">
                 <Label
@@ -217,7 +233,8 @@ const confirmDelete = (event: Event): void => {
                     class="flex flex-col items-center gap-1 text-center text-base leading-tight"
                 >
                     <ChevronsDown class="size-5" aria-hidden="true" />
-                    Diastolic
+                    Bottom
+                    <span class="sr-only">, diastolic</span>
                 </Label>
                 <Input
                     id="diastolic"
@@ -227,9 +244,17 @@ const confirmDelete = (event: Event): void => {
                     pattern="[0-9]*"
                     autocomplete="off"
                     required
+                    aria-required="true"
+                    :aria-invalid="errors.diastolic ? true : undefined"
+                    :aria-describedby="
+                        errors.diastolic ? 'diastolic-error' : 'diastolic-hint'
+                    "
                     class="h-20 text-center text-3xl tabular-nums md:text-3xl"
                 />
-                <InputError :message="errors.diastolic" />
+                <p id="diastolic-hint" class="sr-only">
+                    Bottom number from the cuff.
+                </p>
+                <InputError id="diastolic-error" :message="errors.diastolic" />
             </div>
             <div class="grid gap-2">
                 <Label
@@ -238,6 +263,7 @@ const confirmDelete = (event: Event): void => {
                 >
                     <Heart class="size-5" aria-hidden="true" />
                     Pulse
+                    <span class="sr-only">, optional</span>
                 </Label>
                 <Input
                     id="pulse"
@@ -246,9 +272,11 @@ const confirmDelete = (event: Event): void => {
                     inputmode="numeric"
                     pattern="[0-9]*"
                     autocomplete="off"
+                    :aria-invalid="errors.pulse ? true : undefined"
+                    aria-describedby="pulse-error"
                     class="h-20 text-center text-3xl tabular-nums md:text-3xl"
                 />
-                <InputError :message="errors.pulse" />
+                <InputError id="pulse-error" :message="errors.pulse" />
             </div>
         </div>
 
@@ -263,20 +291,40 @@ const confirmDelete = (event: Event): void => {
                 name="measured_at"
                 :default-value="reading?.measured_at ?? systemDateTimeLocal()"
                 required
+                aria-required="true"
+                :aria-invalid="errors.measured_at ? true : undefined"
+                aria-describedby="measured-at-error"
                 class="h-14 text-lg md:text-lg"
             />
-            <InputError :message="errors.measured_at" />
+            <InputError id="measured-at-error" :message="errors.measured_at" />
         </div>
 
-        <div class="grid gap-2">
-            <p class="text-base font-medium">Optional tag</p>
-            <input type="hidden" name="tag" :value="tag" />
-            <div class="flex flex-wrap gap-2">
+        <input type="hidden" name="tag" :value="tag" />
+
+        <button
+            v-if="!showMore"
+            type="button"
+            class="text-foreground inline-flex min-h-14 items-center justify-center text-base font-semibold underline-offset-4 hover:underline"
+            data-test="bp-more"
+            @click="showMore = true"
+        >
+            Add a tag or note
+        </button>
+
+        <fieldset v-if="showMore" class="grid gap-2">
+            <legend class="text-base font-medium">Optional tag</legend>
+            <div
+                class="flex flex-wrap gap-2"
+                role="radiogroup"
+                aria-label="Optional tag"
+            >
                 <Button
                     v-for="option in tags"
                     :key="option.value"
                     type="button"
-                    class="h-12 text-base"
+                    role="radio"
+                    :aria-checked="tag === option.value"
+                    class="h-14 text-base"
                     :variant="tag === option.value ? 'default' : 'outline'"
                     @click="tag = option.value"
                 >
@@ -289,19 +337,21 @@ const confirmDelete = (event: Event): void => {
                 </Button>
             </div>
             <InputError :message="errors.tag" />
-        </div>
+        </fieldset>
 
-        <div class="grid gap-2">
+        <div v-if="showMore" class="grid gap-2">
             <Label for="note" class="text-base">Note (optional)</Label>
             <Input
                 id="note"
                 name="note"
                 maxlength="240"
                 :default-value="reading?.note ?? ''"
+                :aria-invalid="errors.note ? true : undefined"
+                aria-describedby="note-error"
                 class="h-14 text-lg md:text-lg"
                 placeholder="Felt dizzy, after a walk…"
             />
-            <InputError :message="errors.note" />
+            <InputError id="note-error" :message="errors.note" />
         </div>
 
         <Button

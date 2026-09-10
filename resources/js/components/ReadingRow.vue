@@ -21,11 +21,11 @@ defineProps<{
 }>();
 
 const iconWrap: Record<string, string> = {
-    crisis: 'bg-red-600 text-white',
-    high: 'bg-orange-600 text-white',
-    raised: 'bg-amber-600 text-white',
-    elevated: 'bg-yellow-500 text-stone-900',
-    normal: 'bg-emerald-700 text-white',
+    crisis: 'bg-[var(--bp-crisis)] text-[var(--bp-crisis-fg)]',
+    high: 'bg-[var(--bp-high)] text-[var(--bp-high-fg)]',
+    raised: 'bg-[var(--bp-raised)] text-[var(--bp-raised-fg)]',
+    elevated: 'bg-[var(--bp-elevated)] text-[var(--bp-elevated-fg)]',
+    normal: 'bg-[var(--bp-normal)] text-[var(--bp-normal-fg)]',
     glucose: 'bg-primary text-primary-foreground',
 };
 
@@ -42,6 +42,7 @@ const typeLabel: Record<string, string> = {
             'hl-card flex min-h-16 cursor-pointer items-center gap-3 px-3 py-3 transition-transform duration-200',
             'active:scale-[0.99]',
         ]"
+        :aria-label="`Edit ${typeLabel[entry.type]} ${entry.title}`"
         :data-test="testId"
     >
         <span

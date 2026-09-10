@@ -29,14 +29,14 @@ const title = computed(() => {
 
 const help = computed(() => {
     if (props.expect === 'glucose') {
-        return 'Photograph the meter screen so the sugar number is large and clear. You will check it before it is saved.';
+        return 'Photograph the sugar number so it is large and clear.';
     }
 
     if (props.expect === 'bp') {
-        return 'Photograph the monitor screen so the numbers are large and clear. You will check them before they are saved.';
+        return 'Photograph the cuff numbers so they are large and clear.';
     }
 
-    return 'Photograph the screen of a blood pressure monitor or a sugar meter. We can tell them apart from the numbers. You will check before anything is saved.';
+    return 'Photograph the blood pressure or sugar screen. You will check the numbers before they are saved.';
 });
 
 const onFile = (event: Event): void => {
@@ -57,7 +57,7 @@ const onFile = (event: Event): void => {
     <div class="flex flex-1 flex-col gap-6">
         <div class="space-y-2">
             <h1 class="text-3xl font-bold leading-tight">
-                Your numbers, from a photo
+                Photograph the screen
             </h1>
             <p class="text-muted-foreground text-lg leading-relaxed">
                 {{ help }}
@@ -102,6 +102,7 @@ const onFile = (event: Event): void => {
                     capture="environment"
                     class="sr-only"
                     :disabled="processing"
+                    :aria-label="processing ? 'Reading the photo' : fileLabel"
                     data-test="scan-photo"
                     @change="onFile"
                 />
@@ -114,7 +115,7 @@ const onFile = (event: Event): void => {
             <Link
                 v-if="expect !== 'glucose'"
                 :href="logBp()"
-                class="text-foreground min-h-11 font-semibold underline"
+                class="text-foreground inline-flex min-h-14 items-center font-semibold underline"
             >
                 Add blood pressure
             </Link>
@@ -122,7 +123,7 @@ const onFile = (event: Event): void => {
             <Link
                 v-if="expect !== 'bp'"
                 :href="logSugar()"
-                class="text-foreground min-h-11 font-semibold underline"
+                class="text-foreground inline-flex min-h-14 items-center font-semibold underline"
             >
                 Add blood sugar
             </Link>

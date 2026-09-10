@@ -10,6 +10,8 @@ use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\CompleteOnboardingController;
 use App\Http\Controllers\Consent\HealthDataConsentController;
 use App\Http\Controllers\CurrentProfileController;
+use App\Http\Controllers\FoodLogController;
+use App\Http\Controllers\FoodLookupController;
 use App\Http\Controllers\GlucoseReadingController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\HomeController;
@@ -98,6 +100,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('sugar/{glucoseReading}/edit', [GlucoseReadingController::class, 'edit'])->name('glucose.edit');
     Route::put('sugar/{glucoseReading}', [GlucoseReadingController::class, 'update'])->name('glucose.update');
     Route::delete('sugar/{glucoseReading}', [GlucoseReadingController::class, 'destroy'])->name('glucose.destroy');
+
+    Route::get('food', [FoodLogController::class, 'create'])->name('food.create');
+    Route::post('food', [FoodLogController::class, 'store'])->name('food.store');
+    Route::delete('food/{foodLog}', [FoodLogController::class, 'destroy'])->name('food.destroy');
+    Route::get('food/search', [FoodLookupController::class, 'search'])
+        ->middleware('throttle:food-lookup')
+        ->name('food.search');
+    Route::get('food/barcode', [FoodLookupController::class, 'barcode'])
+        ->middleware('throttle:food-lookup')
+        ->name('food.barcode');
+    Route::post('food/photo', [FoodLookupController::class, 'photo'])
+        ->middleware('throttle:scan-photo')
+        ->name('food.photo');
 });
 
 Route::get('shared/{token}', [ShareLinkController::class, 'show'])->name('shared.show');

@@ -43,16 +43,10 @@ const steps = (): Step[] => [
         body: 'This is HealthyMe. The logo always brings you Home. Let’s point at the buttons you will use.',
     },
     {
-        target: 'scan-photo',
-        radius: 28,
-        title: 'Take a photo',
-        body: 'This big button photographs your blood pressure cuff or sugar meter. Check the numbers before they are saved.',
-    },
-    {
         target: 'log-manual',
         radius: 20,
-        title: 'Or type the numbers',
-        body: 'Use these if you would rather type. Add blood pressure from the arm cuff, or add blood sugar from the meter.',
+        title: 'Log from here',
+        body: 'Photograph a meter, or type blood pressure, sugar, or food. One tap each.',
     },
     {
         target: 'today',

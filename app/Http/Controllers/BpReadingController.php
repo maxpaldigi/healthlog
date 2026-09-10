@@ -9,6 +9,7 @@ use App\Http\Requests\Readings\StoreBpReadingRequest;
 use App\Http\Requests\Readings\UpdateBpReadingRequest;
 use App\Models\BpReading;
 use App\Support\CurrentProfile;
+use App\Support\ReadingSpeech;
 use App\Support\ReadingTimeline;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -44,9 +45,13 @@ class BpReadingController extends Controller
     {
         $profile = $currentProfile->handle($request->user(), $request);
 
-        $storeBpReading->handle($profile, $request->validated());
+        $reading = $storeBpReading->handle($profile, $request->validated());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Blood pressure recorded.']);
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => 'Blood pressure recorded.',
+            'speech' => ReadingSpeech::bloodPressure($reading),
+        ]);
 
         return to_route('home');
     }
@@ -78,8 +83,13 @@ class BpReadingController extends Controller
     public function update(UpdateBpReadingRequest $request, BpReading $bpReading, UpdateBpReading $updateBpReading): RedirectResponse
     {
         $updateBpReading->handle($bpReading, $request->validated());
+        $bpReading->refresh();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Blood pressure updated.']);
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => 'Blood pressure updated.',
+            'speech' => ReadingSpeech::bloodPressure($bpReading),
+        ]);
 
         return to_route('history');
     }

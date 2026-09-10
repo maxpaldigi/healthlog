@@ -19,7 +19,7 @@ const onTrends = computed(() => page.component === 'readings/Trends');
 
 const tabClass = (active: boolean): string =>
     [
-        'flex min-h-16 min-w-[44px] cursor-pointer flex-col items-center justify-center gap-1 rounded-xl px-1 text-sm font-medium',
+        'flex min-h-16 min-w-14 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl px-1 text-sm font-medium',
         active ? 'text-nav-foreground' : 'text-nav-muted',
     ].join(' ');
 </script>

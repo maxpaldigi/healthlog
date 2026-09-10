@@ -22,7 +22,8 @@ it('shows the home screen with log buttons, today status, and the safety notice'
             ->where('todayTarget', 3)
             ->has('todaySlots', 3)
             ->has('recent', 0)
-            ->has('profiles', 1));
+            ->has('profiles', 1)
+            ->where('alerts', []));
 });
 
 it('hides the profile switcher when the user has one profile', function () {

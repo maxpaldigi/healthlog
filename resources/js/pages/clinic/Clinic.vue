@@ -70,7 +70,7 @@ defineProps<{
                     />
                     <InputError :message="errors.measured_at" />
                 </div>
-                <Button type="submit" class="h-12" :disabled="processing">
+                <Button type="submit" class="h-14" :disabled="processing">
                     Save weight
                 </Button>
             </Form>
@@ -89,7 +89,7 @@ defineProps<{
                         </span>
                     </span>
                     <Form v-bind="destroyWeight.form(item.id)">
-                        <Button type="submit" variant="ghost" class="h-11">
+                        <Button type="submit" variant="ghost" class="h-14 min-w-14">
                             <Trash2 class="size-4" aria-hidden="true" />
                             <span class="sr-only">Delete weight</span>
                         </Button>
@@ -136,7 +136,7 @@ defineProps<{
                     <Input id="lab_name" name="lab_name" class="h-14 text-lg" />
                     <InputError :message="errors.lab_name" />
                 </div>
-                <Button type="submit" class="h-12" :disabled="processing">
+                <Button type="submit" class="h-14" :disabled="processing">
                     Save HbA1c
                 </Button>
             </Form>
@@ -154,7 +154,7 @@ defineProps<{
                         </span>
                     </span>
                     <Form v-bind="destroyHba1c.form(item.id)">
-                        <Button type="submit" variant="ghost" class="h-11">
+                        <Button type="submit" variant="ghost" class="h-14 min-w-14">
                             <Trash2 class="size-4" aria-hidden="true" />
                             <span class="sr-only">Delete HbA1c</span>
                         </Button>
@@ -186,11 +186,11 @@ defineProps<{
                     <Label for="med_schedule">When you take it (optional)</Label>
                     <Input id="med_schedule" name="schedule" class="h-14 text-lg" />
                 </div>
-                <label class="flex items-center gap-2 text-base">
-                    <input type="checkbox" name="is_active" value="1" checked class="size-5" />
+                <label class="flex min-h-14 items-center gap-3 text-base">
+                    <input type="checkbox" name="is_active" value="1" checked class="size-6" />
                     Active
                 </label>
-                <Button type="submit" class="h-12" :disabled="processing">
+                <Button type="submit" class="h-14" :disabled="processing">
                     Save medication
                 </Button>
             </Form>
@@ -218,12 +218,12 @@ defineProps<{
                                 name="is_active"
                                 :value="item.is_active ? '0' : '1'"
                             />
-                            <Button type="submit" variant="outline" class="h-11">
+                            <Button type="submit" variant="outline" class="h-14">
                                 {{ item.is_active ? 'Mark stopped' : 'Mark active' }}
                             </Button>
                         </Form>
                         <Form v-bind="destroyMedication.form(item.id)">
-                            <Button type="submit" variant="ghost" class="h-11">
+                            <Button type="submit" variant="ghost" class="h-14">
                                 <Trash2 class="size-4" aria-hidden="true" />
                                 Delete
                             </Button>

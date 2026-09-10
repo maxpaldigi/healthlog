@@ -42,4 +42,27 @@ final class BloodPressureColor
             default => null,
         };
     }
+
+    /**
+     * Display tokens for the colour band. Keep hex values in sync with
+     * `--bp-*` in resources/css/app.css. Foreground on background must
+     * meet WCAG AA (4.5:1). Display only — never a diagnosis.
+     *
+     * @return list<array{band: string, scheme: 'light'|'dark', background: string, foreground: string}>
+     */
+    public static function tokens(): array
+    {
+        return [
+            ['band' => 'crisis', 'scheme' => 'light', 'background' => '#b91c1c', 'foreground' => '#ffffff'],
+            ['band' => 'high', 'scheme' => 'light', 'background' => '#c2410c', 'foreground' => '#ffffff'],
+            ['band' => 'raised', 'scheme' => 'light', 'background' => '#b45309', 'foreground' => '#ffffff'],
+            ['band' => 'elevated', 'scheme' => 'light', 'background' => '#a16207', 'foreground' => '#ffffff'],
+            ['band' => 'normal', 'scheme' => 'light', 'background' => '#047857', 'foreground' => '#ffffff'],
+            ['band' => 'crisis', 'scheme' => 'dark', 'background' => '#f87171', 'foreground' => '#1c1917'],
+            ['band' => 'high', 'scheme' => 'dark', 'background' => '#fb923c', 'foreground' => '#1c1917'],
+            ['band' => 'raised', 'scheme' => 'dark', 'background' => '#fbbf24', 'foreground' => '#1c1917'],
+            ['band' => 'elevated', 'scheme' => 'dark', 'background' => '#fde047', 'foreground' => '#1c1917'],
+            ['band' => 'normal', 'scheme' => 'dark', 'background' => '#34d399', 'foreground' => '#1c1917'],
+        ];
+    }
 }

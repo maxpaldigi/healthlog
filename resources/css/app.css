@@ -142,6 +142,16 @@
     --sidebar-border: hsl(0 0% 91%);
     --sidebar-ring: hsl(217.2 91.2% 59.8%);
     --sidebar: hsl(0 0% 98%);
+    --bp-crisis: #b91c1c;
+    --bp-crisis-fg: #ffffff;
+    --bp-high: #c2410c;
+    --bp-high-fg: #ffffff;
+    --bp-raised: #b45309;
+    --bp-raised-fg: #ffffff;
+    --bp-elevated: #a16207;
+    --bp-elevated-fg: #ffffff;
+    --bp-normal: #047857;
+    --bp-normal-fg: #ffffff;
 }
 
 .dark {
@@ -187,6 +197,16 @@
     --sidebar-border: hsl(0 0% 15.9%);
     --sidebar-ring: hsl(217.2 91.2% 59.8%);
     --sidebar: hsl(240 5.9% 10%);
+    --bp-crisis: #f87171;
+    --bp-crisis-fg: #1c1917;
+    --bp-high: #fb923c;
+    --bp-high-fg: #1c1917;
+    --bp-raised: #fbbf24;
+    --bp-raised-fg: #1c1917;
+    --bp-elevated: #fde047;
+    --bp-elevated-fg: #1c1917;
+    --bp-normal: #34d399;
+    --bp-normal-fg: #1c1917;
 }
 
 @layer base {
@@ -196,6 +216,10 @@
 
     html {
         touch-action: manipulation;
+    }
+
+    html.large-text {
+        font-size: 125%;
     }
 
     body {

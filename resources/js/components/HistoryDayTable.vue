@@ -44,11 +44,11 @@ const slotIcons: Record<string, Component> = {
 const slotOrder = ['morning', 'afternoon', 'evening'] as const;
 
 const colorDot: Record<string, string> = {
-    crisis: 'bg-red-600',
-    high: 'bg-orange-500',
-    raised: 'bg-amber-500',
-    elevated: 'bg-yellow-400',
-    normal: 'bg-emerald-600',
+    crisis: 'bg-[var(--bp-crisis)]',
+    high: 'bg-[var(--bp-high)]',
+    raised: 'bg-[var(--bp-raised)]',
+    elevated: 'bg-[var(--bp-elevated)]',
+    normal: 'bg-[var(--bp-normal)]',
     glucose: 'bg-primary',
 };
 </script>
@@ -107,7 +107,7 @@ const colorDot: Record<string, string> = {
                         >
                             <div
                                 v-if="day.bpSlots[slot].length === 0"
-                                class="text-muted-foreground flex min-h-11 items-center justify-center text-sm"
+                                class="text-muted-foreground flex min-h-14 items-center justify-center text-sm"
                             >
                                 —
                                 <span class="sr-only">No {{ slot }} reading</span>
@@ -117,14 +117,15 @@ const colorDot: Record<string, string> = {
                                     v-for="entry in day.bpSlots[slot]"
                                     :key="entry.id"
                                     :href="entry.edit_url"
-                                    class="hover:bg-accent flex min-h-11 cursor-pointer flex-col items-center justify-center rounded-lg px-1 py-1.5 text-center transition-colors duration-200"
+                                    class="hover:bg-accent flex min-h-14 cursor-pointer flex-col items-center justify-center rounded-lg px-1 py-1.5 text-center transition-colors duration-200"
+                                    :aria-label="`Edit blood pressure ${entry.title}`"
                                     :data-test="`history-bp-${entry.id}`"
                                 >
                                     <span
                                         class="inline-flex items-center gap-1.5 text-base font-semibold tabular-nums"
                                     >
                                         <span
-                                            class="size-2.5 shrink-0 rounded-full"
+                                            class="size-2.5 shrink-0 rounded-full ring-1 ring-foreground/40"
                                             :class="
                                                 colorDot[entry.color] ??
                                                 'bg-border'
@@ -186,7 +187,8 @@ const colorDot: Record<string, string> = {
                         <td colspan="3" class="p-0">
                             <Link
                                 :href="entry.edit_url"
-                                class="hover:bg-accent grid min-h-12 cursor-pointer grid-cols-[1fr_auto_auto] items-center gap-3 px-3 py-2 transition-colors duration-200"
+                                class="hover:bg-accent grid min-h-14 cursor-pointer grid-cols-[1fr_auto_auto] items-center gap-3 px-3 py-2 transition-colors duration-200"
+                                :aria-label="`Edit sugar ${entry.title}`"
                                 :data-test="`history-glucose-${entry.id}`"
                             >
                                 <span class="inline-flex items-center gap-2 font-semibold tabular-nums">

@@ -107,7 +107,7 @@ const showSugar = computed(
                         },
                     })
                 "
-                class="inline-flex min-h-12 cursor-pointer items-center justify-center gap-1.5 rounded-full border text-base font-medium"
+                class="inline-flex min-h-14 cursor-pointer items-center justify-center gap-1.5 rounded-full border text-base font-medium"
                 :class="
                     filters.type === option.value
                         ? 'bg-primary text-primary-foreground border-primary'
@@ -154,7 +154,7 @@ const showSugar = computed(
                     query: { from: filters.from, to: filters.to },
                 })
             "
-            class="bg-card inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-full border text-base font-medium shadow-sm"
+            class="bg-card inline-flex min-h-14 cursor-pointer items-center justify-center gap-2 rounded-full border text-base font-medium shadow-sm"
             data-test="print-for-doctor"
         >
             <Printer class="size-4" aria-hidden="true" />

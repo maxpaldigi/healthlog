@@ -26,6 +26,7 @@ import {
     readingSummary,
 } from '@/lib/offlineQueue';
 import { systemDateTimeLocal } from '@/lib/systemClock';
+import { speak } from '@/composables/useReadAloud';
 import { home } from '@/routes';
 import { destroy, store, update } from '@/routes/glucose';
 import { store as scanStore } from '@/routes/scan';
@@ -59,6 +60,7 @@ const context = ref(
     props.reading?.context ?? props.defaults?.context ?? 'random',
 );
 const source = props.source ?? 'manual';
+const showMore = ref(Boolean(props.reading?.note));
 
 const formBind = props.reading ? update.form(props.reading.id) : store.form();
 const clientUuid = crypto.randomUUID();
@@ -84,9 +86,11 @@ const maybeQueueOffline = (): boolean => {
         summary: readingSummary('glucose', payload),
         queuedAt: new Date().toISOString(),
     }).then(() => {
+        const spoken = readingSummary('glucose', payload);
         toast.success(
             'Saved on this phone. It will upload when you are online.',
         );
+        speak(`${spoken}. Saved on this phone.`);
         router.visit(home.url());
     });
 
@@ -134,7 +138,7 @@ const onMeterPhoto = (event: Event): void => {
     />
 
     <div class="flex flex-1 flex-col gap-6">
-        <h1 class="flex items-center gap-2 text-2xl font-semibold">
+        <h1 id="log-sugar-heading" class="flex items-center gap-2 text-2xl font-semibold">
             <Droplet class="size-7" aria-hidden="true" />
             {{
                 reading
@@ -186,6 +190,7 @@ const onMeterPhoto = (event: Event): void => {
                     capture="environment"
                     class="sr-only"
                     :disabled="processing"
+                    :aria-label="photoLabel"
                     data-test="sugar-meter-photo"
                     @change="onMeterPhoto"
                 />
@@ -200,6 +205,7 @@ const onMeterPhoto = (event: Event): void => {
             v-bind="formBind"
             v-slot="{ errors, processing }"
             class="flex flex-1 flex-col gap-6"
+            aria-labelledby="log-sugar-heading"
             :on-before="maybeQueueOffline"
         >
             <input type="hidden" name="source" :value="source" />
@@ -224,20 +230,29 @@ const onMeterPhoto = (event: Event): void => {
                     autocomplete="off"
                     required
                     autofocus
+                    aria-required="true"
+                    :aria-invalid="errors.value ? true : undefined"
+                    aria-describedby="value-error"
                     :default-value="reading?.value ?? defaults?.value ?? ''"
                     class="h-24 text-center text-5xl tabular-nums md:text-5xl"
                 />
-                <InputError :message="errors.value" />
+                <InputError id="value-error" :message="errors.value" />
             </div>
 
-            <div class="grid gap-2">
-                <p class="text-base font-medium">When was this?</p>
+            <fieldset class="grid gap-2">
+                <legend class="text-base font-medium">When was this?</legend>
                 <input type="hidden" name="context" :value="context" />
-                <div class="grid grid-cols-2 gap-3">
+                <div
+                    class="grid grid-cols-2 gap-3"
+                    role="radiogroup"
+                    aria-label="When was this?"
+                >
                     <Button
                         v-for="option in contexts"
                         :key="option.value"
                         type="button"
+                        role="radio"
+                        :aria-checked="context === option.value"
                         class="h-14 text-base"
                         :variant="
                             context === option.value ? 'default' : 'outline'
@@ -254,7 +269,7 @@ const onMeterPhoto = (event: Event): void => {
                     </Button>
                 </div>
                 <InputError :message="errors.context" />
-            </div>
+            </fieldset>
 
             <div class="grid gap-2">
                 <Label
@@ -272,22 +287,37 @@ const onMeterPhoto = (event: Event): void => {
                         reading?.measured_at ?? systemDateTimeLocal()
                     "
                     required
+                    aria-required="true"
+                    :aria-invalid="errors.measured_at ? true : undefined"
+                    aria-describedby="measured-at-error"
                     class="h-14 text-lg md:text-lg"
                 />
-                <InputError :message="errors.measured_at" />
+                <InputError id="measured-at-error" :message="errors.measured_at" />
             </div>
 
-            <div class="grid gap-2">
+            <button
+                v-if="!showMore"
+                type="button"
+                class="text-foreground inline-flex min-h-14 items-center justify-center text-base font-semibold underline-offset-4 hover:underline"
+                data-test="sugar-more"
+                @click="showMore = true"
+            >
+                Add a note
+            </button>
+
+            <div v-if="showMore" class="grid gap-2">
                 <Label for="note" class="text-base">Note (optional)</Label>
                 <Input
                     id="note"
                     name="note"
                     maxlength="240"
                     :default-value="reading?.note ?? ''"
+                    :aria-invalid="errors.note ? true : undefined"
+                    aria-describedby="note-error"
                     class="h-14 text-lg md:text-lg"
                     placeholder="Before breakfast, felt shaky…"
                 />
-                <InputError :message="errors.note" />
+                <InputError id="note-error" :message="errors.note" />
             </div>
 
             <Button

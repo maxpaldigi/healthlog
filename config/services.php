@@ -45,4 +45,9 @@ return [
         'model' => env('GEMINI_MODEL', 'gemini-2.0-flash'),
     ],
 
+    'open_food_facts' => [
+        'base' => env('OPEN_FOOD_FACTS_BASE', 'https://world.openfoodfacts.org'),
+        'user_agent' => env('OPEN_FOOD_FACTS_USER_AGENT', 'HealthyMe/1.0 ('.env('APP_URL', 'http://localhost').')'),
+    ],
+
 ];
