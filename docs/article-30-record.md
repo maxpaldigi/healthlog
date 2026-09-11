@@ -15,7 +15,8 @@ Purpose: personal blood pressure and blood sugar record-keeping, visit reports, 
 | Medication name lookup | Search words (no name, email, or date of birth) | U.S. National Library of Medicine RxNorm | Explicit Art. 9 consent (`health_data`) | Cached names; medication list until account deletion |
 | Share link | Readings in the chosen date range | Anyone with the link | Separate `share_link` consent | Link expiry (1–30 days) |
 | Clinic reply on a share link | Note and optional sugar targets written by whoever has the reply link | Stored on the person’s account (visible to them and helpers) | Separate `share_link` consent | Writes stop at link expiry; note until account deletion; targets until the person changes them |
+| Operator directory | Name, email, join date, last log date, entry counts, health-data consent yes/no | HealthyMe operator | Contract / running the service | Until account deletion |
 
 No identifiers are sent to Gemini. No merged food database is distributed.
 
-Policy version: 2026-09-10.
+Policy version: 2026-09-11.

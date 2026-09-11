@@ -38,6 +38,7 @@ class EnsureHealthDataConsent
             'register',
             'register.store',
             'invites.accept',
+            'admin.*',
         ])) {
             return $next($request);
         }

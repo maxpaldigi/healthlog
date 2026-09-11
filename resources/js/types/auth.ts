@@ -12,6 +12,7 @@ export type User = {
 
 export type Auth = {
     user: User;
+    is_super_admin?: boolean;
     show_guide: boolean;
 };
 

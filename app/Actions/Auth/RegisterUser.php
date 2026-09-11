@@ -7,6 +7,7 @@ use App\Enums\GlucoseUnit;
 use App\Enums\WeightUnit;
 use App\Models\Profile;
 use App\Models\User;
+use App\Support\SuperAdmin;
 use App\Support\SystemTimezone;
 use Illuminate\Support\Facades\DB;
 
@@ -34,6 +35,10 @@ class RegisterUser
             ]);
 
             app(RecordConsent::class)->handle($user, ConsentType::HealthData);
+
+            if (SuperAdmin::matches($user)) {
+                $user->forceFill(['is_super_admin' => true])->save();
+            }
 
             return $user;
         });

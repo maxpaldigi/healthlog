@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3';
-import { CircleHelp, LogOut, Settings, Users } from '@lucide/vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import { CircleHelp, LogOut, Settings, Shield, Users } from '@lucide/vue';
+import { computed } from 'vue';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -22,6 +23,10 @@ const handleLogout = () => {
 };
 
 defineProps<Props>();
+
+const isSuperAdmin = computed(
+    () => Boolean(usePage().props.auth.is_super_admin),
+);
 </script>
 
 <template>
@@ -32,6 +37,16 @@ defineProps<Props>();
     </DropdownMenuLabel>
     <DropdownMenuSeparator />
     <DropdownMenuGroup>
+        <DropdownMenuItem v-if="isSuperAdmin" :as-child="true">
+            <Link
+                class="block w-full cursor-pointer"
+                href="/admin"
+                data-test="operator-dashboard-link"
+            >
+                <Shield class="mr-2 h-4 w-4" />
+                Operator
+            </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem :as-child="true">
             <Link class="block w-full cursor-pointer" :href="edit()" prefetch>
                 <Settings class="mr-2 h-4 w-4" />

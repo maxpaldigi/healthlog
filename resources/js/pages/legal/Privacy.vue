@@ -16,7 +16,7 @@ import { data as aboutData } from '@/routes/about';
         </Link>
         <h1 class="mt-6 text-3xl font-bold">Privacy notice</h1>
         <p class="text-muted-foreground mt-2 text-base leading-relaxed">
-            Version 2026-09-10. HealthyMe is a record-keeping tool, not a
+            Version 2026-09-11. HealthyMe is a record-keeping tool, not a
             medical device, and does not replace a doctor.
         </p>
         <div class="mt-6 space-y-4 text-base leading-relaxed">
@@ -68,6 +68,12 @@ import { data as aboutData } from '@/routes/about';
                 If you invite a helper, we email them a link. They can view and
                 add readings for that log. The person whose readings these are
                 can always see who has access and can remove it.
+            </p>
+            <p>
+                The person who runs this app can see who has an account (name,
+                email, when you joined, whether you have logged, and how many
+                entries you have). They cannot open your readings unless you
+                share a link or invite them.
             </p>
             <p>
                 If you turn on read aloud, this phone speaks saved numbers and

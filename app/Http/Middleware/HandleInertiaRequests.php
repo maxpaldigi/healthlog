@@ -38,15 +38,29 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
-            'auth' => [
-                'user' => $request->user(),
-                'show_guide' => $request->user() !== null
-                    && $request->user()->onboarding_completed_at === null,
-            ],
+            'auth' => $this->authProps($request),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'vapidPublicKey' => filled(config('webpush.vapid.public_key'))
                 ? (string) config('webpush.vapid.public_key')
                 : null,
         ];
+    }
+
+    /**
+     * @return array{user: mixed, show_guide: bool, is_super_admin?: true}
+     */
+    private function authProps(Request $request): array
+    {
+        $auth = [
+            'user' => $request->user(),
+            'show_guide' => $request->user() !== null
+                && $request->user()->onboarding_completed_at === null,
+        ];
+
+        if ($request->user()?->isSuperAdmin() === true) {
+            $auth['is_super_admin'] = true;
+        }
+
+        return $auth;
     }
 }

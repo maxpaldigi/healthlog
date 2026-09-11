@@ -31,7 +31,7 @@ use Illuminate\Support\Carbon;
 ])]
 class Consent extends Model
 {
-    public const POLICY_VERSION = '2026-09-10';
+    public const POLICY_VERSION = '2026-09-11';
 
     /** @use HasFactory<ConsentFactory> */
     use HasFactory;

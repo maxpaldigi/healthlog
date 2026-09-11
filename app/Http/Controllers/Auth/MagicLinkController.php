@@ -19,6 +19,10 @@ class MagicLinkController extends Controller
                 ->with('status', 'This login link is invalid or has expired. Please request a new one.');
         }
 
-        return redirect()->intended(route('home'));
+        $home = $user->isSuperAdmin()
+            ? route('admin.dashboard')
+            : route('home');
+
+        return redirect()->intended($home);
     }
 }

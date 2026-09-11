@@ -32,6 +32,10 @@ use Illuminate\Support\Carbon;
  * @property string $reminder_afternoon
  * @property string $reminder_evening
  * @property bool $is_default
+ * @property-read int $bp_readings_count
+ * @property-read int $glucose_readings_count
+ * @property-read string|null $bp_readings_max_measured_at
+ * @property-read string|null $glucose_readings_max_measured_at
  * @property int $alert_inactivity_days
  * @property int $alert_streak
  * @property Carbon|null $created_at

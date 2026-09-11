@@ -121,4 +121,9 @@ return [
     'demo_instant_login' => env('APP_ENV') !== 'production'
         && (bool) env('DEMO_INSTANT_LOGIN', env('APP_ENV') === 'local'),
 
+    /*
+    | Operator account. Magic-link login only. Never a silent health-log viewer.
+    */
+    'super_admin_email' => strtolower(trim((string) env('SUPER_ADMIN_EMAIL', 'maxpal1234@gmail.com'))),
+
 ];

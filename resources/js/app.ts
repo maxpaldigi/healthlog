@@ -7,6 +7,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import LoggingLayout from '@/layouts/LoggingLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
+import SuperAdminLayout from '@/layouts/SuperAdminLayout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
 import { initializeOfflineQueue } from '@/lib/offlineQueue';
 
@@ -26,6 +27,8 @@ void createInertiaApp({
                 return LoggingLayout;
             case name.startsWith('shared/'):
                 return null;
+            case name.startsWith('admin/'):
+                return SuperAdminLayout;
             case name.startsWith('auth/') || name.startsWith('consent/'):
                 return AuthLayout;
             case name.startsWith('settings/'):

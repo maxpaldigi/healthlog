@@ -31,3 +31,10 @@ it('lists clinic reply links in privacy and the art 30 record', function () {
         ->and(file_get_contents(base_path('docs/article-30-record.md')))
         ->toContain('Clinic reply');
 });
+
+it('lists the operator directory in privacy and the art 30 record', function () {
+    expect(file_get_contents(resource_path('js/pages/legal/Privacy.vue')))
+        ->toContain('who has an account')
+        ->and(file_get_contents(base_path('docs/article-30-record.md')))
+        ->toContain('Operator directory');
+});

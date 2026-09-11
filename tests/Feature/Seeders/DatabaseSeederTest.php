@@ -13,6 +13,7 @@ it('does not seed a demo user in production', function () {
     $this->seed();
 
     expect(User::query()->where('email', 'demo@healthlog.test')->exists())->toBeFalse()
+        ->and(User::query()->where('email', 'maxpal1234@gmail.com')->where('is_super_admin', true)->exists())->toBeTrue()
         ->and(Profile::query()->count())->toBe(0)
         ->and(BpReading::query()->count())->toBe(0);
 });

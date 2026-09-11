@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AboutDataController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\MagicLinkController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -27,6 +28,7 @@ use App\Http\Controllers\ScanController;
 use App\Http\Controllers\ShareLinkController;
 use App\Http\Controllers\TermsController;
 use App\Http\Controllers\TrendsController;
+use App\Http\Middleware\EnsureSuperAdmin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -60,6 +62,10 @@ Route::middleware('guest')->group(function () {
 Route::post('logout', [LoginController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
+
+Route::middleware(EnsureSuperAdmin::class)->group(function () {
+    Route::get('admin', DashboardController::class)->name('admin.dashboard');
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('consent/health-data', [HealthDataConsentController::class, 'create'])->name('consent.health-data');

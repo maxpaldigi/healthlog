@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Actions\Auth\EnsureSuperAdmin;
 use App\Enums\Arm;
 use App\Enums\BodyPosition;
 use App\Enums\GlucoseContext;
@@ -24,6 +25,8 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
+        app(EnsureSuperAdmin::class)->handle();
+
         if (app()->isProduction()) {
             return;
         }
