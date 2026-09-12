@@ -20,6 +20,9 @@ declare module '@inertiajs/core' {
             auth: Auth;
             sidebarOpen: boolean;
             vapidPublicKey: string | null;
+            locale: string;
+            locales: { value: string; label: string }[];
+            translations: Record<string, string>;
             [key: string]: unknown;
         };
     }

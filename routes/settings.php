@@ -3,6 +3,7 @@
 use App\Http\Controllers\Care\InviteCaregiverController;
 use App\Http\Controllers\Care\RevokeCaregiverController;
 use App\Http\Controllers\Settings\HealthProfileController;
+use App\Http\Controllers\Settings\LocaleController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
 use Illuminate\Support\Facades\Route;
@@ -24,4 +25,5 @@ Route::middleware(['auth'])->group(function () {
     Route::get('settings/security', [SecurityController::class, 'edit'])->name('security.edit');
 
     Route::inertia('settings/appearance', 'settings/Appearance')->name('appearance.edit');
+    Route::patch('settings/appearance/locale', [LocaleController::class, 'update'])->name('appearance.locale');
 });

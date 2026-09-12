@@ -1,10 +1,15 @@
 <?php
 
+use App\Enums\FoodSource;
+use App\Enums\GlucoseContext;
 use App\Enums\ProfileRole;
+use App\Models\FoodLog;
+use App\Models\GlucoseReading;
 use App\Models\Profile;
 use App\Models\ProfileMember;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 /*
@@ -50,6 +55,29 @@ expect()->extend('toBeOne', function () {
 | global functions to help you to reduce the number of lines of code in your test files.
 |
 */
+
+/**
+ * @param  list<string>  $mgDl
+ */
+function seedLinkedMeals(Profile $profile, string $label, array $mgDl, ?string $sourceRef = null): void
+{
+    foreach (array_values($mgDl) as $index => $value) {
+        $day = Carbon::parse('2026-08-01', $profile->clockTimezone())->addDays($index);
+        $reading = GlucoseReading::factory()->for($profile)->create([
+            'context' => GlucoseContext::PostMeal2h,
+            'value_mg_dl' => $value,
+            'measured_at' => $day->copy()->setTime(14, 0)->utc(),
+        ]);
+
+        FoodLog::factory()->for($profile)->create([
+            'source' => $sourceRef === null ? FoodSource::Custom : FoodSource::OpenFoodFacts,
+            'source_ref' => $sourceRef,
+            'label' => $label,
+            'eaten_at' => $day->copy()->setTime(12, 0)->utc(),
+            'glucose_reading_id' => $reading->id,
+        ]);
+    }
+}
 
 function userWithProfile(array $user = [], array $profile = [], bool $consent = true): User
 {

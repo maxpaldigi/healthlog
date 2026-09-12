@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
 import { Camera, Search, Trash2, Utensils } from '@lucide/vue';
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,18 +48,28 @@ type Recent = {
     attribution: string | null;
 };
 
+type FoodHistory = {
+    after_meal: string | null;
+    morning_blood_pressure: string | null;
+    clinic_targets: string | null;
+    hint: string | null;
+};
+
+type Identified = {
+    label: string;
+    note: string;
+    confidence: string;
+    product: Product | null;
+    results: Product[];
+    history: FoodHistory;
+};
+
 const props = defineProps<{
     defaults: { eaten_at: string };
     whoReference: string;
     portions: Portion[];
     recent: Recent[];
-    identified: {
-        label: string;
-        note: string;
-        confidence: string;
-        product: Product | null;
-        results: Product[];
-    } | null;
+    identified: Identified | null;
     scanStatus?: string | null;
 }>();
 
@@ -88,6 +98,22 @@ const foodName = computed(() =>
 const canSave = computed(() => foodName.value.length >= 2);
 
 const showBarcode = ref(false);
+const pendingConfirm = ref<Identified | null>(null);
+const previewUrl = ref<string | null>(null);
+const pickedResult = ref<Product | null>(null);
+const photoLabel = ref('Photograph the food');
+const preparingPhoto = ref(false);
+
+const confirmProduct = computed(
+    () => pendingConfirm.value?.product ?? pickedResult.value,
+);
+
+const revokePreview = (): void => {
+    if (previewUrl.value !== null) {
+        URL.revokeObjectURL(previewUrl.value);
+        previewUrl.value = null;
+    }
+};
 
 const stopScan = (): void => {
     scanning.value = false;
@@ -212,6 +238,10 @@ const runSearch = async (): Promise<void> => {
 };
 
 watch(query, () => {
+    if (pendingConfirm.value) {
+        return;
+    }
+
     if (!selected.value) {
         customLabel.value = query.value;
     }
@@ -240,8 +270,59 @@ const useCustomName = (): void => {
     portion.value = props.portions.find((item) => item.key === 'serving') ?? props.portions[0];
 };
 
+const acceptIdentified = (): void => {
+    const found = pendingConfirm.value;
+
+    if (!found) {
+        return;
+    }
+
+    if (found.product) {
+        choose(found.product);
+    } else if (pickedResult.value) {
+        choose(pickedResult.value);
+    } else {
+        query.value = found.label;
+        customLabel.value = found.label;
+        results.value = found.results;
+        selected.value = null;
+    }
+
+    pendingConfirm.value = null;
+    pickedResult.value = null;
+    photoLabel.value = 'Photograph the food';
+    revokePreview();
+};
+
+const rejectIdentified = (): void => {
+    pendingConfirm.value = null;
+    pickedResult.value = null;
+    query.value = '';
+    customLabel.value = '';
+    results.value = [];
+    selected.value = null;
+    photoLabel.value = 'Photograph the food';
+    revokePreview();
+};
+
+watch(
+    () => props.identified,
+    (found) => {
+        if (!found) {
+            return;
+        }
+
+        pendingConfirm.value = found;
+        pickedResult.value = found.product ?? found.results[0] ?? null;
+        selected.value = null;
+        results.value = [];
+    },
+    { immediate: true },
+);
+
 onUnmounted(() => {
     stopScan();
+    revokePreview();
 
     if (searchTimer !== null) {
         window.clearTimeout(searchTimer);
@@ -253,9 +334,6 @@ const confirmDelete = (event: Event): void => {
         event.preventDefault();
     }
 };
-
-const photoLabel = ref('Photograph the food');
-const preparingPhoto = ref(false);
 
 const onFoodPhoto = async (event: Event): Promise<void> => {
     const input = event.target as HTMLInputElement;
@@ -272,6 +350,9 @@ const onFoodPhoto = async (event: Event): Promise<void> => {
     try {
         const compressed = await compressPhoto(file);
 
+        revokePreview();
+        previewUrl.value = URL.createObjectURL(compressed);
+
         postPhoto(photoRoute.url(), compressed, {}, {
             onFinish: () => {
                 preparingPhoto.value = false;
@@ -279,30 +360,15 @@ const onFoodPhoto = async (event: Event): Promise<void> => {
             onFail: () => {
                 preparingPhoto.value = false;
                 photoLabel.value = 'Photograph the food';
+                revokePreview();
             },
         });
     } catch {
         preparingPhoto.value = false;
         photoLabel.value = 'Photograph the food';
+        revokePreview();
     }
 };
-
-onMounted(() => {
-    if (!props.identified) {
-        return;
-    }
-
-    query.value = props.identified.label;
-    customLabel.value = props.identified.label;
-
-    if (props.identified.product) {
-        choose(props.identified.product);
-
-        return;
-    }
-
-    results.value = props.identified.results;
-});
 </script>
 
 <template>
@@ -318,22 +384,131 @@ onMounted(() => {
             (ODbL).
         </p>
         <p
-            v-if="scanStatus"
+            v-if="scanStatus && !pendingConfirm"
             class="rounded-2xl border border-amber-400 bg-amber-50 px-4 py-3 text-base leading-relaxed text-amber-950"
             data-test="scan-status"
             role="alert"
         >
             {{ scanStatus }}
         </p>
-        <p
-            v-if="identified?.note"
-            class="border-primary/30 bg-card rounded-2xl border px-4 py-3 text-base leading-relaxed"
-            data-test="food-photo-note"
-        >
-            {{ identified.note }}
-        </p>
 
-        <div v-if="!selected" class="grid gap-2">
+        <section
+            v-if="pendingConfirm"
+            class="hl-card space-y-4 px-4 py-5"
+            data-test="food-photo-confirm"
+        >
+            <img
+                v-if="previewUrl"
+                :src="previewUrl"
+                alt="Photo you took"
+                class="h-48 w-full rounded-2xl object-cover"
+                data-test="food-photo-preview"
+            />
+            <h2 class="text-2xl font-bold" data-test="food-photo-label">
+                {{ pendingConfirm.label }}
+            </h2>
+            <p class="text-base leading-relaxed" data-test="food-photo-note">
+                {{ pendingConfirm.note }}
+            </p>
+
+            <div v-if="confirmProduct" class="space-y-2" data-test="food-photo-facts">
+                <p v-if="confirmProduct.brands" class="text-muted-foreground text-base">
+                    {{ confirmProduct.brands }}
+                </p>
+                <ul class="grid gap-1 text-base">
+                    <li v-if="confirmProduct.sodium_mg_100g">
+                        {{ confirmProduct.sodium_mg_100g }} mg sodium per 100 g
+                    </li>
+                    <li v-if="confirmProduct.sugars_g_100g">
+                        {{ confirmProduct.sugars_g_100g }} g sugars per 100 g
+                    </li>
+                    <li v-if="confirmProduct.carbs_g_100g">
+                        {{ confirmProduct.carbs_g_100g }} g carbs per 100 g
+                    </li>
+                </ul>
+                <p
+                    v-for="flag in confirmProduct.flags"
+                    :key="flag"
+                    class="text-base leading-relaxed"
+                >
+                    {{ flag }}
+                </p>
+                <p class="text-muted-foreground text-sm">
+                    {{ confirmProduct.attribution }}
+                </p>
+            </div>
+
+            <ul
+                v-if="!pendingConfirm.product && pendingConfirm.results.length > 1"
+                class="grid gap-2"
+                aria-label="Possible matches"
+            >
+                <li v-for="item in pendingConfirm.results" :key="item.barcode">
+                    <button
+                        type="button"
+                        class="hl-card flex min-h-14 w-full cursor-pointer flex-col items-start px-4 py-3 text-left"
+                        :class="
+                            pickedResult?.barcode === item.barcode
+                                ? 'ring-primary ring-2'
+                                : ''
+                        "
+                        :data-test="`food-photo-pick-${item.barcode}`"
+                        @click="pickedResult = item"
+                    >
+                        <span class="text-lg font-semibold">{{ item.name }}</span>
+                        <span
+                            v-if="item.brands"
+                            class="text-muted-foreground text-base"
+                        >
+                            {{ item.brands }}
+                        </span>
+                    </button>
+                </li>
+            </ul>
+
+            <div class="space-y-2 text-base leading-relaxed" data-test="food-photo-history">
+                <p v-if="pendingConfirm.history.after_meal">
+                    {{ pendingConfirm.history.after_meal }}
+                </p>
+                <p v-if="pendingConfirm.history.morning_blood_pressure">
+                    {{ pendingConfirm.history.morning_blood_pressure }}
+                </p>
+                <p v-if="pendingConfirm.history.clinic_targets">
+                    {{ pendingConfirm.history.clinic_targets }}
+                </p>
+                <p
+                    v-if="pendingConfirm.history.hint"
+                    class="text-muted-foreground"
+                >
+                    {{ pendingConfirm.history.hint }}
+                </p>
+                <p class="text-muted-foreground">
+                    Check with your clinic.
+                </p>
+            </div>
+
+            <div class="grid gap-2">
+                <Button
+                    type="button"
+                    class="h-16 w-full rounded-full text-xl"
+                    data-test="food-photo-yes"
+                    @click="acceptIdentified"
+                >
+                    Yes, use this
+                </Button>
+                <Button
+                    type="button"
+                    variant="outline"
+                    class="h-14 w-full rounded-full text-lg"
+                    data-test="food-photo-no"
+                    @click="rejectIdentified"
+                >
+                    No, I’ll type it
+                </Button>
+            </div>
+        </section>
+
+        <div v-if="!selected && !pendingConfirm" class="grid gap-2">
             <label
                 class="bg-nav text-nav-foreground flex min-h-40 cursor-pointer flex-col items-center justify-center gap-3 rounded-[1.75rem] px-5 text-center shadow-[0_16px_40px_-18px_rgb(28_25_23_/_0.45)]"
                 :class="preparingPhoto ? 'opacity-70' : ''"
@@ -366,7 +541,7 @@ onMounted(() => {
             </label>
         </div>
 
-        <div v-if="!selected" class="grid gap-2">
+        <div v-if="!selected && !pendingConfirm" class="grid gap-2">
             <Label for="food-search" class="text-base">Or type the name</Label>
             <div class="relative">
                 <Search
@@ -429,7 +604,7 @@ onMounted(() => {
             </button>
         </div>
 
-        <div v-if="!selected && showBarcode" class="grid gap-2">
+        <div v-if="!selected && !pendingConfirm && showBarcode" class="grid gap-2">
             <div class="flex flex-col gap-2 sm:flex-row">
                 <Button
                     type="button"
@@ -481,7 +656,7 @@ onMounted(() => {
         </div>
 
         <section
-            v-if="selected"
+            v-if="selected && !pendingConfirm"
             class="hl-card space-y-3 px-4 py-4"
             data-test="food-product"
         >
@@ -524,6 +699,7 @@ onMounted(() => {
         </section>
 
         <Form
+            v-if="!pendingConfirm"
             v-bind="store.form()"
             v-slot="{ errors, processing }"
             class="flex flex-1 flex-col gap-6"
@@ -598,7 +774,7 @@ onMounted(() => {
             </Button>
         </Form>
 
-        <section v-if="recent.length > 0" class="space-y-3">
+        <section v-if="recent.length > 0 && !pendingConfirm" class="space-y-3">
             <h2 class="text-xl font-bold">Recently eaten</h2>
             <ul class="grid gap-2">
                 <li

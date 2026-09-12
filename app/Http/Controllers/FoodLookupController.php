@@ -17,8 +17,7 @@ class FoodLookupController extends Controller
             'q' => ['required', 'string', 'min:2', 'max:80'],
         ]);
 
-        $locale = $request->getPreferredLanguage() ?? (string) config('app.locale');
-        $foods = $openFoodFacts->search($validated['q'], $locale);
+        $foods = $openFoodFacts->search($validated['q'], app()->getLocale());
 
         return response()->json([
             'results' => array_map(fn ($food): array => $food->toArray(), $foods),
@@ -51,8 +50,6 @@ class FoodLookupController extends Controller
 
         abort_unless($photo !== null, 422);
 
-        $locale = $request->getPreferredLanguage() ?? (string) config('app.locale');
-
-        return $processFoodPhoto->handle($photo, $locale);
+        return $processFoodPhoto->handle($photo, app()->getLocale());
     }
 }

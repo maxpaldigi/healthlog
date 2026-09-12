@@ -2,6 +2,7 @@
 
 use App\Contracts\ExtractsFoodFromPhoto;
 use App\Exceptions\CouldNotReadPhotoException;
+use App\Support\FoodResponse;
 use App\Support\IdentifiedFood;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
@@ -52,7 +53,9 @@ it('names food from a photo, searches worldwide, and deletes the photo', functio
             ->component('food/LogFood')
             ->where('identified.label', 'Apple')
             ->where('identified.note', 'This looks like Apple. Check, then save.')
-            ->where('identified.results.0.name', 'Fresh apples'));
+            ->where('identified.results.0.name', 'Fresh apples')
+            ->where('identified.history.after_meal', null)
+            ->where('identified.history.hint', FoodResponse::PHOTO_HINT));
 
     expect(Storage::disk('local')->allFiles())->toBe([]);
 
@@ -71,6 +74,32 @@ it('names food from a photo, searches worldwide, and deletes the photo', functio
             && str_contains(strtolower($request->url()), 'apple')
             && ! str_contains($request->url(), 'parent@example.com');
     });
+});
+
+it('includes this person\'s 2-hour average when the named food has five readings', function () {
+    Storage::fake('local');
+    Http::fake([
+        'world.openfoodfacts.org/*' => Http::response(['products' => []]),
+    ]);
+
+    $this->mock(ExtractsFoodFromPhoto::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('handle')->once()->andReturn(new IdentifiedFood('Rice', null, 'high'));
+    });
+
+    $user = userWithProfile([], ['timezone' => 'UTC']);
+    seedLinkedMeals($user->defaultProfile, 'Rice', array_fill(0, 5, '210.00'));
+
+    $this->actingAs($user)
+        ->followingRedirects()
+        ->post(route('food.photo'), [
+            'photo' => UploadedFile::fake()->image('rice.jpg', 80, 80),
+        ])
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('food/LogFood')
+            ->where('identified.label', 'Rice')
+            ->where('identified.history.after_meal', 'After Rice: 210 mg/dL avg (5 readings).')
+            ->where('identified.history.hint', null));
 });
 
 it('deletes the food photo after a successful identify', function () {

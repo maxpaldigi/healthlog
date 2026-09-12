@@ -7,15 +7,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslator } from '@/composables/useTranslator';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
+
+const { t } = useTranslator();
 
 const LAST_EMAIL_KEY = 'healthyme.last-login-email';
 
 defineOptions({
     layout: {
-        title: 'Log in',
-        description: 'Enter your email. We send a one-time login link. After you open it, this phone stays signed in.',
+        title: 'auth.login.title',
+        description: 'auth.login.description',
     },
 });
 
@@ -48,7 +51,7 @@ const rememberEmail = (): void => {
 </script>
 
 <template>
-    <Head title="Log in" />
+    <Head :title="t('auth.login.title')" />
 
     <div
         v-if="status"
@@ -65,7 +68,7 @@ const rememberEmail = (): void => {
     >
         <div class="grid gap-6">
             <div class="grid gap-2">
-                <Label for="email" class="text-base">Email address</Label>
+                <Label for="email" class="text-base">{{ t('auth.login.email') }}</Label>
                 <Input
                     id="email"
                     v-model="email"
@@ -80,8 +83,7 @@ const rememberEmail = (): void => {
                 />
                 <InputError :message="errors.email" />
                 <p class="text-muted-foreground text-base leading-relaxed">
-                    You only need a new link on a new phone, or after you log
-                    out. This phone remembers the last email you used here.
+                    {{ t('auth.login.remember_hint') }}
                 </p>
             </div>
 
@@ -92,13 +94,13 @@ const rememberEmail = (): void => {
                 data-test="login-button"
             >
                 <Spinner v-if="processing" />
-                Email me a login link
+                {{ t('auth.login.submit') }}
             </Button>
         </div>
 
         <div class="text-muted-foreground text-center text-base">
-            Don't have an account?
-            <TextLink :href="register()">Create one</TextLink>
+            {{ t('auth.login.no_account') }}
+            <TextLink :href="register()">{{ t('auth.login.create') }}</TextLink>
         </div>
     </Form>
 
@@ -117,10 +119,10 @@ const rememberEmail = (): void => {
             data-test="demo-login-button"
         >
             <Spinner v-if="processing" />
-            Open the demo
+            {{ t('auth.login.demo') }}
         </Button>
         <p class="text-muted-foreground mt-3 text-center text-base leading-relaxed">
-            Uses {{ props.demoEmail }} on this computer. No email is sent.
+            {{ t('auth.login.demo_hint', { email: props.demoEmail ?? '' }) }}
         </p>
     </Form>
 </template>

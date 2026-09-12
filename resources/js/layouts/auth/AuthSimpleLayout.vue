@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import { useTranslator } from '@/composables/useTranslator';
 import { home } from '@/routes';
+
+const { t } = useTranslator();
 
 defineProps<{
     title?: string;
@@ -26,9 +29,9 @@ defineProps<{
                         <p class="text-primary text-sm font-bold tracking-wide uppercase">
                             HealthyMe
                         </p>
-                        <h1 class="text-2xl font-bold">{{ title }}</h1>
+                        <h1 class="text-2xl font-bold">{{ title ? t(title) : '' }}</h1>
                         <p class="text-muted-foreground text-center text-base leading-relaxed">
-                            {{ description }}
+                            {{ description ? t(description) : '' }}
                         </p>
                     </div>
                 </div>

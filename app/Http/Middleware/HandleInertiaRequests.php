@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\AppLocale;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -43,6 +44,9 @@ class HandleInertiaRequests extends Middleware
             'vapidPublicKey' => filled(config('webpush.vapid.public_key'))
                 ? (string) config('webpush.vapid.public_key')
                 : null,
+            'locale' => app()->getLocale(),
+            'locales' => AppLocale::options(),
+            'translations' => AppLocale::catalog(app()->getLocale()),
         ];
     }
 

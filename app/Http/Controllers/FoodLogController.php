@@ -6,8 +6,10 @@ use App\Actions\Food\StoreFoodLog;
 use App\Enums\FoodSource;
 use App\Http\Requests\Food\StoreFoodLogRequest;
 use App\Models\FoodLog;
+use App\Models\Profile;
 use App\Support\CurrentProfile;
 use App\Support\FoodPortions;
+use App\Support\FoodResponse;
 use App\Support\NutritionFacts;
 use App\Support\ReadingTimeline;
 use Illuminate\Http\RedirectResponse;
@@ -45,7 +47,7 @@ class FoodLogController extends Controller
             'whoReference' => NutritionFacts::whoSaltReference(),
             'portions' => FoodPortions::presets(null),
             'recent' => $recent,
-            'identified' => $this->identifiedFromSession($request),
+            'identified' => $this->identifiedFromSession($request, $profile),
             'scanStatus' => $request->session()->get('scan_status'),
         ]);
     }
@@ -81,10 +83,11 @@ class FoodLogController extends Controller
      *     note: string,
      *     confidence: string,
      *     product: array<string, mixed>|null,
-     *     results: list<mixed>
+     *     results: list<mixed>,
+     *     history: array{after_meal: string|null, morning_blood_pressure: string|null, clinic_targets: string|null, hint: string|null}
      * }|null
      */
-    private function identifiedFromSession(Request $request): ?array
+    private function identifiedFromSession(Request $request, Profile $profile): ?array
     {
         $payload = $request->session()->pull('food_photo');
 
@@ -93,13 +96,18 @@ class FoodLogController extends Controller
         }
 
         $results = $payload['results'] ?? [];
+        $product = is_array($payload['product'] ?? null) ? $payload['product'] : null;
+        $barcode = is_array($product) && is_string($product['barcode'] ?? null)
+            ? $product['barcode']
+            : null;
 
         return [
             'label' => $payload['label'],
             'note' => is_string($payload['note'] ?? null) ? $payload['note'] : '',
             'confidence' => is_string($payload['confidence'] ?? null) ? $payload['confidence'] : 'low',
-            'product' => is_array($payload['product'] ?? null) ? $payload['product'] : null,
+            'product' => $product,
             'results' => is_array($results) ? array_values($results) : [],
+            'history' => FoodResponse::forFood($profile, $payload['label'], $barcode),
         ];
     }
 }

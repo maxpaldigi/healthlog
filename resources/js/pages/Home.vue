@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { usePendingReadings } from '@/composables/usePendingReadings';
 import { useReadAloud } from '@/composables/useReadAloud';
 import { useSlotReminders } from '@/composables/useSlotReminders';
+import { useTranslator } from '@/composables/useTranslator';
 import { useWebPush } from '@/composables/useWebPush';
 import ReadingRow from '@/components/ReadingRow.vue';
 import TodayGauge from '@/components/TodayGauge.vue';
@@ -109,12 +110,14 @@ const access = computed(
 
 const alerts = computed(() => props.alerts ?? []);
 
+const { t } = useTranslator();
+
 const foodResponse = computed(
     () =>
         props.foodResponse ?? {
             after_meals: [],
             morning_blood_pressure: [],
-            intro: 'Your numbers after these foods. Check with your clinic.',
+            intro: t('food.intro'),
             hint: '',
         },
 );
@@ -124,7 +127,7 @@ const afterMealsPreview = computed(() =>
 );
 
 const firstName = computed(
-    () => props.profile.name.trim().split(/\s+/)[0] || 'there',
+    () => props.profile.name.trim().split(/\s+/)[0] || t('home.hello_fallback'),
 );
 
 const dateLabel = computed(() =>
@@ -175,13 +178,15 @@ const slotIcons: Record<string, Component> = {
 </script>
 
 <template>
-    <Head title="Home" />
+    <Head :title="t('home.title')" />
 
     <div class="flex flex-1 flex-col gap-6">
         <header class="space-y-1">
-            <h1 class="text-3xl font-bold">Hello, {{ firstName }}</h1>
+            <h1 class="text-3xl font-bold">
+                {{ t('home.hello', { name: firstName }) }}
+            </h1>
             <p class="text-muted-foreground text-lg leading-relaxed">
-                Photograph a meter, type a number, or add food.
+                {{ t('home.subtitle') }}
             </p>
         </header>
 
@@ -335,9 +340,9 @@ const slotIcons: Record<string, Component> = {
                     <Camera class="size-7" />
                 </span>
                 <span class="min-w-0 flex-1">
-                    <span class="block text-xl font-bold">Photograph the meter</span>
+                    <span class="block text-xl font-bold">{{ t('home.scan') }}</span>
                     <span class="text-nav-muted mt-0.5 block text-base">
-                        Blood pressure or sugar screen
+                        {{ t('home.scan_hint') }}
                     </span>
                 </span>
                 <Plus class="size-6 shrink-0" aria-hidden="true" />
@@ -355,9 +360,9 @@ const slotIcons: Record<string, Component> = {
                     <Activity class="size-6" />
                 </span>
                 <span class="min-w-0 flex-1">
-                    <span class="block text-lg font-bold">Blood pressure</span>
+                    <span class="block text-lg font-bold">{{ t('home.bp') }}</span>
                     <span class="text-muted-foreground block text-base">
-                        Type the cuff numbers
+                        {{ t('home.bp_hint') }}
                     </span>
                 </span>
                 <ChevronRight class="size-6 shrink-0" aria-hidden="true" />
@@ -375,9 +380,9 @@ const slotIcons: Record<string, Component> = {
                     <Droplet class="size-6" />
                 </span>
                 <span class="min-w-0 flex-1">
-                    <span class="block text-lg font-bold">Blood sugar</span>
+                    <span class="block text-lg font-bold">{{ t('home.sugar') }}</span>
                     <span class="text-muted-foreground block text-base">
-                        Type the meter number
+                        {{ t('home.sugar_hint') }}
                     </span>
                 </span>
                 <ChevronRight class="size-6 shrink-0" aria-hidden="true" />
@@ -395,9 +400,9 @@ const slotIcons: Record<string, Component> = {
                     <Utensils class="size-6" />
                 </span>
                 <span class="min-w-0 flex-1">
-                    <span class="block text-lg font-bold">Food</span>
+                    <span class="block text-lg font-bold">{{ t('home.food') }}</span>
                     <span class="text-muted-foreground block text-base">
-                        Photograph, search, or barcode
+                        {{ t('home.food_hint') }}
                     </span>
                 </span>
                 <ChevronRight class="size-6 shrink-0" aria-hidden="true" />

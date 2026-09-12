@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Enums\BpDaySlot;
 use App\Enums\GlucoseContext;
+use App\Enums\TargetSetBy;
 use App\Models\BpReading;
 use App\Models\FoodLog;
 use App\Models\GlucoseReading;
@@ -17,10 +18,12 @@ final class FoodResponse
      */
     public const MIN_SAMPLES = 5;
 
+    public const PHOTO_HINT = 'After you log this food 5 times with a 2-hour sugar reading, your own average will show here.';
+
     /**
      * @return array{
-     *     after_meals: list<array{label: string, sample_count: int, average: string, unit: string, line: string}>,
-     *     morning_blood_pressure: list<array{label: string, sample_count: int, average: string, line: string}>,
+     *     after_meals: list<array{key: string, label: string, sample_count: int, average: string, unit: string, line: string}>,
+     *     morning_blood_pressure: list<array{key: string, label: string, sample_count: int, average: string, line: string}>,
      *     intro: string,
      *     hint: string
      * }
@@ -30,13 +33,13 @@ final class FoodResponse
         return [
             'after_meals' => self::afterMeals($profile),
             'morning_blood_pressure' => self::morningBloodPressure($profile),
-            'intro' => 'Your numbers after these foods. Check with your clinic.',
-            'hint' => 'After 5 times of the same food with a 2-hour sugar reading, a comparison appears here.',
+            'intro' => AppLocale::get('food.intro'),
+            'hint' => AppLocale::get('food.hint'),
         ];
     }
 
     /**
-     * @return list<array{label: string, sample_count: int, average: string, unit: string, line: string}>
+     * @return list<array{key: string, label: string, sample_count: int, average: string, unit: string, line: string}>
      */
     public static function afterMeals(Profile $profile): array
     {
@@ -69,23 +72,24 @@ final class FoodResponse
             $average = NutritionFacts::display(Glucose::fromMgDl($meanMgDl, $profile->glucose_unit));
 
             $rows[] = [
+                'key' => $group['key'],
                 'label' => $group['label'],
                 'sample_count' => $count,
                 'average' => $average,
                 'unit' => $unit,
                 'sort' => $meanMgDl,
-                'line' => sprintf(
-                    'After %s: %s %s avg (%d readings).',
-                    $group['label'],
-                    $average,
-                    $unit,
-                    $count,
-                ),
+                'line' => AppLocale::get('food.after_meal', [
+                    'food' => $group['label'],
+                    'average' => $average,
+                    'unit' => $unit,
+                    'count' => $count,
+                ]),
             ];
         }
 
         return array_map(
             fn (array $row): array => [
+                'key' => $row['key'],
                 'label' => $row['label'],
                 'sample_count' => $row['sample_count'],
                 'average' => $row['average'],
@@ -97,7 +101,7 @@ final class FoodResponse
     }
 
     /**
-     * @return list<array{label: string, sample_count: int, average: string, line: string}>
+     * @return list<array{key: string, label: string, sample_count: int, average: string, line: string}>
      */
     public static function morningBloodPressure(Profile $profile): array
     {
@@ -147,21 +151,22 @@ final class FoodResponse
             $average = self::roundToInt(self::mean($group['values']));
 
             $rows[] = [
+                'key' => $group['key'],
                 'label' => $group['label'],
                 'sample_count' => $count,
                 'average' => $average,
                 'sort' => $average,
-                'line' => sprintf(
-                    'After %s: morning %s avg (%d readings).',
-                    $group['label'],
-                    $average,
-                    $count,
-                ),
+                'line' => AppLocale::get('food.after_morning_bp', [
+                    'food' => $group['label'],
+                    'average' => $average,
+                    'count' => $count,
+                ]),
             ];
         }
 
         return array_map(
             fn (array $row): array => [
+                'key' => $row['key'],
                 'label' => $row['label'],
                 'sample_count' => $row['sample_count'],
                 'average' => $row['average'],
@@ -172,8 +177,32 @@ final class FoodResponse
     }
 
     /**
+     * Facts for one named food after a photo. Display only — never a diagnosis.
+     *
+     * @return array{after_meal: string|null, morning_blood_pressure: string|null, clinic_targets: string|null, hint: string|null}
+     */
+    public static function forFood(Profile $profile, string $label, ?string $barcode = null): array
+    {
+        $want = self::lookupKey($label, $barcode);
+
+        $after = collect(self::afterMeals($profile))->first(
+            fn (array $row): bool => $row['key'] === $want,
+        );
+        $morning = collect(self::morningBloodPressure($profile))->first(
+            fn (array $row): bool => $row['key'] === $want,
+        );
+
+        return [
+            'after_meal' => is_array($after) ? $after['line'] : null,
+            'morning_blood_pressure' => is_array($morning) ? $morning['line'] : null,
+            'clinic_targets' => self::clinicTargetsLine($profile),
+            'hint' => is_array($after) ? null : AppLocale::get('food.photo_hint'),
+        ];
+    }
+
+    /**
      * @param  list<array{log: FoodLog, sort: string}>  $samples
-     * @return list<array{label: string, values: list<string>}>
+     * @return list<array{key: string, label: string, values: list<string>}>
      */
     private static function grouped(array $samples): array
     {
@@ -198,12 +227,13 @@ final class FoodResponse
 
         $result = [];
 
-        foreach ($groups as $group) {
+        foreach ($groups as $key => $group) {
             arsort($group['labels']);
             $label = array_key_first($group['labels']);
 
             $result[] = [
-                'label' => is_string($label) ? $label : 'Food',
+                'key' => $key,
+                'label' => is_string($label) ? $label : AppLocale::get('food.unnamed'),
                 'values' => $group['values'],
             ];
         }
@@ -211,17 +241,50 @@ final class FoodResponse
         return $result;
     }
 
-    private static function foodKey(FoodLog $log): string
+    public static function lookupKey(string $label, ?string $barcode = null): string
     {
-        $ref = $log->source_ref;
+        $code = null;
 
-        if (is_string($ref) && $ref !== '') {
-            return 'off:'.$ref;
+        if (is_string($barcode) && $barcode !== '') {
+            $code = OpenFoodFacts::normalizeBarcode($barcode)
+                ?? (preg_replace('/\D+/', '', $barcode) ?: null);
         }
 
-        $normalized = preg_replace('/\s+/u', ' ', mb_strtolower(trim($log->label)));
+        if (is_string($code) && $code !== '') {
+            return 'off:'.$code;
+        }
 
-        return 'name:'.($normalized ?? mb_strtolower(trim($log->label)));
+        $normalized = preg_replace('/\s+/u', ' ', mb_strtolower(trim($label)));
+
+        return 'name:'.($normalized ?? mb_strtolower(trim($label)));
+    }
+
+    private static function foodKey(FoodLog $log): string
+    {
+        return self::lookupKey($log->label, $log->source_ref);
+    }
+
+    private static function clinicTargetsLine(Profile $profile): ?string
+    {
+        $low = $profile->glucose_low_mg_dl;
+        $high = $profile->glucose_high_mg_dl;
+
+        if ($low === null || $high === null) {
+            return null;
+        }
+
+        $unit = $profile->glucose_unit->label();
+        $lowDisplay = NutritionFacts::display(Glucose::fromMgDl((string) $low, $profile->glucose_unit));
+        $highDisplay = NutritionFacts::display(Glucose::fromMgDl((string) $high, $profile->glucose_unit));
+        $key = $profile->glucose_target_set_by === TargetSetBy::Clinician
+            ? 'food.clinic_range'
+            : 'food.self_range';
+
+        return AppLocale::get($key, [
+            'low' => $lowDisplay,
+            'high' => $highDisplay,
+            'unit' => $unit,
+        ]);
     }
 
     /**

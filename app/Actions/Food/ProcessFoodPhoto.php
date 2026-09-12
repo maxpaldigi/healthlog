@@ -46,11 +46,6 @@ class ProcessFoodPhoto
 
             $payload = $this->payload($identified, $locale);
 
-            Inertia::flash('toast', [
-                'type' => 'success',
-                'message' => $payload['note'],
-            ]);
-
             return redirect()
                 ->route('food.create')
                 ->with('food_photo', $payload);

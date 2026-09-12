@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import AppearanceTabs from '@/components/AppearanceTabs.vue';
 import Heading from '@/components/Heading.vue';
+import { Button } from '@/components/ui/button';
 import { useLargeText } from '@/composables/useLargeText';
 import { useReadAloud } from '@/composables/useReadAloud';
+import { useTranslator } from '@/composables/useTranslator';
 import { edit } from '@/routes/appearance';
 
 defineOptions({
@@ -17,27 +19,67 @@ defineOptions({
     },
 });
 
+const { t } = useTranslator();
+const page = usePage();
 const { largeText, updateLargeText } = useLargeText();
 const { readAloud, updateReadAloud } = useReadAloud();
+
+const chooseLocale = (value: string): void => {
+    if (value === page.props.locale) {
+        return;
+    }
+
+    router.patch('/settings/appearance/locale', { locale: value });
+};
 </script>
 
 <template>
-    <Head title="Appearance settings" />
+    <Head :title="t('appearance.heading')" />
 
-    <h1 class="sr-only">Appearance settings</h1>
+    <h1 class="sr-only">{{ t('appearance.heading') }}</h1>
 
     <div class="space-y-8">
         <div class="space-y-6">
             <Heading
                 variant="small"
-                title="Appearance settings"
-                description="Colours, text size, and read aloud for this phone."
+                :title="t('appearance.heading')"
+                :description="t('appearance.description')"
             />
             <AppearanceTabs />
         </div>
 
         <div class="space-y-3">
-            <h2 class="text-lg font-semibold">Easier to read</h2>
+            <h2 class="text-lg font-semibold">{{ t('appearance.language') }}</h2>
+            <p class="text-muted-foreground text-base leading-relaxed">
+                {{ t('appearance.language_hint') }}
+            </p>
+            <div
+                class="grid gap-2"
+                role="radiogroup"
+                :aria-label="t('appearance.language')"
+            >
+                <Button
+                    v-for="option in page.props.locales"
+                    :key="option.value"
+                    type="button"
+                    role="radio"
+                    :aria-checked="page.props.locale === option.value"
+                    class="h-14 justify-start text-base"
+                    :variant="
+                        page.props.locale === option.value
+                            ? 'default'
+                            : 'outline'
+                    "
+                    :data-test="`locale-${option.value}`"
+                    @click="chooseLocale(option.value)"
+                >
+                    {{ option.label }}
+                </Button>
+            </div>
+        </div>
+
+        <div class="space-y-3">
+            <h2 class="text-lg font-semibold">{{ t('appearance.easier') }}</h2>
             <label
                 class="border-border flex min-h-14 cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 text-base leading-relaxed"
             >
@@ -53,9 +95,11 @@ const { readAloud, updateReadAloud } = useReadAloud();
                     "
                 />
                 <span>
-                    <span class="block font-medium">Large text</span>
+                    <span class="block font-medium">{{
+                        t('appearance.large_text')
+                    }}</span>
                     <span class="text-muted-foreground mt-1 block">
-                        Makes words and buttons bigger on this phone.
+                        {{ t('appearance.large_text_hint') }}
                     </span>
                 </span>
             </label>
@@ -74,11 +118,11 @@ const { readAloud, updateReadAloud } = useReadAloud();
                     "
                 />
                 <span>
-                    <span class="block font-medium">Read aloud</span>
+                    <span class="block font-medium">{{
+                        t('appearance.read_aloud')
+                    }}</span>
                     <span class="text-muted-foreground mt-1 block">
-                        This phone speaks saved numbers and today’s summary.
-                        Speech stays on this device. Off by default. Press
-                        Escape to stop.
+                        {{ t('appearance.read_aloud_hint') }}
                     </span>
                 </span>
             </label>

@@ -8,8 +8,10 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useTranslator } from '@/composables/useTranslator';
 import { history, home, scan, trends } from '@/routes';
 
+const { t } = useTranslator();
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 const onHome = computed(() => page.component === 'Home');
@@ -27,7 +29,7 @@ const tabClass = (active: boolean): string =>
 <template>
     <nav
         class="bg-nav text-nav-foreground fixed inset-x-0 bottom-0 z-20 rounded-t-[1.75rem] pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-8px_28px_-12px_rgb(28_25_23_/_0.35)]"
-        aria-label="Main"
+        :aria-label="t('nav.main')"
         data-tour="tabs"
     >
         <div class="mx-auto grid max-w-md grid-cols-5 items-end px-1 pt-2">
@@ -41,7 +43,7 @@ const tabClass = (active: boolean): string =>
                     :stroke-width="onHome ? 2.5 : 2"
                     aria-hidden="true"
                 />
-                Home
+                {{ t('nav.home') }}
             </Link>
 
             <Link
@@ -55,7 +57,7 @@ const tabClass = (active: boolean): string =>
                     :stroke-width="onHistory ? 2.5 : 2"
                     aria-hidden="true"
                 />
-                History
+                {{ t('nav.history') }}
             </Link>
 
             <Link
@@ -70,7 +72,7 @@ const tabClass = (active: boolean): string =>
                 >
                     <Camera class="size-7" stroke-width="2.25" aria-hidden="true" />
                 </span>
-                Scan
+                {{ t('nav.scan') }}
             </Link>
 
             <Link
@@ -83,17 +85,17 @@ const tabClass = (active: boolean): string =>
                     :stroke-width="onTrends ? 2.5 : 2"
                     aria-hidden="true"
                 />
-                Trends
+                {{ t('nav.trends') }}
             </Link>
 
             <DropdownMenu>
                 <DropdownMenuTrigger
                     :class="tabClass(false)"
-                    aria-label="Account menu"
+                    :aria-label="t('nav.account_menu')"
                     data-tour="tab-account"
                 >
                     <CircleUser class="size-6" aria-hidden="true" />
-                    Account
+                    {{ t('nav.account') }}
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="center" side="top" class="mb-2 w-56">
                     <UserMenuContent v-if="user" :user="user" />

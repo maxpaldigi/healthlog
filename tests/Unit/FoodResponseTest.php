@@ -1,37 +1,16 @@
 <?php
 
-use App\Enums\FoodSource;
 use App\Enums\GlucoseContext;
 use App\Enums\GlucoseUnit;
+use App\Enums\TargetSetBy;
 use App\Models\BpReading;
 use App\Models\FoodLog;
 use App\Models\GlucoseReading;
-use App\Models\Profile;
 use App\Support\FoodResponse;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 
 uses(RefreshDatabase::class);
-
-function seedLinkedMeals(Profile $profile, string $label, array $mgDl, ?string $sourceRef = null): void
-{
-    foreach (array_values($mgDl) as $index => $value) {
-        $day = Carbon::parse('2026-08-01', $profile->clockTimezone())->addDays($index);
-        $reading = GlucoseReading::factory()->for($profile)->create([
-            'context' => GlucoseContext::PostMeal2h,
-            'value_mg_dl' => $value,
-            'measured_at' => $day->copy()->setTime(14, 0)->utc(),
-        ]);
-
-        FoodLog::factory()->for($profile)->create([
-            'source' => $sourceRef === null ? FoodSource::Custom : FoodSource::OpenFoodFacts,
-            'source_ref' => $sourceRef,
-            'label' => $label,
-            'eaten_at' => $day->copy()->setTime(12, 0)->utc(),
-            'glucose_reading_id' => $reading->id,
-        ]);
-    }
-}
 
 it('hides a food until it has five 2-hour sugar readings', function () {
     $user = userWithProfile([], ['timezone' => 'UTC']);
@@ -164,4 +143,48 @@ it('stays descriptive and never tells the person to avoid a food', function () {
         ->and(strtolower($payload['intro'].$payload['hint']))->not->toContain('avoid')
         ->and(strtolower($payload['intro'].$payload['hint']))->not->toContain('diagnos')
         ->and(strtolower($payload['intro'].$payload['hint']))->not->toContain('treat');
+});
+
+it('hides a photo history average until five 2-hour sugar readings', function () {
+    $user = userWithProfile([], ['timezone' => 'UTC']);
+    $profile = $user->defaultProfile;
+
+    seedLinkedMeals($profile, 'Rice', ['210.00', '210.00', '210.00', '210.00']);
+
+    $history = FoodResponse::forFood($profile, 'Rice');
+
+    expect($history['after_meal'])->toBeNull()
+        ->and($history['hint'])->toBe(FoodResponse::PHOTO_HINT)
+        ->and(strtolower($history['hint'] ?? ''))->not->toContain('should')
+        ->and(strtolower($history['hint'] ?? ''))->not->toContain('avoid')
+        ->and(strtolower($history['hint'] ?? ''))->not->toContain('eat this');
+});
+
+it('shows this person\'s average after the named food once there are five readings', function () {
+    $user = userWithProfile([], [
+        'timezone' => 'UTC',
+        'glucose_low_mg_dl' => '70.00',
+        'glucose_high_mg_dl' => '180.00',
+        'glucose_target_set_by' => TargetSetBy::Clinician,
+    ]);
+    $profile = $user->defaultProfile;
+
+    seedLinkedMeals($profile, 'Rice', array_fill(0, 7, '210.00'));
+
+    $history = FoodResponse::forFood($profile, 'rice');
+
+    expect($history['after_meal'])->toBe('After Rice: 210 mg/dL avg (7 readings).')
+        ->and($history['hint'])->toBeNull()
+        ->and($history['clinic_targets'])->toBe('Clinic sugar range on this log: 70–180 mg/dL.');
+});
+
+it('matches photo history by barcode even when the printed name differs', function () {
+    $user = userWithProfile([], ['timezone' => 'UTC']);
+    $profile = $user->defaultProfile;
+
+    seedLinkedMeals($profile, 'Basmati Rice', array_fill(0, 5, '200.00'), '890123');
+
+    $history = FoodResponse::forFood($profile, 'Rice', '890123');
+
+    expect($history['after_meal'])->toBe('After Basmati Rice: 200 mg/dL avg (5 readings).');
 });

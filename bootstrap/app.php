@@ -5,6 +5,7 @@ use App\Http\Middleware\EnsureHealthDataConsent;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SetAppLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -18,11 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->encryptCookies(except: ['appearance', 'large_text', 'read_aloud', 'sidebar_state', 'system_timezone']);
+        $middleware->encryptCookies(except: ['appearance', 'large_text', 'read_aloud', 'sidebar_state', 'system_timezone', 'locale']);
 
         $middleware->web(append: [
             HandleAppearance::class,
             DetectSystemTimezone::class,
+            SetAppLocale::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
             EnsureHealthDataConsent::class,
