@@ -24,6 +24,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $timezone
  * @property GlucoseUnit $glucose_unit
  * @property WeightUnit $weight_unit
+ * @property string|null $height_cm
+ * @property bool $body_checkin_pending
+ * @property Carbon|null $height_prompt_skipped_at
  * @property string|null $glucose_low_mg_dl
  * @property string|null $glucose_high_mg_dl
  * @property TargetSetBy $glucose_target_set_by
@@ -48,6 +51,9 @@ use Illuminate\Support\Carbon;
     'timezone',
     'glucose_unit',
     'weight_unit',
+    'height_cm',
+    'body_checkin_pending',
+    'height_prompt_skipped_at',
     'glucose_low_mg_dl',
     'glucose_high_mg_dl',
     'glucose_target_set_by',
@@ -97,6 +103,9 @@ class Profile extends Model
             'date_of_birth' => 'date',
             'glucose_unit' => GlucoseUnit::class,
             'weight_unit' => WeightUnit::class,
+            'height_cm' => 'decimal:2',
+            'body_checkin_pending' => 'boolean',
+            'height_prompt_skipped_at' => 'datetime',
             'glucose_low_mg_dl' => 'decimal:2',
             'glucose_high_mg_dl' => 'decimal:2',
             'glucose_target_set_by' => TargetSetBy::class,

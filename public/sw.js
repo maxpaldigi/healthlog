@@ -1,4 +1,4 @@
-const CACHE = 'healthyme-boot2';
+const CACHE = 'healthyme-a17125387757';
 const SHELL = ['/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (event) => {

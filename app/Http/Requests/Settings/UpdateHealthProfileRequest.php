@@ -5,6 +5,7 @@ namespace App\Http\Requests\Settings;
 use App\Enums\GlucoseUnit;
 use App\Enums\TargetSetBy;
 use App\Enums\WeightUnit;
+use App\Support\BodyHeight;
 use App\Support\Glucose;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -27,6 +28,7 @@ class UpdateHealthProfileRequest extends FormRequest
             'timezone' => ['required', 'timezone:all'],
             'glucose_unit' => ['required', Rule::enum(GlucoseUnit::class)],
             'weight_unit' => ['required', Rule::enum(WeightUnit::class)],
+            'height_cm' => ['nullable', 'numeric'],
             'glucose_low' => ['nullable', 'numeric'],
             'glucose_high' => ['nullable', 'numeric'],
             'reminders_enabled' => ['sometimes', 'boolean'],
@@ -60,6 +62,12 @@ class UpdateHealthProfileRequest extends FormRequest
             if ($low !== null && $high !== null && bccomp($low, $high, 2) >= 0) {
                 $validator->errors()->add('glucose_high', 'The high sugar target must be above the low target.');
             }
+
+            $height = $this->input('height_cm');
+
+            if ($height !== null && $height !== '' && ! BodyHeight::isWithinStoredRange(BodyHeight::fromCentimetres((string) $height))) {
+                $validator->errors()->add('height_cm', 'Height must be between 50 and 250 cm.');
+            }
         });
     }
 
@@ -75,6 +83,7 @@ class UpdateHealthProfileRequest extends FormRequest
             'timezone' => $this->validated('timezone'),
             'glucose_unit' => $unit,
             'weight_unit' => WeightUnit::from($this->validated('weight_unit')),
+            'height_cm' => $this->storedHeight(),
             'glucose_low_mg_dl' => $this->convertedTarget('glucose_low', $unit),
             'glucose_high_mg_dl' => $this->convertedTarget('glucose_high', $unit),
             'glucose_target_set_by' => TargetSetBy::Self,
@@ -83,6 +92,17 @@ class UpdateHealthProfileRequest extends FormRequest
             'reminder_afternoon' => $this->validated('reminder_afternoon'),
             'reminder_evening' => $this->validated('reminder_evening'),
         ];
+    }
+
+    private function storedHeight(): ?string
+    {
+        $raw = $this->input('height_cm');
+
+        if ($raw === null || $raw === '') {
+            return null;
+        }
+
+        return BodyHeight::fromCentimetres((string) $raw);
     }
 
     private function convertedTarget(string $key, GlucoseUnit $unit): ?string

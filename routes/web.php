@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\MagicLinkController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\BodyCheckInController;
 use App\Http\Controllers\BpReadingController;
 use App\Http\Controllers\Care\AcceptCaregiverInviteController;
 use App\Http\Controllers\ClinicController;
@@ -29,6 +30,7 @@ use App\Http\Controllers\ShareLinkController;
 use App\Http\Controllers\TermsController;
 use App\Http\Controllers\TrendsController;
 use App\Http\Middleware\EnsureSuperAdmin;
+use App\Support\DemoAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -38,7 +40,9 @@ Route::get('/', function (Request $request) {
         return app()->call([app(HomeController::class), '__invoke']);
     }
 
-    return Inertia::render('Welcome');
+    return Inertia::render('Welcome', [
+        'demoEmail' => DemoAccount::instantLoginEnabled() ? DemoAccount::email() : null,
+    ]);
 })->name('home');
 
 Route::get('privacy', PrivacyController::class)->name('privacy');
@@ -84,6 +88,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('share-links', [ShareLinkController::class, 'store'])->name('share-links.store');
 
     Route::get('clinic', [ClinicController::class, 'index'])->name('clinic.index');
+    Route::get('clinic/body', [BodyCheckInController::class, 'create'])->name('clinic.body');
+    Route::post('clinic/body', [BodyCheckInController::class, 'store'])->name('clinic.body.store');
+    Route::post('clinic/body/skip', [BodyCheckInController::class, 'skip'])->name('clinic.body.skip');
     Route::post('weights', [ClinicController::class, 'storeWeight'])->name('weights.store');
     Route::delete('weights/{weight}', [ClinicController::class, 'destroyWeight'])->name('weights.destroy');
     Route::post('hba1c', [ClinicController::class, 'storeHba1c'])->name('hba1c.store');

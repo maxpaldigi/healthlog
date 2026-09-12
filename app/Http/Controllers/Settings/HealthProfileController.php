@@ -67,6 +67,7 @@ class HealthProfileController extends Controller
             'glucose_unit' => GlucoseUnit::from($data['glucose_unit']),
             'weight_unit' => WeightUnit::from($data['weight_unit']),
             'is_default' => $current === null,
+            'body_checkin_pending' => true,
             'reminders_enabled' => false,
             'reminder_morning' => '08:00',
             'reminder_afternoon' => '14:00',

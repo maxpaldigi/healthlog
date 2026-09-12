@@ -11,7 +11,6 @@ import {
 import UserInfo from '@/components/UserInfo.vue';
 import { home, logout, people } from '@/routes';
 import { edit as editHealth } from '@/routes/health-profiles';
-import { edit } from '@/routes/profile';
 import type { User } from '@/types';
 
 type Props = {
@@ -48,7 +47,7 @@ const isSuperAdmin = computed(
             </Link>
         </DropdownMenuItem>
         <DropdownMenuItem :as-child="true">
-            <Link class="block w-full cursor-pointer" :href="edit()" prefetch>
+            <Link class="block w-full cursor-pointer" href="/settings" prefetch>
                 <Settings class="mr-2 h-4 w-4" />
                 Settings
             </Link>

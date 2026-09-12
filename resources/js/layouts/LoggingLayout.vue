@@ -49,8 +49,16 @@ const title = computed(() => {
         return 'Clinic extras';
     }
 
+    if (page.component === 'clinic/BodyCheckIn') {
+        return 'Height and weight';
+    }
+
     if (page.component.startsWith('readings/')) {
         return 'Log';
+    }
+
+    if (page.component.startsWith('settings/')) {
+        return 'Settings';
     }
 
     return 'HealthyMe';

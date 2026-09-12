@@ -21,7 +21,13 @@ type MedicationSuggestion = { rxcui: string; name: string };
 defineProps<{
     unit: string;
     defaults: { measured_at: string; tested_at: string };
-    weights: { id: number; value: string; unit: string; measured_at: string }[];
+    weights: {
+        id: number;
+        value: string;
+        unit: string;
+        measured_at: string;
+        bmi: string | null;
+    }[];
     hba1c: { id: number; value: string; tested_at: string; lab_name: string | null }[];
     medications: {
         id: number;
@@ -153,6 +159,7 @@ onUnmounted(() => {
                     <span>
                         <span class="font-semibold tabular-nums">
                             {{ item.value }} {{ item.unit }}
+                            <template v-if="item.bmi"> · BMI {{ item.bmi }}</template>
                         </span>
                         <span class="text-muted-foreground block text-sm">
                             {{ item.measured_at }}

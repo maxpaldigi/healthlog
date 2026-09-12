@@ -73,12 +73,11 @@ it('records health-data consent from the consent screen', function () {
         ->post(route('consent.health-data.store'), [
             'health_data_consent' => '1',
         ])
-        ->assertRedirect(route('home'));
+        ->assertRedirect(route('clinic.body'));
 
     expect($user->fresh()->hasGrantedConsent(ConsentType::HealthData))->toBeTrue();
 
     $this->actingAs($user)
         ->get(route('home'))
-        ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('Home'));
+        ->assertRedirect(route('clinic.body'));
 });

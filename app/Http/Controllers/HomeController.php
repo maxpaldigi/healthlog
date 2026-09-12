@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\BpDaySlot;
 use App\Enums\ProfileRole;
+use App\Support\BodyCheckIn;
 use App\Support\CareAlerts;
 use App\Support\ClinicianNote;
 use App\Support\CurrentProfile;
@@ -11,16 +12,21 @@ use App\Support\FoodResponse;
 use App\Support\ReadingReminders;
 use App\Support\ReadingSpeech;
 use App\Support\ReadingTimeline;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class HomeController extends Controller
 {
-    public function __invoke(Request $request, CurrentProfile $currentProfile, ReadingReminders $reminders, CareAlerts $alerts): Response
+    public function __invoke(Request $request, CurrentProfile $currentProfile, ReadingReminders $reminders, CareAlerts $alerts): Response|RedirectResponse
     {
         $user = $request->user();
         $profile = $currentProfile->handle($user, $request);
+
+        if ($user->can('update', $profile) && BodyCheckIn::shouldOpenAfterSignIn($profile)) {
+            return redirect()->route('clinic.body');
+        }
         $todayStart = $profile->nowInTimezone()->startOfDay()->utc();
         $todayEnd = $profile->nowInTimezone()->endOfDay()->utc();
 
@@ -77,6 +83,7 @@ class HomeController extends Controller
             'summarySpeech' => ReadingSpeech::home(count($filledSlots), 3, $todaySlots),
             'recent' => $recent,
             'foodResponse' => FoodResponse::make($profile),
+            'bodyPrompt' => BodyCheckIn::homeCard($profile),
             'clinicNote' => ClinicianNote::current($profile),
             'reminders' => [
                 'enabled' => $profile->reminders_enabled,

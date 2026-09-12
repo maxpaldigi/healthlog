@@ -32,6 +32,7 @@ defineProps<{
         glucose_unit_label: string;
         weight_unit: string;
         weight_unit_label: string;
+        height_cm: string;
         is_default: boolean;
         glucose_low: string;
         glucose_high: string;
@@ -221,6 +222,21 @@ defineProps<{
                         {{ unit.label }}
                     </option>
                 </select>
+            </div>
+
+            <div class="grid gap-2">
+                <Label for="height_cm">Height (cm)</Label>
+                <Input
+                    id="height_cm"
+                    name="height_cm"
+                    inputmode="decimal"
+                    :default-value="current.height_cm"
+                    class="h-12 text-lg"
+                />
+                <InputError :message="errors.height_cm" />
+                <p class="text-muted-foreground text-sm leading-relaxed">
+                    Optional. Used only to show BMI next to a saved weight.
+                </p>
             </div>
 
             <div class="grid gap-2">

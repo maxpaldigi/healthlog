@@ -33,7 +33,7 @@ void createInertiaApp({
             case name.startsWith('auth/') || name.startsWith('consent/'):
                 return AuthLayout;
             case name.startsWith('settings/'):
-                return [AppLayout, SettingsLayout];
+                return [LoggingLayout, SettingsLayout];
             default:
                 return AppLayout;
         }

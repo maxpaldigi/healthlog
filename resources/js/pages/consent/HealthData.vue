@@ -28,9 +28,9 @@ defineProps<{
         class="flex flex-col gap-6"
     >
         <p class="text-base leading-relaxed">
-            HealthyMe stores blood pressure, blood sugar, and related notes so
-            you can keep a record and print a visit report. This is not bundled
-            with any other agreement.
+            HealthyMe stores blood pressure, blood sugar, optional height and
+            weight, and related notes so you can keep a record and print a
+            visit report. This is not bundled with any other agreement.
         </p>
         <p class="text-muted-foreground text-base leading-relaxed">
             Policy version {{ policyVersion }}. Read the

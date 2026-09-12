@@ -139,7 +139,12 @@
         <h2>Weight</h2>
         <ul>
             @foreach ($report['weights'] as $item)
-                <li>{{ $item['measured_at'] }} — {{ $item['value'] }} {{ $item['unit'] }}</li>
+                <li>
+                    {{ $item['measured_at'] }} — {{ $item['value'] }} {{ $item['unit'] }}
+                    @if (! empty($item['bmi']))
+                        · BMI {{ $item['bmi'] }}
+                    @endif
+                </li>
             @endforeach
         </ul>
     @endif

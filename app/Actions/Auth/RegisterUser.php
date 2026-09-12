@@ -32,6 +32,7 @@ class RegisterUser
                 'glucose_unit' => GlucoseUnit::from($data['glucose_unit']),
                 'weight_unit' => WeightUnit::from($data['weight_unit']),
                 'is_default' => true,
+                'body_checkin_pending' => true,
             ]);
 
             app(RecordConsent::class)->handle($user, ConsentType::HealthData);

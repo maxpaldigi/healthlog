@@ -88,6 +88,7 @@ const props = defineProps<{
         targets_line: string | null;
         set_by: string;
     } | null;
+    bodyPrompt?: { key: string; title: string; message: string } | null;
 }>();
 
 const reminders = computed(
@@ -205,6 +206,23 @@ const slotIcons: Record<string, Component> = {
                 </Button>
             </Form>
         </div>
+
+        <section
+            v-if="bodyPrompt"
+            class="hl-card space-y-3 px-4 py-4"
+            data-test="body-prompt"
+        >
+            <p class="text-lg font-semibold">{{ bodyPrompt.title }}</p>
+            <p class="text-muted-foreground text-base leading-relaxed">
+                {{ bodyPrompt.message }}
+            </p>
+            <Link
+                href="/clinic/body"
+                class="bg-nav text-nav-foreground flex min-h-14 cursor-pointer items-center justify-center rounded-full text-lg font-bold"
+            >
+                Add it
+            </Link>
+        </section>
 
         <section
             v-if="clinicNote"

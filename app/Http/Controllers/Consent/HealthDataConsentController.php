@@ -41,6 +41,18 @@ class HealthDataConsentController extends Controller
             $recordConsent->handle($user, ConsentType::HealthData);
         }
 
+        $profile = $user->defaultProfile;
+
+        if (
+            $profile !== null
+            && $profile->height_cm === null
+            && $profile->height_prompt_skipped_at === null
+        ) {
+            $profile->update(['body_checkin_pending' => true]);
+
+            return redirect()->route('clinic.body');
+        }
+
         return redirect()->route('home');
     }
 }

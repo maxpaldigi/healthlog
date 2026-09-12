@@ -46,6 +46,7 @@ class EnterDemoAccount
                     'glucose_unit' => GlucoseUnit::MgDl,
                     'weight_unit' => WeightUnit::Kg,
                     'is_default' => true,
+                    'body_checkin_pending' => true,
                 ]);
             }
 

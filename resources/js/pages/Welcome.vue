@@ -1,9 +1,18 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Form, Head, Link } from '@inertiajs/vue3';
 import { Activity, Camera, Droplet } from '@lucide/vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import { Spinner } from '@/components/ui/spinner';
+import { useTranslator } from '@/composables/useTranslator';
 import { login, privacy, register } from '@/routes';
 import { data as aboutData } from '@/routes/about';
+import { store } from '@/routes/login';
+
+const { t } = useTranslator();
+
+defineProps<{
+    demoEmail?: string | null;
+}>();
 </script>
 
 <template>
@@ -81,6 +90,22 @@ import { data as aboutData } from '@/routes/about';
                 >
                     Log in
                 </Link>
+                <Form
+                    v-if="demoEmail"
+                    v-bind="store.form()"
+                    v-slot="{ processing }"
+                >
+                    <input type="hidden" name="email" :value="demoEmail" />
+                    <button
+                        type="submit"
+                        class="border-border bg-card flex min-h-14 w-full cursor-pointer items-center justify-center rounded-full border text-lg font-bold disabled:opacity-60"
+                        :disabled="processing"
+                        data-test="demo-login-button"
+                    >
+                        <Spinner v-if="processing" />
+                        {{ t('auth.login.demo') }}
+                    </button>
+                </Form>
                 <p class="text-muted-foreground text-center text-sm leading-relaxed">
                     This is a record-keeping tool, not a medical device. It does
                     not provide medical advice and does not replace a doctor.

@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, Link } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
 import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -98,9 +97,20 @@ const rememberEmail = (): void => {
             </Button>
         </div>
 
-        <div class="text-muted-foreground text-center text-base">
-            {{ t('auth.login.no_account') }}
-            <TextLink :href="register()">{{ t('auth.login.create') }}</TextLink>
+        <div class="text-center">
+            <p class="text-muted-foreground mb-2 text-base">
+                {{ t('auth.login.no_account') }}
+            </p>
+            <Link :href="register()" class="block">
+                <Button
+                    type="button"
+                    variant="outline"
+                    class="h-14 w-full rounded-full text-lg"
+                    data-test="login-register-first"
+                >
+                    {{ t('auth.login.create') }}
+                </Button>
+            </Link>
         </div>
     </Form>
 

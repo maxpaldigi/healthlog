@@ -21,6 +21,7 @@ final class ProfileSettings
             'glucose_unit_label' => $profile->glucose_unit->label(),
             'weight_unit' => $profile->weight_unit->value,
             'weight_unit_label' => $profile->weight_unit->label(),
+            'height_cm' => $profile->height_cm === null ? '' : (string) $profile->height_cm,
             'is_default' => $profile->is_default,
             'glucose_low' => $profile->glucose_low_mg_dl === null
                 ? ''

@@ -8,6 +8,7 @@ use App\Http\Requests\Clinic\StoreWeightRequest;
 use App\Models\Hba1cResult;
 use App\Models\Medication;
 use App\Models\Weight;
+use App\Support\BodyCheckIn;
 use App\Support\BodyWeight;
 use App\Support\CurrentProfile;
 use App\Support\ReadingTimeline;
@@ -30,12 +31,11 @@ class ClinicController extends Controller
                 'measured_at' => ReadingTimeline::localDateTimeValue($profile),
                 'tested_at' => $profile->nowInTimezone()->toDateString(),
             ],
-            'weights' => $profile->weights()->orderByDesc('measured_at')->limit(12)->get()->map(fn (Weight $weight): array => [
-                'id' => $weight->id,
-                'value' => BodyWeight::fromKg((string) $weight->kg, $profile->weight_unit),
-                'unit' => $profile->weight_unit->label(),
-                'measured_at' => $weight->measured_at->timezone($profile->timezone)->format('j M Y, g:ia'),
-            ]),
+            'weights' => $profile->weights()->orderByDesc('measured_at')->limit(12)->get()->map(fn (Weight $weight): array => BodyCheckIn::weightPayload(
+                $profile,
+                $weight,
+                $weight->measured_at->timezone($profile->timezone)->format('j M Y, g:ia'),
+            )),
             'hba1c' => $profile->hba1cResults()->orderByDesc('tested_at')->limit(12)->get()->map(fn (Hba1cResult $result): array => [
                 'id' => $result->id,
                 'value' => (string) $result->value,

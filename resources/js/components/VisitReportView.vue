@@ -56,7 +56,13 @@ type Report = {
         count: number;
         average: string | null;
     }[];
-    weights: { id: number; value: string; unit: string; measured_at: string }[];
+    weights: {
+        id: number;
+        value: string;
+        unit: string;
+        measured_at: string;
+        bmi?: string | null;
+    }[];
     hba1c: {
         id: number;
         value: string;
@@ -319,7 +325,10 @@ const slotTitles = {
                     class="flex justify-between gap-3"
                 >
                     <span>{{ item.measured_at }}</span>
-                    <span class="tabular-nums">{{ item.value }} {{ item.unit }}</span>
+                    <span class="tabular-nums">
+                        {{ item.value }} {{ item.unit
+                        }}<template v-if="item.bmi"> · BMI {{ item.bmi }}</template>
+                    </span>
                 </li>
             </ul>
         </section>

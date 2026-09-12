@@ -111,12 +111,11 @@ final class VisitReport
             'insights' => $insights,
             'days' => $days,
             'sugar_by_context' => $sugarByContext,
-            'weights' => $weights->map(fn (Weight $weight): array => [
-                'id' => $weight->id,
-                'value' => BodyWeight::fromKg((string) $weight->kg, $profile->weight_unit),
-                'unit' => $weightUnit,
-                'measured_at' => $weight->measured_at->timezone($profile->timezone)->format('j M Y'),
-            ])->values()->all(),
+            'weights' => $weights->map(fn (Weight $weight): array => BodyCheckIn::weightPayload(
+                $profile,
+                $weight,
+                $weight->measured_at->timezone($profile->timezone)->format('j M Y'),
+            ))->values()->all(),
             'hba1c' => $hba1cResults->map(fn (Hba1cResult $result): array => [
                 'id' => $result->id,
                 'value' => (string) $result->value,

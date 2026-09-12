@@ -16,6 +16,9 @@ class SendMagicLink
         $user = User::query()->where('email', $email)->first();
 
         if ($user === null) {
+            // Same work as a hit so missing accounts are not cheaper to probe.
+            LoginToken::hash(Str::random(64));
+
             return;
         }
 

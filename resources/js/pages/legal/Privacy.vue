@@ -16,14 +16,14 @@ import { data as aboutData } from '@/routes/about';
         </Link>
         <h1 class="mt-6 text-3xl font-bold">Privacy notice</h1>
         <p class="text-muted-foreground mt-2 text-base leading-relaxed">
-            Version 2026-09-11. HealthyMe is a record-keeping tool, not a
+            Version 2026-09-12. HealthyMe is a record-keeping tool, not a
             medical device, and does not replace a doctor.
         </p>
         <div class="mt-6 space-y-4 text-base leading-relaxed">
             <p>
                 We store your name, email, health profile settings, and the
-                readings you add (blood pressure, sugar, food, optional weight,
-                HbA1c, and medication names). Health data is only stored after a
+                readings you add (blood pressure, sugar, food, optional height
+                and weight, HbA1c, and medication names). Health data is only stored after a
                 separate, unticked consent.
             </p>
             <p>

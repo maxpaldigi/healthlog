@@ -25,10 +25,32 @@ it('renders the login and register screens', function () {
     $this->get(route('register'))->assertOk();
 });
 
+it('shows demo login on this computer when the flag is on', function () {
+    config(['auth.demo_instant_login' => true]);
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Welcome')
+            ->where('demoEmail', 'demo@healthlog.test'));
+
+    $this->get(route('login'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('auth/Login')
+            ->where('demoEmail', 'demo@healthlog.test'));
+});
+
 it('never shows or accepts demo login in production', function () {
     $this->app['env'] = 'production';
     config(['auth.demo_instant_login' => true]);
     Notification::fake();
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Welcome')
+            ->where('demoEmail', null));
 
     $this->get(route('login'))
         ->assertOk()
@@ -241,6 +263,15 @@ it('returns the same response for unknown emails and sends no notification', fun
 
     Notification::assertNothingSent();
     expect(LoginToken::query()->count())->toBe(0);
+
+    $this->get(route('login.check-email'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('auth/CheckEmail')
+            ->missing('accountExists')
+            ->missing('unknownEmail')
+            ->where('loginUrl', null)
+            ->where('mailFailed', false));
 });
 
 it('logs an authenticated user out', function () {

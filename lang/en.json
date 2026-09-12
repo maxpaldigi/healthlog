@@ -21,12 +21,12 @@
     "home.food_hint": "Photograph, search, or barcode",
 
     "auth.login.title": "Log in",
-    "auth.login.description": "Enter your email. We send a one-time login link. After you open it, this phone stays signed in.",
+    "auth.login.description": "If this email already has an account, we send a one-time login link. New here? Create an account first. After you open a link, this phone stays signed in.",
     "auth.login.email": "Email address",
-    "auth.login.remember_hint": "You only need a new link on a new phone, or after you log out. This phone remembers the last email you used here.",
+    "auth.login.remember_hint": "We only email a login link if this address already has an account. You only need a new link on a new phone, or after you log out.",
     "auth.login.submit": "Email me a login link",
-    "auth.login.no_account": "Don't have an account?",
-    "auth.login.create": "Create one",
+    "auth.login.no_account": "New here?",
+    "auth.login.create": "Create an account first",
     "auth.login.demo": "Open the demo",
     "auth.login.demo_hint": "Uses :email on this computer. No email is sent.",
 
