@@ -10,6 +10,7 @@ import SettingsLayout from '@/layouts/settings/Layout.vue';
 import SuperAdminLayout from '@/layouts/SuperAdminLayout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
 import { initializeOfflineQueue } from '@/lib/offlineQueue';
+import { registerServiceWorker } from '@/lib/registerServiceWorker';
 
 const appName = import.meta.env.VITE_APP_NAME || 'HealthyMe';
 
@@ -63,10 +64,4 @@ initializeFlashToast();
 
 initializeOfflineQueue();
 
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(() => {
-            // Install still works without a worker.
-        });
-    });
-}
+registerServiceWorker();

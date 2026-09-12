@@ -5,6 +5,7 @@ import vue from '@vitejs/plugin-vue';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
 import { defineConfig, lazyPlugins } from 'vite-plus';
+import { stampServiceWorker } from './vite/stampServiceWorker';
 
 export default defineConfig({
     plugins: lazyPlugins(() => [
@@ -30,6 +31,7 @@ export default defineConfig({
         wayfinder({
             formVariants: true,
         }),
+        stampServiceWorker(),
     ]),
     server: {
         host: '127.0.0.1',

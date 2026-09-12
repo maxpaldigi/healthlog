@@ -9,8 +9,11 @@ export function useTranslator(): {
         key: string,
         replace: Record<string, string | number> = {},
     ): string => {
-        const translations = page.props.translations ?? {};
-        let line = translations[key] ?? key;
+        const translations = page.props.translations;
+        let line =
+            translations && typeof translations[key] === 'string'
+                ? translations[key]
+                : key;
 
         for (const [name, value] of Object.entries(replace)) {
             line = line.replaceAll(`:${name}`, String(value));

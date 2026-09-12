@@ -61,7 +61,7 @@ type Identified = {
     confidence: string;
     product: Product | null;
     results: Product[];
-    history: FoodHistory;
+    history?: FoodHistory;
 };
 
 const props = defineProps<{
@@ -467,17 +467,17 @@ const onFoodPhoto = async (event: Event): Promise<void> => {
             </ul>
 
             <div class="space-y-2 text-base leading-relaxed" data-test="food-photo-history">
-                <p v-if="pendingConfirm.history.after_meal">
+                <p v-if="pendingConfirm.history?.after_meal">
                     {{ pendingConfirm.history.after_meal }}
                 </p>
-                <p v-if="pendingConfirm.history.morning_blood_pressure">
+                <p v-if="pendingConfirm.history?.morning_blood_pressure">
                     {{ pendingConfirm.history.morning_blood_pressure }}
                 </p>
-                <p v-if="pendingConfirm.history.clinic_targets">
+                <p v-if="pendingConfirm.history?.clinic_targets">
                     {{ pendingConfirm.history.clinic_targets }}
                 </p>
                 <p
-                    v-if="pendingConfirm.history.hint"
+                    v-if="pendingConfirm.history?.hint"
                     class="text-muted-foreground"
                 >
                     {{ pendingConfirm.history.hint }}

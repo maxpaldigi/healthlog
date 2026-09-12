@@ -1,17 +1,27 @@
-const CACHE = 'healthyme-v1';
-const SHELL = ['/', '/manifest.json', '/icon-192.png', '/icon-512.png'];
+const CACHE = 'healthyme-boot2';
+const SHELL = ['/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()),
+        caches
+            .open(CACHE)
+            .then((cache) => cache.addAll(SHELL))
+            .then(() => self.skipWaiting()),
     );
 });
 
 self.addEventListener('activate', (event) => {
     event.waitUntil(
-        caches.keys().then((keys) =>
-            Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))),
-        ).then(() => self.clients.claim()),
+        caches
+            .keys()
+            .then((keys) =>
+                Promise.all(
+                    keys
+                        .filter((key) => key !== CACHE)
+                        .map((key) => caches.delete(key)),
+                ),
+            )
+            .then(() => self.clients.claim()),
     );
 });
 
@@ -24,7 +34,7 @@ self.addEventListener('fetch', (event) => {
 
     const url = new URL(request.url);
 
-    if (url.origin !== self.location.origin) {
+    if (url.origin !== self.location.origin || url.pathname === '/sw.js') {
         return;
     }
 
@@ -34,15 +44,19 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    event.respondWith(networkFirst(request));
+    event.respondWith(networkFirst(request, isPageRequest(request)));
 });
 
 self.addEventListener('sync', (event) => {
     if (event.tag === 'healthyme-sync-readings') {
         event.waitUntil(
-            self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
-                clients.forEach((client) => client.postMessage({ type: 'sync-readings' }));
-            }),
+            self.clients
+                .matchAll({ type: 'window', includeUncontrolled: true })
+                .then((clients) => {
+                    clients.forEach((client) =>
+                        client.postMessage({ type: 'sync-readings' }),
+                    );
+                }),
         );
     }
 });
@@ -73,19 +87,29 @@ self.addEventListener('notificationclick', (event) => {
     const url = event.notification.data?.url || '/';
 
     event.waitUntil(
-        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
-            for (const client of clients) {
-                if ('focus' in client) {
-                    client.navigate(url);
+        self.clients
+            .matchAll({ type: 'window', includeUncontrolled: true })
+            .then((clients) => {
+                for (const client of clients) {
+                    if ('focus' in client) {
+                        client.navigate(url);
 
-                    return client.focus();
+                        return client.focus();
+                    }
                 }
-            }
 
-            return self.clients.openWindow(url);
-        }),
+                return self.clients.openWindow(url);
+            }),
     );
 });
+
+function isPageRequest(request) {
+    return (
+        request.mode === 'navigate' ||
+        request.destination === 'document' ||
+        request.headers.get('X-Inertia') === 'true'
+    );
+}
 
 async function cacheFirst(request) {
     const cached = await caches.match(request);
@@ -94,21 +118,29 @@ async function cacheFirst(request) {
         return cached;
     }
 
-    const response = await fetch(request);
-
-    if (response.ok) {
-        const cache = await caches.open(CACHE);
-        cache.put(request, response.clone());
-    }
-
-    return response;
-}
-
-async function networkFirst(request) {
     try {
         const response = await fetch(request);
 
-        if (response.ok && request.destination !== 'document') {
+        if (response.ok) {
+            const cache = await caches.open(CACHE);
+            cache.put(request, response.clone());
+        }
+
+        return response;
+    } catch (error) {
+        return new Response('HealthyMe needs a connection to open.', {
+            status: 503,
+            statusText: 'Offline',
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+        });
+    }
+}
+
+async function networkFirst(request, page) {
+    try {
+        const response = await fetch(request);
+
+        if (response.ok && !page) {
             const cache = await caches.open(CACHE);
             cache.put(request, response.clone());
         }
@@ -121,14 +153,10 @@ async function networkFirst(request) {
             return cached;
         }
 
-        if (request.mode === 'navigate') {
-            const home = await caches.match('/');
-
-            if (home) {
-                return home;
-            }
-        }
-
-        throw error;
+        return new Response('HealthyMe needs a connection to open.', {
+            status: 503,
+            statusText: 'Offline',
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+        });
     }
 }

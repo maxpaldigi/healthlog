@@ -7,6 +7,24 @@
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>
             (function() {
+                @if (app()->isLocal())
+                try {
+                    if ('serviceWorker' in navigator) {
+                        navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                            registrations.forEach(function (registration) {
+                                registration.unregister();
+                            });
+                        });
+                    }
+                    if (window.caches) {
+                        caches.keys().then(function (keys) {
+                            keys.forEach(function (key) {
+                                caches.delete(key);
+                            });
+                        });
+                    }
+                } catch (error) {}
+                @endif
                 try {
                     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
                     if (timezone) {
