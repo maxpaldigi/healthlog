@@ -72,6 +72,28 @@
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-title" content="HealthyMe">
 
+        @php
+            $shareTitle = config('app.name', 'HealthyMe');
+            $shareDescription = 'Blood pressure and sugar, easy to keep. Photograph the meter or type the numbers.';
+            $shareImage = url('/og.jpg');
+            $shareUrl = url()->current();
+        @endphp
+        <meta name="description" content="{{ $shareDescription }}">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="{{ $shareTitle }}">
+        <meta property="og:title" content="{{ $shareTitle }}">
+        <meta property="og:description" content="{{ $shareDescription }}">
+        <meta property="og:url" content="{{ $shareUrl }}">
+        <meta property="og:image" content="{{ $shareImage }}">
+        <meta property="og:image:type" content="image/jpeg">
+        <meta property="og:image:width" content="1280">
+        <meta property="og:image:height" content="720">
+        <meta property="og:image:alt" content="HealthyMe — blood pressure and sugar log">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ $shareTitle }}">
+        <meta name="twitter:description" content="{{ $shareDescription }}">
+        <meta name="twitter:image" content="{{ $shareImage }}">
+
         @fonts
 
         @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
