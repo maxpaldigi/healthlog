@@ -94,34 +94,7 @@
         <meta name="twitter:description" content="{{ $shareDescription }}">
         <meta name="twitter:image" content="{{ $shareImage }}">
 
-        @php
-            $analyticsId = filled(config('services.google_analytics.measurement_id'))
-                && app()->isProduction()
-                ? (string) config('services.google_analytics.measurement_id')
-                : null;
-        @endphp
-        @if ($analyticsId)
-            {{-- Google Analytics 4. Consent Mode starts denied; cookies only after Accept. --}}
-            <script>
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('consent', 'default', {
-                    analytics_storage: 'denied',
-                    ad_storage: 'denied',
-                    ad_user_data: 'denied',
-                    ad_personalization: 'denied',
-                    wait_for_update: 500
-                });
-                gtag('js', new Date());
-                gtag('config', @json($analyticsId), { anonymize_ip: true, send_page_view: true });
-                try {
-                    if (localStorage.getItem('healthyme.analytics') === '1') {
-                        gtag('consent', 'update', { analytics_storage: 'granted' });
-                    }
-                } catch (error) {}
-            </script>
-            <script async src="https://www.googletagmanager.com/gtag/js?id={{ $analyticsId }}"></script>
-        @endif
+        @include('partials.cookie-consent-head')
 
         @fonts
 
@@ -132,87 +105,6 @@
     </head>
     <body class="font-sans antialiased">
         <x-inertia::app />
-        @if ($analyticsId)
-            <div
-                id="analytics-consent"
-                hidden
-                class="fixed inset-x-0 bottom-0 z-50 border-t border-[#d6cfc4] bg-[#f6f0e8] p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(26,22,20,0.12)]"
-                role="dialog"
-                aria-labelledby="analytics-consent-title"
-                aria-describedby="analytics-consent-copy"
-            >
-                <div class="mx-auto flex w-full max-w-md flex-col gap-3">
-                    <p id="analytics-consent-title" class="text-lg font-bold text-[#1a1614]">
-                        Visit counting
-                    </p>
-                    <p id="analytics-consent-copy" class="text-base leading-relaxed text-[#4a433c]">
-                        We can use Google Analytics to count page visits. No blood pressure, sugar, or other health readings are sent. You can say no.
-                    </p>
-                    <div class="flex flex-col gap-2 sm:flex-row">
-                        <button
-                            type="button"
-                            id="analytics-consent-accept"
-                            class="flex min-h-14 flex-1 cursor-pointer items-center justify-center rounded-full bg-[#2A3B8F] px-4 text-lg font-bold text-white"
-                        >
-                            OK, count visits
-                        </button>
-                        <button
-                            type="button"
-                            id="analytics-consent-refuse"
-                            class="flex min-h-14 flex-1 cursor-pointer items-center justify-center rounded-full border border-[#d6cfc4] bg-white px-4 text-lg font-bold text-[#1a1614]"
-                        >
-                            No thanks
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <script>
-                (function () {
-                    var key = 'healthyme.analytics';
-                    var banner = document.getElementById('analytics-consent');
-                    if (!banner) {
-                        return;
-                    }
-
-                    function choice() {
-                        try {
-                            return localStorage.getItem(key);
-                        } catch (error) {
-                            return '0';
-                        }
-                    }
-
-                    function remember(value) {
-                        try {
-                            localStorage.setItem(key, value);
-                        } catch (error) {}
-                    }
-
-                    function hide() {
-                        banner.hidden = true;
-                    }
-
-                    if (choice() === null) {
-                        banner.hidden = false;
-                    }
-
-                    document.getElementById('analytics-consent-accept')?.addEventListener('click', function () {
-                        remember('1');
-                        if (typeof gtag === 'function') {
-                            gtag('consent', 'update', { analytics_storage: 'granted' });
-                        }
-                        hide();
-                    });
-
-                    document.getElementById('analytics-consent-refuse')?.addEventListener('click', function () {
-                        remember('0');
-                        if (typeof gtag === 'function') {
-                            gtag('consent', 'update', { analytics_storage: 'denied' });
-                        }
-                        hide();
-                    });
-                })();
-            </script>
-        @endif
+        @include('partials.cookie-consent')
     </body>
 </html>

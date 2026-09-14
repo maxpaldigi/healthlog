@@ -3,6 +3,16 @@ import { Head, Link } from '@inertiajs/vue3';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import { home, privacy } from '@/routes';
 import { data as aboutData } from '@/routes/about';
+
+declare global {
+    interface Window {
+        healthymeOpenCookieConsent?: () => void;
+    }
+}
+
+const openCookieConsent = (): void => {
+    window.healthymeOpenCookieConsent?.();
+};
 </script>
 
 <template>
@@ -27,10 +37,13 @@ import { data as aboutData } from '@/routes/about';
                 separate, unticked consent.
             </p>
             <p>
-                On the live site we can use Google Analytics to count page
-                visits after you tap OK on the visit-counting notice. We do not
-                send your name, email, blood pressure, sugar, or other health
-                readings to Analytics. You can choose No thanks.
+                On the live site we use cookies. Necessary cookies keep you
+                signed in. Optional analytics cookies (Google Analytics) count
+                page visits only after you accept on the cookie banner. Reject
+                is always as easy as Accept. We do not send your name, email,
+                blood pressure, sugar, or other health readings to Analytics.
+                Ads cookies stay off. You can change your choice later from
+                the privacy notice.
             </p>
             <p>
                 Meter photos and food photos are sent to Google Gemini to read
@@ -88,6 +101,16 @@ import { data as aboutData } from '@/routes/about';
             <p>
                 You can log out on a shared phone. You can ask us to delete your
                 account from Account settings.
+            </p>
+            <p>
+                <button
+                    type="button"
+                    class="text-primary min-h-14 cursor-pointer text-left text-base font-semibold underline underline-offset-4"
+                    data-test="open-cookie-consent"
+                    @click="openCookieConsent"
+                >
+                    Change cookie choice
+                </button>
             </p>
         </div>
         <p class="text-muted-foreground mt-8 text-base">
