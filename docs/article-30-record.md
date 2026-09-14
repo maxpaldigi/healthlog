@@ -7,6 +7,7 @@ Purpose: personal blood pressure and blood sugar record-keeping, visit reports, 
 | --- | --- | --- | --- | --- |
 | Account | Name, email | Laravel Cloud hosting | Contract / terms | Until account deletion |
 | Health readings | BP, glucose, optional height and weight, BMI shown from those numbers, HbA1c, medication names, notes | Laravel Cloud hosting | Explicit Art. 9 consent (`health_data`) | Until account deletion or consent withdrawal |
+| Site visit counting | Page URL, browser/device signals Google Analytics collects (no health readings; no name or email sent by HealthyMe) | Google Analytics | Consent (visit-counting banner) | Per Google Analytics retention settings |
 | Meter or food photo extract | Image of device screen or food (no name, email, or date of birth) | Google Gemini | Explicit Art. 9 consent | Deleted immediately after extract (hourly prune as backup) |
 | Login email | Email, name | Resend | Contract | Magic links expire in 15 minutes |
 | Web Push reminders | Browser push endpoint and keys | Browser push services (Mozilla, Google, Apple) | Optional notification permission | Until unsubscribe, key rotation, or account deletion |
@@ -19,4 +20,4 @@ Purpose: personal blood pressure and blood sugar record-keeping, visit reports, 
 
 No identifiers are sent to Gemini. No merged food database is distributed.
 
-Policy version: 2026-09-12.
+Policy version: 2026-09-14.

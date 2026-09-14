@@ -20,6 +20,12 @@ import { home, privacy } from '@/routes';
         </p>
         <ul class="mt-6 space-y-4 text-base leading-relaxed">
             <li>
+                <span class="font-semibold">Google Analytics.</span>
+                Counts page visits on the live site after you accept the
+                visit-counting notice. No health readings. Google Analytics
+                terms.
+            </li>
+            <li>
                 <span class="font-semibold">Google Gemini.</span>
                 Reads numbers from a meter photo, or names food in a photo.
                 Images only. Deleted after extract. Google API terms.

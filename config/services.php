@@ -55,4 +55,13 @@ return [
         'user_agent' => env('RXNORM_USER_AGENT', 'HealthyMe/1.0 ('.env('APP_URL', 'http://localhost').')'),
     ],
 
+    /*
+    | Google Analytics (GA4). Empty disables the tag. Production only —
+    | local and testing never load it. Cookies stay off until the person
+    | accepts on the banner (Google Consent Mode).
+    */
+    'google_analytics' => [
+        'measurement_id' => env('GOOGLE_ANALYTICS_ID'),
+    ],
+
 ];

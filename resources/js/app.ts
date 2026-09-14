@@ -8,6 +8,7 @@ import AuthLayout from '@/layouts/AuthLayout.vue';
 import LoggingLayout from '@/layouts/LoggingLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import SuperAdminLayout from '@/layouts/SuperAdminLayout.vue';
+import { initializeAnalytics } from '@/lib/analytics';
 import { initializeFlashToast } from '@/lib/flashToast';
 import { initializeOfflineQueue } from '@/lib/offlineQueue';
 import { registerServiceWorker } from '@/lib/registerServiceWorker';
@@ -63,5 +64,7 @@ if (systemTimezone !== '') {
 initializeFlashToast();
 
 initializeOfflineQueue();
+
+initializeAnalytics();
 
 registerServiceWorker();
