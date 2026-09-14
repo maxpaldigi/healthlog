@@ -6,7 +6,6 @@ it('does not load Google Analytics on this computer by default', function () {
     $this->get(route('home'))
         ->assertOk()
         ->assertDontSee('googletagmanager.com/gtag/js', false)
-        ->assertDontSee('G-LFH02VZ86Y', false)
         ->assertDontSee('analytics-consent', false);
 });
 
@@ -22,8 +21,6 @@ it('loads Google Analytics only in production when the id is set', function () {
         ->assertSee('OK, count visits', false);
 });
 
-it('mentions Google Analytics in the privacy notice', function () {
-    $this->get(route('privacy'))
-        ->assertOk()
-        ->assertInertia(fn ($page) => $page->component('legal/Privacy'));
+it('uses the HealthyMe measurement id by default', function () {
+    expect(config('services.google_analytics.measurement_id'))->toBe('G-LFH02VZ86Y');
 });

@@ -61,7 +61,7 @@ return [
     | accepts on the banner (Google Consent Mode).
     */
     'google_analytics' => [
-        'measurement_id' => env('GOOGLE_ANALYTICS_ID'),
+        'measurement_id' => env('GOOGLE_ANALYTICS_ID', 'G-LFH02VZ86Y'),
     ],
 
 ];
