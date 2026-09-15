@@ -14,6 +14,7 @@ return [
     */
     'enabled' => [
         'en' => 'English',
+        'pt' => 'Português',
     ],
 
 ];

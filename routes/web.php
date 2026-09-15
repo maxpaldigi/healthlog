@@ -26,6 +26,7 @@ use App\Http\Controllers\ReportExportController;
 use App\Http\Controllers\ReportFhirController;
 use App\Http\Controllers\ReportPdfController;
 use App\Http\Controllers\ScanController;
+use App\Http\Controllers\Settings\LocaleController;
 use App\Http\Controllers\ShareLinkController;
 use App\Http\Controllers\TermsController;
 use App\Http\Controllers\TrendsController;
@@ -48,6 +49,10 @@ Route::get('/', function (Request $request) {
 Route::get('privacy', PrivacyController::class)->name('privacy');
 Route::get('terms', TermsController::class)->name('terms');
 Route::get('about/data', AboutDataController::class)->name('about.data');
+
+Route::patch('locale', [LocaleController::class, 'update'])
+    ->middleware('throttle:60,1')
+    ->name('locale.update');
 
 Route::middleware('guest')->group(function () {
     Route::get('login', [LoginController::class, 'create'])->name('login');

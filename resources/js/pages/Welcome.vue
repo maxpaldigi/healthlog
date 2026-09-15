@@ -2,6 +2,7 @@
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { Activity, Camera, Droplet } from '@lucide/vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import LocaleSwitcher from '@/components/LocaleSwitcher.vue';
 import { Spinner } from '@/components/ui/spinner';
 import { useTranslator } from '@/composables/useTranslator';
 import { login, privacy, register } from '@/routes';
@@ -22,7 +23,10 @@ defineProps<{
         class="bg-background text-foreground flex min-h-dvh flex-col px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))]"
     >
         <div class="mx-auto flex w-full max-w-md flex-1 flex-col">
-            <AppLogoIcon class="size-24" />
+            <div class="flex items-start justify-between gap-3">
+                <AppLogoIcon class="size-24" />
+                <LocaleSwitcher />
+            </div>
             <p class="text-primary mt-4 text-sm font-bold tracking-wide uppercase">
                 HealthyMe
             </p>

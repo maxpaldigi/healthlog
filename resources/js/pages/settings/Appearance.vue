@@ -29,7 +29,7 @@ const chooseLocale = (value: string): void => {
         return;
     }
 
-    router.patch('/settings/appearance/locale', { locale: value });
+    router.patch('/locale', { locale: value });
 };
 </script>
 

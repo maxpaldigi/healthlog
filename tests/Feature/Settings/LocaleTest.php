@@ -3,13 +3,16 @@
 use App\Support\AppLocale;
 use Inertia\Testing\AssertableInertia as Assert;
 
-it('shares english as the only enabled locale by default', function () {
+it('shares english and portuguese as enabled locales', function () {
     $this->actingAs(userWithProfile())
         ->get(route('appearance.edit'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('locale', 'en')
-            ->where('locales', [['value' => 'en', 'label' => 'English']])
+            ->where('locales', [
+                ['value' => 'en', 'label' => 'English'],
+                ['value' => 'pt', 'label' => 'Português'],
+            ])
             ->has('translations'));
 });
 
@@ -22,22 +25,32 @@ it('ignores an unknown locale cookie', function () {
 });
 
 it('persists an enabled locale on the user and the cookie', function () {
-    config(['locales.enabled' => ['en' => 'English', 'xx' => 'Test']]);
-
     $user = userWithProfile();
 
     $this->actingAs($user)
         ->from(route('appearance.edit'))
-        ->patch(route('appearance.locale'), ['locale' => 'xx'])
+        ->patch(route('locale.update'), ['locale' => 'pt'])
         ->assertRedirect(route('appearance.edit'))
-        ->assertPlainCookie(AppLocale::COOKIE, 'xx');
+        ->assertPlainCookie(AppLocale::COOKIE, 'pt');
 
-    expect($user->fresh()->locale)->toBe('xx');
+    expect($user->fresh()->locale)->toBe('pt');
 
     $this->actingAs($user->fresh())
         ->get(route('appearance.edit'))
         ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('locale', 'xx'));
+        ->assertInertia(fn (Assert $page) => $page->where('locale', 'pt'));
+});
+
+it('lets a guest change language with a cookie only', function () {
+    $this->from(route('home'))
+        ->patch(route('locale.update'), ['locale' => 'pt'])
+        ->assertRedirect(route('home'))
+        ->assertPlainCookie(AppLocale::COOKIE, 'pt');
+
+    $this->withUnencryptedCookie(AppLocale::COOKIE, 'pt')
+        ->get(route('home'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('locale', 'pt'));
 });
 
 it('rejects a locale that is not enabled', function () {
@@ -45,7 +58,7 @@ it('rejects a locale that is not enabled', function () {
 
     $this->actingAs($user)
         ->from(route('appearance.edit'))
-        ->patch(route('appearance.locale'), ['locale' => 'zz'])
+        ->patch(route('locale.update'), ['locale' => 'zz'])
         ->assertRedirect(route('appearance.edit'))
         ->assertSessionHasErrors('locale');
 

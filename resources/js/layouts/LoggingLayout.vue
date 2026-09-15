@@ -4,6 +4,7 @@ import { CalendarDays } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import InstallAppBanner from '@/components/InstallAppBanner.vue';
+import LocaleSwitcher from '@/components/LocaleSwitcher.vue';
 import LoggingTabBar from '@/components/LoggingTabBar.vue';
 import OnboardingGuide from '@/components/OnboardingGuide.vue';
 import { Toaster } from '@/components/ui/sonner';
@@ -87,21 +88,24 @@ const dateLabel = computed(() =>
             :class="wide ? 'max-w-3xl' : 'max-w-md'"
             data-tour="brand"
         >
-            <Link
-                :href="home()"
-                class="focus-visible:ring-ring flex min-h-14 min-w-0 items-center gap-2.5 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-                aria-label="HealthyMe home"
-            >
-                <AppLogoIcon
-                    class="size-11 shrink-0 shadow-sm ring-1 ring-black/5"
-                    alt=""
-                />
-                <span
-                    class="text-foreground truncate text-lg leading-tight font-bold"
+            <div class="flex min-w-0 items-center gap-2">
+                <Link
+                    :href="home()"
+                    class="focus-visible:ring-ring flex min-h-14 min-w-0 items-center gap-2.5 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                    aria-label="HealthyMe home"
                 >
-                    {{ isHome ? 'HealthyMe' : title }}
-                </span>
-            </Link>
+                    <AppLogoIcon
+                        class="size-11 shrink-0 shadow-sm ring-1 ring-black/5"
+                        alt=""
+                    />
+                    <span
+                        class="text-foreground truncate text-lg leading-tight font-bold"
+                    >
+                        {{ isHome ? 'HealthyMe' : title }}
+                    </span>
+                </Link>
+                <LocaleSwitcher />
+            </div>
             <p
                 class="text-muted-foreground flex min-h-14 shrink-0 items-center gap-1.5 text-sm font-medium"
             >

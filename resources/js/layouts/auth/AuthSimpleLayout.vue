@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import LocaleSwitcher from '@/components/LocaleSwitcher.vue';
 import { useTranslator } from '@/composables/useTranslator';
 import { home } from '@/routes';
 
@@ -25,6 +26,7 @@ defineProps<{
                     >
                         <AppLogoIcon class="size-16" />
                     </Link>
+                    <LocaleSwitcher />
                     <div class="space-y-2 text-center">
                         <p class="text-primary text-sm font-bold tracking-wide uppercase">
                             HealthyMe
