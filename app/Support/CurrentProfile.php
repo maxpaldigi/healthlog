@@ -10,17 +10,33 @@ use Illuminate\Http\Request;
 
 class CurrentProfile
 {
+    public const HEADER = 'X-Profile-Id';
+
     public function handle(User $user, Request $request): Profile
     {
         $profiles = $user->accessibleProfiles()->orderBy('name')->get();
 
-        $sessionId = $request->session()->get('current_profile_id');
+        $headerId = $request->header(self::HEADER);
 
-        if ($sessionId !== null) {
-            $fromSession = $profiles->firstWhere('id', (int) $sessionId);
+        if ($headerId !== null && $headerId !== '') {
+            $fromHeader = $profiles->firstWhere('id', (int) $headerId);
 
-            if ($fromSession !== null) {
-                return $fromSession;
+            if ($fromHeader !== null) {
+                $this->remember($request, $fromHeader->id);
+
+                return $fromHeader;
+            }
+        }
+
+        if ($request->hasSession()) {
+            $sessionId = $request->session()->get('current_profile_id');
+
+            if ($sessionId !== null) {
+                $fromSession = $profiles->firstWhere('id', (int) $sessionId);
+
+                if ($fromSession !== null) {
+                    return $fromSession;
+                }
             }
         }
 
@@ -37,8 +53,15 @@ class CurrentProfile
             ]);
         }
 
-        $request->session()->put('current_profile_id', $profile->id);
+        $this->remember($request, $profile->id);
 
         return $profile;
+    }
+
+    private function remember(Request $request, int $profileId): void
+    {
+        if ($request->hasSession()) {
+            $request->session()->put('current_profile_id', $profileId);
+        }
     }
 }

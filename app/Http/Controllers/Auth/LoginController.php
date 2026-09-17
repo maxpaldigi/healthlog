@@ -37,7 +37,15 @@ class LoginController extends Controller
             return redirect()->route('home');
         }
 
-        $sendMagicLink->handle($email);
+        $dispatch = $sendMagicLink->handle($email);
+
+        if ($dispatch->devLoginUrl !== null) {
+            session()->flash('dev_login_url', $dispatch->devLoginUrl);
+        }
+
+        if ($dispatch->mailFailed) {
+            session()->flash('mail_failed', true);
+        }
 
         return redirect()->route('login.check-email');
     }

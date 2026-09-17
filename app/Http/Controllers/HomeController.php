@@ -2,16 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\BpDaySlot;
-use App\Enums\ProfileRole;
-use App\Support\BodyCheckIn;
 use App\Support\CareAlerts;
-use App\Support\ClinicianNote;
 use App\Support\CurrentProfile;
-use App\Support\FoodResponse;
+use App\Support\HomePayload;
 use App\Support\ReadingReminders;
-use App\Support\ReadingSpeech;
-use App\Support\ReadingTimeline;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -23,74 +17,17 @@ class HomeController extends Controller
     {
         $user = $request->user();
         $profile = $currentProfile->handle($user, $request);
+        $payload = HomePayload::make($user, $profile, $reminders, $alerts);
 
-        if ($user->can('update', $profile) && BodyCheckIn::shouldOpenAfterSignIn($profile)) {
+        if ($payload['body_check_in_required']) {
             return redirect()->route('clinic.body');
         }
-        $todayStart = $profile->nowInTimezone()->startOfDay()->utc();
-        $todayEnd = $profile->nowInTimezone()->endOfDay()->utc();
 
-        $bpToday = $profile->bpReadings()->forPeriod($todayStart, $todayEnd)->get();
-        $filledSlots = [];
+        unset($payload['body_check_in_required']);
 
-        foreach ($bpToday as $reading) {
-            $slot = BpDaySlot::fromLocalTime($reading->measured_at->timezone($profile->clockTimezone()));
-            $filledSlots[$slot->value] = true;
-        }
+        // Web Home still expects full Profile models for the switcher.
+        $payload['profiles'] = $user->accessibleProfiles()->orderBy('name')->get();
 
-        $todaySlots = collect(BpDaySlot::dayOrder())
-            ->map(fn (BpDaySlot $slot): array => [
-                'key' => $slot->value,
-                'label' => $slot->label(),
-                'filled' => isset($filledSlots[$slot->value]),
-            ])
-            ->all();
-
-        $recentBp = $profile->bpReadings()->orderByDesc('measured_at')->limit(3)->get();
-        $recentGlucose = $profile->glucoseReadings()->orderByDesc('measured_at')->limit(3)->get();
-        $recent = array_slice(ReadingTimeline::merge($profile, $recentBp, $recentGlucose), 0, 3);
-
-        $profiles = $user->accessibleProfiles()->orderBy('name')->get();
-        $role = $user->roleOn($profile);
-        $caregivers = $profile->members()
-            ->accepted()
-            ->where('role', ProfileRole::Caregiver)
-            ->orderBy('email')
-            ->get(['id', 'email', 'role']);
-
-        return Inertia::render('Home', [
-            'profile' => [
-                'id' => $profile->id,
-                'name' => $profile->name,
-            ],
-            'profiles' => $profiles,
-            'role' => $role?->value,
-            'access' => [
-                'is_owner' => $role === ProfileRole::Owner,
-                'caregivers' => $caregivers->map(fn ($member): array => [
-                    'id' => $member->id,
-                    'email' => $member->email,
-                    'label' => $member->email,
-                ])->values()->all(),
-            ],
-            'alerts' => array_values(array_filter(
-                $alerts->active($profile),
-                fn (array $alert): bool => $alert['message'] !== 'No readings logged yet',
-            )),
-            'todayCount' => count($filledSlots),
-            'todayTarget' => 3,
-            'todaySlots' => $todaySlots,
-            'summarySpeech' => ReadingSpeech::home(count($filledSlots), 3, $todaySlots),
-            'recent' => $recent,
-            'foodResponse' => FoodResponse::make($profile),
-            'bodyPrompt' => BodyCheckIn::homeCard($profile),
-            'clinicNote' => ClinicianNote::current($profile),
-            'reminders' => [
-                'enabled' => $profile->reminders_enabled,
-                'timezone' => $profile->timezone,
-                'times' => $profile->reminderTimes(),
-                'due' => $reminders->openDueSlots($profile),
-            ],
-        ]);
+        return Inertia::render('Home', $payload);
     }
 }

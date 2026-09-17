@@ -38,7 +38,15 @@ class RegisterController extends Controller
             'weight_unit' => $validated['weight_unit'],
         ]);
 
-        $sendMagicLink->handle($user->email);
+        $dispatch = $sendMagicLink->handle($user->email);
+
+        if ($dispatch->devLoginUrl !== null) {
+            session()->flash('dev_login_url', $dispatch->devLoginUrl);
+        }
+
+        if ($dispatch->mailFailed) {
+            session()->flash('mail_failed', true);
+        }
 
         return redirect()->route('login.check-email');
     }

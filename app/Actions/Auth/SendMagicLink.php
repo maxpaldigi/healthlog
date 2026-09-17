@@ -11,7 +11,7 @@ use Throwable;
 
 class SendMagicLink
 {
-    public function handle(string $email): void
+    public function handle(string $email): MagicLinkDispatch
     {
         $user = User::query()->where('email', $email)->first();
 
@@ -19,7 +19,7 @@ class SendMagicLink
             // Same work as a hit so missing accounts are not cheaper to probe.
             LoginToken::hash(Str::random(64));
 
-            return;
+            return new MagicLinkDispatch;
         }
 
         $user->loginTokens()
@@ -46,13 +46,14 @@ class SendMagicLink
         } catch (Throwable $e) {
             report($e);
             $sent = false;
-            session()->flash('mail_failed', true);
         }
 
         $sendsRealMail = ! in_array(config('mail.default'), ['log', 'array'], true);
+        $devLoginUrl = (! $sent || ! $sendsRealMail) ? $url : null;
 
-        if (! $sent || ! $sendsRealMail) {
-            session()->flash('dev_login_url', $url);
-        }
+        return new MagicLinkDispatch(
+            devLoginUrl: $devLoginUrl,
+            mailFailed: ! $sent,
+        );
     }
 }

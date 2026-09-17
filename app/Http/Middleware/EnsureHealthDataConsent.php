@@ -39,8 +39,18 @@ class EnsureHealthDataConsent
             'register.store',
             'invites.accept',
             'admin.*',
+            'api.v1.auth.*',
+            'api.v1.me',
+            'api.v1.consent.*',
         ])) {
             return $next($request);
+        }
+
+        if ($request->is('api/*') || $request->expectsJson()) {
+            return response()->json([
+                'message' => 'Health data consent is required.',
+                'consent_required' => true,
+            ], 403);
         }
 
         return redirect()->route('consent.health-data');
