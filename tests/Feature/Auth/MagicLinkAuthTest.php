@@ -8,6 +8,7 @@ use App\Models\LoginToken;
 use App\Models\User;
 use App\Notifications\MagicLinkNotification;
 use Illuminate\Notifications\Events\NotificationSending;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
@@ -173,6 +174,49 @@ it('logs the user in and verifies email when a valid magic link is used', functi
 
     $this->assertAuthenticatedAs($user->fresh());
     expect($user->fresh()->email_verified_at)->not->toBeNull();
+});
+
+it('opens the app bridge on mobile instead of consuming the token', function () {
+    Notification::fake();
+    $user = User::factory()->create();
+
+    $this->post(route('login.store'), ['email' => $user->email]);
+    $notification = Notification::sent($user, MagicLinkNotification::class)->first();
+    expect($notification)->not->toBeNull();
+
+    $this->withHeader('User-Agent', 'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36')
+        ->get($notification->url)
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('auth/OpenApp')
+            ->where('appUrl', fn (string $url): bool => str_starts_with($url, 'healthyme://login/magic/'))
+            ->has('webContinueUrl'));
+
+    expect(LoginToken::query()->whereNull('consumed_at')->count())->toBe(1);
+});
+
+it('still logs in on the website when continue=web is used', function () {
+    Notification::fake();
+    $user = User::factory()->create();
+
+    $this->post(route('login.store'), ['email' => $user->email]);
+    $notification = Notification::sent($user, MagicLinkNotification::class)->first();
+
+    preg_match('#/login/magic/([^?]+)#', $notification->url, $matches);
+    $plain = rawurldecode($matches[1]);
+    parse_str(parse_url($notification->url, PHP_URL_QUERY) ?: '', $query);
+
+    $webContinueUrl = URL::temporarySignedRoute(
+        'login.magic',
+        Carbon::createFromTimestamp((int) $query['expires']),
+        ['token' => $plain, 'continue' => 'web'],
+    );
+
+    $this->withHeader('User-Agent', 'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36')
+        ->get($webContinueUrl)
+        ->assertRedirect(route('home'));
+
+    $this->assertAuthenticatedAs($user);
 });
 
 it('does not allow a magic link to be reused', function () {

@@ -1,4 +1,4 @@
-const CACHE = 'healthyme-5d17e388ddf7';
+const CACHE = 'healthyme-95d2c40437c2';
 const SHELL = ['/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (event) => {

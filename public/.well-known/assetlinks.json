@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "fit.healthyme.healthyme",
+      "sha256_cert_fingerprints": [
+        "FA:20:B8:12:B6:53:93:D8:E4:6D:8C:39:1E:E1:A3:79:76:45:BD:70:F5:C2:37:A8:5F:F7:AF:B3:B2:BD:FE:B8"
+      ]
+    }
+  }
+]

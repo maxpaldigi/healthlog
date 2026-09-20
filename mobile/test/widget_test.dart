@@ -9,12 +9,18 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('login screen shows brand and disclaimer', (tester) async {
+  testWidgets('login screen asks for email and explains tap-to-open', (tester) async {
     await tester.pumpWidget(const HealthyMeApp());
-    await tester.pump(); // start boot
-    await tester.pump(); // finish loadToken
+    await tester.pump();
+    await tester.pump();
 
     expect(find.text('HealthyMe'), findsOneWidget);
     expect(find.textContaining('Not a medical device'), findsOneWidget);
+    expect(find.text('Email me a login link'), findsOneWidget);
+    expect(find.textContaining('tap the login link'), findsNothing);
+    expect(
+      find.textContaining('open the email on this phone'),
+      findsOneWidget,
+    );
   });
 }

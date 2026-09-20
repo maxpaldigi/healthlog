@@ -1,3 +1,8 @@
+import 'dart:async';
+import 'dart:io' show Platform;
+
+import 'package:app_links/app_links.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -22,8 +27,12 @@ class HealthyMeApp extends StatefulWidget {
 class _HealthyMeAppState extends State<HealthyMeApp> {
   final api = ApiClient();
   late final auth = AuthApi(api);
+  final _appLinks = AppLinks();
+  StreamSubscription<Uri>? _linkSub;
+
   bool booting = true;
   bool loggedIn = false;
+  String? linkError;
 
   @override
   void initState() {
@@ -31,15 +40,70 @@ class _HealthyMeAppState extends State<HealthyMeApp> {
     _boot();
   }
 
+  @override
+  void dispose() {
+    _linkSub?.cancel();
+    super.dispose();
+  }
+
   Future<void> _boot() async {
     await api.loadToken();
+
+    final inTest = !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
+    if (!inTest) {
+      _linkSub = _appLinks.uriLinkStream.listen(_onIncomingLink);
+
+      try {
+        final initial = await _appLinks
+            .getInitialLink()
+            .timeout(const Duration(milliseconds: 500), onTimeout: () => null);
+        if (initial != null) {
+          await _handleMagicLink(initial);
+        }
+      } catch (_) {
+        // No launch link (normal cold start).
+      }
+    }
+
+    if (!mounted) return;
     setState(() {
       loggedIn = api.isLoggedIn;
       booting = false;
     });
   }
 
-  void _onLoggedIn() => setState(() => loggedIn = true);
+  void _onIncomingLink(Uri uri) {
+    unawaited(_handleMagicLink(uri));
+  }
+
+  Future<void> _handleMagicLink(Uri uri) async {
+    if (!_looksLikeMagicLink(uri)) {
+      return;
+    }
+
+    try {
+      await auth.exchangeFromUrl(uri.toString());
+      if (!mounted) return;
+      setState(() {
+        loggedIn = true;
+        linkError = null;
+      });
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => linkError = e.message);
+    }
+  }
+
+  bool _looksLikeMagicLink(Uri uri) {
+    final path = uri.path;
+    return path.contains('/login/magic/') ||
+        (uri.scheme == 'healthyme' && path.contains('/magic'));
+  }
+
+  void _onLoggedIn() => setState(() {
+        loggedIn = true;
+        linkError = null;
+      });
 
   Future<void> _onLoggedOut() async {
     await auth.logout();
@@ -70,16 +134,26 @@ class _HealthyMeAppState extends State<HealthyMeApp> {
           ? const Scaffold(body: Center(child: CircularProgressIndicator()))
           : loggedIn
               ? HomeScreen(api: api, auth: auth, onLoggedOut: _onLoggedOut)
-              : LoginScreen(auth: auth, onLoggedIn: _onLoggedIn),
+              : LoginScreen(
+                  auth: auth,
+                  onLoggedIn: _onLoggedIn,
+                  linkError: linkError,
+                ),
     );
   }
 }
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key, required this.auth, required this.onLoggedIn});
+  const LoginScreen({
+    super.key,
+    required this.auth,
+    required this.onLoggedIn,
+    this.linkError,
+  });
 
   final AuthApi auth;
   final VoidCallback onLoggedIn;
+  final String? linkError;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -87,10 +161,10 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final email = TextEditingController();
-  final link = TextEditingController();
   String? message;
-  String? loginUrl;
   bool busy = false;
+  bool showPasteFallback = false;
+  final link = TextEditingController();
 
   @override
   void dispose() {
@@ -103,16 +177,16 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       busy = true;
       message = null;
-      loginUrl = null;
     });
     try {
       final result = await widget.auth.requestMagicLink(email.text);
       setState(() {
-        message = result['message']?.toString() ??
-            'If that email is registered, a login link is on its way.';
-        loginUrl = result['login_url']?.toString();
+        message =
+            'Check your email and tap the login link. It opens this app and signs you in.';
+        final loginUrl = result['login_url']?.toString();
         if (loginUrl != null) {
-          link.text = loginUrl!;
+          // Local/dev mailers only — auto-open for convenience.
+          link.text = loginUrl;
         }
       });
     } on ApiException catch (e) {
@@ -174,32 +248,51 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: busy ? null : _requestLink,
               child: Text(busy ? 'Please wait…' : 'Email me a login link'),
             ),
+            if (widget.linkError != null) ...[
+              const SizedBox(height: 16),
+              Text(
+                widget.linkError!,
+                style: const TextStyle(color: Colors.red, fontSize: 16),
+              ),
+            ],
             if (message != null) ...[
               const SizedBox(height: 16),
-              Text(message!),
+              Text(message!, style: const TextStyle(fontSize: 16)),
             ],
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
             Text(
-              'Paste the login link from your email (or the local test link):',
-              style: Theme.of(context).textTheme.titleMedium,
+              'After you request a link: open the email on this phone and tap the button. HealthyMe should open and finish login.',
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: link,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Login link or token',
-                border: OutlineInputBorder(),
+            const SizedBox(height: 24),
+            TextButton(
+              onPressed: () =>
+                  setState(() => showPasteFallback = !showPasteFallback),
+              child: Text(
+                showPasteFallback
+                    ? 'Hide paste option'
+                    : 'Link did not open the app? Paste it here',
               ),
             ),
-            const SizedBox(height: 16),
-            OutlinedButton(
-              onPressed: busy ? null : _redeem,
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(56),
+            if (showPasteFallback) ...[
+              const SizedBox(height: 8),
+              TextField(
+                controller: link,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'Login link',
+                  border: OutlineInputBorder(),
+                ),
               ),
-              child: const Text('Open HealthyMe'),
-            ),
+              const SizedBox(height: 16),
+              OutlinedButton(
+                onPressed: busy ? null : _redeem,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(56),
+                ),
+                child: const Text('Open HealthyMe'),
+              ),
+            ],
           ],
         ),
       ),
@@ -312,7 +405,8 @@ class _HomeScreenState extends State<HomeScreen> {
       await _load();
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -345,7 +439,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Text(error!, textAlign: TextAlign.center),
                         const SizedBox(height: 16),
-                        FilledButton(onPressed: _load, child: const Text('Try again')),
+                        FilledButton(
+                            onPressed: _load, child: const Text('Try again')),
                       ],
                     ),
                   ),
@@ -357,9 +452,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Text(
                         'Hello, $name',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
                       const Text(
@@ -378,7 +474,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: ListTile(
                             title: Text(map['label']?.toString() ?? ''),
                             trailing: Icon(
-                              filled ? Icons.check_circle : Icons.circle_outlined,
+                              filled
+                                  ? Icons.check_circle
+                                  : Icons.circle_outlined,
                               color: filled ? Colors.green : Colors.grey,
                               size: 32,
                             ),
